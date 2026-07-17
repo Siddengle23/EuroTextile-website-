@@ -1,0 +1,305 @@
+/* --- GLOBAL THEME SETTINGS (Matched to Logo) --- */
+:root {
+    --primary-blue: #2565a5;  /* From Logo ETS */
+    --accent-blue: #a3cbe8;   /* From Logo highlights */
+    --bg-skin: #fdf5f0;       /* Soft requested skin/peach tone */
+    --bg-skin-darker: #fae8dc;/* Slightly darker for animation contrast */
+    --text-main: #1e293b;
+    --text-light: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- THE ANIMATED BACKGROUND --- */
+@keyframes subtleGradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+body {
+    /* This creates the slow moving skin-tone background */
+    background: linear-gradient(-45deg, var(--bg-skin), var(--bg-skin-darker), #ffffff, var(--bg-skin));
+    background-size: 400% 400%;
+    animation: subtleGradient 15s ease infinite;
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* --- NAVIGATION BAR --- */
+.navbar {
+    display: flex;
+    justify-content: flex-start; /* Pushes everything to the left side */
+    align-items: center;
+    gap: 60px; /* Creates the space between your logo and the sub-sections */
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 20px 50px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between the logo image and the text */
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-blue);
+    letter-spacing: 1px;
+}
+
+.nav-logo-img {
+    height: 40px; /* Keeps the logo cleanly sized inside the menu bar */
+    width: auto;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary-blue);
+}
+
+/* --- HERO SECTION --- */
+.hero {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #17426b 100%);
+    color: var(--text-light);
+    padding: 120px 50px; /* Changed padding to align with the left menu */
+    text-align: left; /* Forces the text to the left */
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0; /* Removes the auto-centering */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligns everything inside to the left edge */
+}
+
+.hero-logo-img {
+    height: 70px; /* Controls the size of the logo in the hero section */
+    margin-bottom: 25px; /* Adds space before the headline starts */
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero p {
+    font-size: 20px;
+    color: var(--accent-blue);
+    margin-bottom: 40px;
+}
+
+.btn-primary {
+    background-color: var(--accent-blue);
+    color: var(--primary-blue);
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #ffffff;
+    transform: translateY(-2px);
+}
+
+
+
+/* --- PRODUCTS GRID --- */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.product-card img {
+    width: 100%; /* Forces the image to fill the width of the card */
+    height: 200px; /* Forces all images to be the exact same height */
+    object-fit: cover; /* Prevents the images from stretching or squishing */
+    border-radius: 4px; /* Softens the corners of the image */
+    margin-bottom: 15px; /* Adds space between the image and the text */
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    background: #ffffff;
+}
+
+.product-card h3 {
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    font-size: 22px;
+}
+
+/* --- SERVICES SECTION --- */
+.service-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;
+}
+
+.card h3 {
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+}
+
+/* --- CONTACT SECTION --- */
+.contact-form {
+    max-width: 600px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.contact-form input, 
+.contact-form textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--accent-blue);
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #fafafa;
+}
+
+.contact-form input:focus, 
+.contact-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    background-color: #ffffff;
+}
+
+.btn-submit {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #17426b;
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: var(--primary-blue);
+    color: var(--text-light);
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    margin-top: 50px;
+}
+/* --- JAVASCRIPT ANIMATION STATES --- */
+.reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px); /* Pushes the element down 40 pixels */
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); /* Smooth easing */
+}
+
+.reveal-visible {
+    opacity: 1;
+    transform: translateY(0); /* Brings it back to its normal position */
+}
+
+/* --- OUR CLIENTS SLIDER --- */
+.clients {
+    padding: 80px 20px 40px 20px;
+    background-color: transparent;
+    overflow: hidden;
+}
+
+.clients-heading {
+    text-align: center;
+    font-size: 42px; /* Made much bigger */
+    font-weight: 800;
+    color: var(--primary-blue); 
+    margin-bottom: 60px;
+    letter-spacing: 1px;
+}
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    max-width: 100%; /* Expanded to allow the massive text to flow edge-to-edge */
+    margin: auto;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.slider-track {
+    display: flex;
+    width: max-content; /* THE FIX: Allows the track to automatically stretch to fit your new long name */
+    animation: scrollTrack 35s linear infinite; /* Adjusted speed for the larger text */
+}
+
+.slider-track:hover {
+    animation-play-state: paused; 
+}
+
+.client-logo {
+    padding: 0 70px; /* Replaced the fixed 250px width with flexible padding between words */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px; /* Made massive, directly referencing the Blend360 aesthetic */
+    font-weight: 800;
+    color: #cbd5e1; 
+    white-space: nowrap; /* THE FIX: Forces the new longer name to stay cleanly on a single line */
+    transition: color 0.3s ease;
+    cursor: default;
+}
+
+.client-logo:hover {
+    color: var(--primary-blue); 
+}
+
+/* The new continuous scroll math based on percentages instead of pixels */
+@keyframes scrollTrack {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } 
+}

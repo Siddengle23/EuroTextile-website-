@@ -3,34 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Euro Textile Spares Pvt. Ltd.</title>
+    <title>Euro Textile Spares Pvt. Ltd. — Genuine European Spinning-Mill Spares</title>
+    <meta name="description" content="Pune-based import & distribution hub supplying India's premium spinning mills with genuine European textile machinery spare parts — Phicomp (CH), Emil Broell (AT), Samatex (DE).">
+    <link rel="icon" href="images/logo2.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- UTILITY STRIP -->
+    <div class="utility-strip">
+        <div class="wrap util-inner">
+            <span class="util-tagline">Sole-selling agent &amp; distributor for elite European OEMs</span>
+            <span class="util-contacts">
+                <a href="tel:+919881470883">+91&nbsp;98814&nbsp;70883</a>
+                <a href="mailto:dengle@eurotextilespares.com">dengle@eurotextilespares.com</a>
+            </span>
+        </div>
+    </div>
+
     <!-- NAVIGATION BAR -->
     <nav class="navbar">
-        <div class="logo">
-            <img src="images/logo2.png" alt="Company Logo" class="nav-logo-img">
-            Euro Textile Spares
+        <div class="wrap nav-inner">
+            <a href="#home" class="logo">
+                <img src="images/logo (1).png" alt="Euro Textile Spares Pvt. Ltd." class="nav-logo-img">
+            </a>
+            <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links">
+                <li><a href="#home">About</a></li>
+                <li class="has-dropdown">
+                    <a href="#products" class="dropdown-toggle">Products <span class="caret">▾</span></a>
+                    <ul class="dropdown">
+                        <li><a href="#products" data-cat="rotors">Rotors</a></li>
+                        <li><a href="#products" data-cat="cups">Rotor Cups &amp; Bearings</a></li>
+                        <li><a href="#products" data-cat="navels">Navels</a></li>
+                        <li><a href="#products" data-cat="autoconer">Autoconer</a></li>
+                        <li><a href="#products" data-cat="autocoro">Autocoro</a></li>
+                        <li><a href="#products" data-cat="ringframe">Ring Frame</a></li>
+                        <li><a href="#products" data-cat="twindiscs">Twin Discs</a></li>
+                    </ul>
+                </li>
+                <li><a href="#manufacturers">Manufacturers</a></li>
+                <li><a href="#capabilities">Capabilities</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#contact" class="btn-primary nav-cta">Request a Quote</a></li>
+            </ul>
         </div>
-        <ul class="nav-links">
-            <li><a href="#products">Products</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
     </nav>
 
-    <!-- HERO SECTION -->
+    <!-- HERO -->
     <header id="home" class="hero">
-        <div class="hero-content">
-            <img src="images/logo2.png" alt="Euro Textile Spares Logo" class="hero-logo-img">
-            <h1>Precision Textile Machinery Spares</h1>
-            <p>European & Asian manufactured textile machinery spare parts delivery.</p>
-            <a href="#contact" class="btn-primary">Request a Quote</a>
+        <span class="chevron chevron-left" aria-hidden="true"></span>
+        <span class="chevron chevron-right" aria-hidden="true"></span>
+        <div class="wrap hero-inner">
+            <div class="hero-copy">
+                <span class="eyebrow">Germany · Austria · Switzerland → India</span>
+                <h1>Genuine European engineering,<br>delivered from Pune.</h1>
+                <p class="hero-lead">
+                    Euro Textile Spares supplies India's premium spinning mills with
+                    <strong>100% authentic, high-performance spare parts</strong> sourced directly
+                    from elite European manufacturers — with strict OEM compatibility and superior
+                    yarn-formation quality. We bypass unverified secondary suppliers to eliminate
+                    unexpected maintenance halts and protect your bottom line.
+                </p>
+                <div class="hero-actions">
+                    <a href="#contact" class="btn-primary">Request a Quote</a>
+                    <a href="#products" class="btn-outline">Explore the Catalog</a>
+                </div>
+            </div>
+            <div class="hero-badge">
+                <img src="images/logo2.png" alt="" class="hero-mark">
+                <span class="hero-badge-text">Authentic OEM parts,<br>straight from our Pune inventory hub</span>
+            </div>
         </div>
     </header>
 
-    <!-- OUR CLIENTS SLIDER -->
+    <!-- VALUE STRIP -->
+    <section class="values">
+        <div class="wrap value-grid">
+            <div class="value-item">
+                <span class="value-num">100%</span>
+                <span class="value-label">Genuine OEM components</span>
+            </div>
+            <div class="value-item">
+                <span class="value-num">3</span>
+                <span class="value-label">European engineering partners — DE · AT · CH</span>
+            </div>
+            <div class="value-item">
+                <span class="value-num">Pune</span>
+                <span class="value-label">Dedicated ready-stock inventory hub</span>
+            </div>
+            <div class="value-item">
+                <span class="value-num">Max</span>
+                <span class="value-label">Machine uptime &amp; yarn quality</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- OUR CLIENTS SLIDER (kept as-is; will be updated later) -->
     <section id="clients" class="clients">
         <h2 class="clients-heading">Our Clients</h2>
         <div class="slider-container">
@@ -43,11 +117,10 @@
                 <div class="client-logo">RAYMOND</div>
                 <div class="client-logo">TRIDENT</div>
                 <div class="client-logo">ARVIND LIMITED</div>
-                
-                <!-- Set 2 (Duplicated exactly to create the infinite loop illusion) -->
+                <!-- Set 2 (duplicate for the infinite loop) -->
                 <div class="client-logo">WELSPUN</div>
                 <div class="client-logo">VARDHMAN</div>
-                <div class="client-logo">ALOK</div>
+                <div class="client-logo">ALOK INDUSTRIES</div>
                 <div class="client-logo">NAHAR FIBRES</div>
                 <div class="client-logo">RAYMOND</div>
                 <div class="client-logo">TRIDENT</div>
@@ -56,80 +129,318 @@
         </div>
     </section>
 
+    <!-- PRODUCTS -->
     <section id="products" class="products">
-        <h2>Our Spare Parts Catalog</h2>
-        <p class="section-subtext">Supplying high-grade replacement parts for top-tier textile machinery.</p>
-        
-        <div class="product-grid">
-            <div class="product-card">
-                <!-- Add the image tag here -->
-                <img src="images/autoconer.jpg" alt="AutoConer Spare Parts">
-                <h3>AutoConer</h3>
-                <p>Premium winding machine spares for optimal yarn quality.</p>
+        <div class="wrap">
+            <div class="section-head">
+                <span class="eyebrow">Product Catalog</span>
+                <h2>Precision spares, organised by part type</h2>
+                <p class="section-subtext">
+                    High-grade replacement parts for Autoconer, Autocoro, ring-frame and rotor-spinning
+                    machinery — every line traceable to its European manufacturer.
+                </p>
             </div>
-            
-            <div class="product-card">
-                <img src="images/autocoro.jpg" alt="AutoCoro Spare Parts">
-                <h3>AutoCoro</h3>
-                <p>Rotor spinning machine components for high-speed production.</p>
+
+            <!-- category tabs -->
+            <div class="cat-tabs" role="tablist">
+                <button class="cat-tab is-active" data-cat="rotors">Rotors</button>
+                <button class="cat-tab" data-cat="cups">Rotor Cups &amp; Bearings</button>
+                <button class="cat-tab" data-cat="navels">Navels</button>
+                <button class="cat-tab" data-cat="autoconer">Autoconer</button>
+                <button class="cat-tab" data-cat="autocoro">Autocoro</button>
+                <button class="cat-tab" data-cat="ringframe">Ring Frame</button>
+                <button class="cat-tab" data-cat="twindiscs">Twin Discs</button>
             </div>
-            
-            <div class="product-card">
-                <img src="images/ring-spinning.jpg" alt="Ring Spinning Parts">
-                <h3>Ring Spinning</h3>
-                <p>Durable rings and travelers for consistent tension and reduced breakage.</p>
+
+            <!-- ROTORS -->
+            <div class="cat-panel is-active" data-panel="rotors">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="8" fill="none" stroke="currentColor" stroke-width="3"/><path d="M32 10v8M32 46v8M10 32h8M46 32h8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="info-body">
+                        <span class="mfr-badge"><span class="flag flag-ch"></span> Phicomp AG · Switzerland</span>
+                        <h3>Spinning Rotors</h3>
+                        <p>High-precision rotors engineered for <strong>ACO8, ACO9, ACO10 and ACO11</strong>
+                        automatic rotor-spinning machines. High-end European nickel-diamond coating for
+                        &gt;35,000-hour lifetimes, curved thin-wall design for lower power consumption and
+                        rapid start/stop, and consistent yarn quality across the full lifecycle.</p>
+                        <ul class="info-tags">
+                            <li>Groove types: G · T · K · TT · U · S</li>
+                            <li>Groove Ø 28–52 mm</li>
+                            <li>DD / DDN nickel-diamond coating</li>
+                        </ul>
+                        <a href="#contact" class="btn-outline btn-sm">Enquire about rotors</a>
+                    </div>
+                </div>
             </div>
-            
-            <div class="product-card">
-                <img src="images/rotor-cup.jpg" alt="Rotor Cup and Bearing">
-                <h3>Rotor Cup & Bearing</h3>
-                <p>Precision-engineered cups and high-RPM bearings for extended lifecycle.</p>
+
+            <!-- ROTOR CUPS & BEARINGS -->
+            <div class="cat-panel" data-panel="cups">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 20h28l-5 24H23z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><ellipse cx="32" cy="20" rx="14" ry="5" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="20" r="4" fill="currentColor"/></svg>
+                    </div>
+                    <div class="info-body">
+                        <span class="mfr-badge"><span class="flag flag-ch"></span> Phicomp AG · Switzerland</span>
+                        <h3>Rotor Cups &amp; Bearings</h3>
+                        <p>Premium rotor cups and bearings optimised for <strong>semi-automatic rotor-spinning
+                        systems</strong>. Economic bearings up to 90,000 rpm and PhiComp bearings up to
+                        110,000 rpm, with high-strength steel or aluminium cups and diamond-nickel coatings
+                        for extended lifetime and low, consistent CV.</p>
+                        <ul class="info-tags">
+                            <li>Schlafhorst / Oerlikon / Saurer BD3xx–BD8</li>
+                            <li>Rieter BT9xx · R3x</li>
+                            <li>Taitan · Rifa &amp; others</li>
+                        </ul>
+                        <a href="#contact" class="btn-outline btn-sm">Enquire about cups &amp; bearings</a>
+                    </div>
+                </div>
             </div>
-            
-            <div class="product-card">
-                <img src="images/twin-discs.jpg" alt="Twin Discs">
-                <h3>Twin Discs</h3>
-                <p>Wear-resistant twin discs ensuring stable rotor speeds.</p>
+
+            <!-- NAVELS (rendered from data.js) -->
+            <div class="cat-panel" data-panel="navels">
+                <div class="panel-intro">
+                    <span class="mfr-badge"><span class="flag flag-at"></span> Emil Broell GmbH &amp; Co KG · Austria</span>
+                    <h3>Navels for rotor spinning</h3>
+                    <p>Industry-standard, high-quality navels engineered for optimal yarn structural
+                    consistency and smooth performance. Choose the profile that matches your fibre,
+                    yarn count and end use.</p>
+                </div>
+                <div class="navel-grid" id="navelGrid"><!-- injected by script.js --></div>
+                <div class="machines-note">
+                    <strong>Fits:</strong>
+                    <ul id="navelMachines"><!-- injected by script.js --></ul>
+                </div>
             </div>
-            
-            <div class="product-card">
-                <img src="images/solid-rings.jpg" alt="Solid Rings">
-                <h3>Solid Rings</h3>
-                <p>High-tensile solid rings designed for advanced spinning applications.</p>
+
+            <!-- AUTOCONER (rendered from data.js) -->
+            <div class="cat-panel" data-panel="autoconer">
+                <div class="panel-intro">
+                    <span class="mfr-badge"><span class="flag flag-de"></span> Samatex GmbH · Germany</span>
+                    <h3>Autoconer spares</h3>
+                    <p>Heavy-duty, long-lifespan winding-machine spares — over 3,000 parts available.
+                    Search the range below or request the full parts list.</p>
+                </div>
+                <div class="parts-toolbar">
+                    <input type="search" class="parts-search" data-target="autoconerParts" placeholder="Search Autoconer parts…" aria-label="Search Autoconer parts">
+                </div>
+                <p class="parts-count" data-count="autoconerParts"></p>
+                <div class="parts-grid" id="autoconerParts"><!-- injected by script.js --></div>
+            </div>
+
+            <!-- AUTOCORO (rendered from data.js) -->
+            <div class="cat-panel" data-panel="autocoro">
+                <div class="panel-intro">
+                    <span class="mfr-badge"><span class="flag flag-de"></span> Samatex GmbH · Germany</span>
+                    <h3>Autocoro spares</h3>
+                    <p>Rotor-spinning machine components for high-speed production — grouped by machine
+                    section. Over 3,500 parts available; search below or request the full parts list.</p>
+                </div>
+                <div class="parts-toolbar">
+                    <input type="search" class="parts-search" data-target="autocoroParts" placeholder="Search Autocoro parts…" aria-label="Search Autocoro parts">
+                    <div class="toolbar-actions">
+                        <a class="btn-primary btn-sm" href="docs/Autocoro338_Parts_list_revised.pdf" target="_blank" rel="noopener">Additional Parts ↗</a>
+                    </div>
+                </div>
+                <p class="parts-count" data-count="autocoroParts"></p>
+                <div class="parts-grid grouped" id="autocoroParts"><!-- injected by script.js --></div>
+            </div>
+
+            <!-- RING FRAME (Rieter Ring + Zinser Ring, rendered from data.js) -->
+            <div class="cat-panel" data-panel="ringframe">
+                <div class="panel-intro">
+                    <span class="mfr-badge"><span class="flag flag-de"></span> Samatex GmbH · Germany</span>
+                    <h3>Ring Frame spares — Rieter &amp; Zinser</h3>
+                    <p>Heavy-duty, long-lifespan spare parts for ring-spinning frames, engineered for
+                    reliable, repeatable performance and minimum downtime.</p>
+                </div>
+                <h4 class="ring-group-title">Rieter Ring</h4>
+                <div class="parts-grid ring-grid" id="rieterParts"><!-- injected by script.js --></div>
+                <h4 class="ring-group-title">Zinser Ring</h4>
+                <div class="parts-grid ring-grid" id="zinserParts"><!-- injected by script.js --></div>
+            </div>
+
+            <!-- TWIN DISCS -->
+            <div class="cat-panel" data-panel="twindiscs">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="24" cy="32" rx="10" ry="16" fill="none" stroke="currentColor" stroke-width="3"/><ellipse cx="40" cy="32" rx="10" ry="16" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+                    </div>
+                    <div class="info-body">
+                        <span class="mfr-badge">CPU</span>
+                        <h3>Twin Discs — supporting discs for open-end machines</h3>
+                        <p>Wear-resistant twin discs (supporting discs) ensuring stable rotor speeds on
+                        open-end / rotor-spinning machines. All disc types available.</p>
+                        <div class="variant-row">
+                            <span class="variant-chip">Twin Disc N&nbsp;Type</span>
+                            <span class="variant-chip">Twin Disc Laser&nbsp;Type</span>
+                            <span class="variant-chip">Twin Disc Reflector&nbsp;Type</span>
+                        </div>
+                        <ul class="info-tags">
+                            <li>Supporting disc for RU / R1 / R20</li>
+                            <li>Supporting disc for R40 / R60 / R66</li>
+                            <li>Supporting disc for SE-7 to SE-12</li>
+                        </ul>
+                        <a href="#contact" class="btn-outline btn-sm">Enquire about twin discs</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="services" class="services">
-        <h2>Import & Distribution Expertise</h2>
-        <div class="service-cards">
-            <div class="card">
-                <h3>Customs & Import</h3>
-                <p>Navigating Indian customs and tariffs seamlessly for our international partners.</p>
+    <!-- MANUFACTURERS -->
+    <section id="manufacturers" class="manufacturers">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="eyebrow">Sourced direct</span>
+                <h2>Our European manufacturing partners</h2>
+                <p class="section-subtext">
+                    A dedicated pipeline of authentic components from Germany, Austria and Switzerland —
+                    no unverified secondary suppliers in between.
+                </p>
             </div>
-            <div class="card">
-                <h3>Pan-India Distribution</h3>
-                <p>End-to-end logistics to get parts directly to textile mills across India.</p>
+            <div class="mfr-grid">
+                <div class="mfr-card">
+                    <span class="flag flag-ch big"></span>
+                    <h3>Phicomp AG</h3>
+                    <span class="mfr-country">Switzerland</span>
+                    <p>High-precision rotors, rotor cups &amp; bearings for automatic and semi-automatic
+                    rotor-spinning machines.</p>
+                </div>
+                <div class="mfr-card">
+                    <span class="flag flag-at big"></span>
+                    <h3>Emil Broell GmbH &amp; Co KG</h3>
+                    <span class="mfr-country">Austria</span>
+                    <p>Industry-standard navels engineered for optimal yarn structural consistency in
+                    rotor spinning.</p>
+                </div>
+                <div class="mfr-card">
+                    <span class="flag flag-de big"></span>
+                    <h3>Samatex GmbH</h3>
+                    <span class="mfr-country">Germany</span>
+                    <p>Heavy-duty, long-lifespan spares for Autocoro, Autoconer and ring-frame
+                    auto-doffing machinery.</p>
+                </div>
+                <div class="mfr-card">
+                    <span class="flag flag-neutral big"></span>
+                    <h3>CPU</h3>
+                    <span class="mfr-country">Twin Discs</span>
+                    <p>Wear-resistant supporting discs (N, Laser &amp; Reflector type) for open-end
+                    spinning machines.</p>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- CAPABILITIES -->
+    <section id="capabilities" class="capabilities">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="eyebrow">Import &amp; Distribution</span>
+                <h2>A B2B bridge into the Indian market</h2>
+            </div>
+            <div class="cap-grid">
+                <div class="cap-card">
+                    <div class="cap-num">01</div>
+                    <h3>Importing &amp; Compliance</h3>
+                    <p>Navigating Indian customs, tariffs and GST requirements seamlessly on behalf of our
+                    international manufacturing partners.</p>
+                </div>
+                <div class="cap-card">
+                    <div class="cap-num">02</div>
+                    <h3>Pan-India Distribution</h3>
+                    <p>End-to-end local logistics that deliver genuine parts directly to textile mills
+                    across India from our Pune inventory hub.</p>
+                </div>
+                <div class="cap-card">
+                    <div class="cap-num">03</div>
+                    <h3>Market Representation</h3>
+                    <p>The dedicated on-the-ground sales and support agent in India for elite European
+                    suppliers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
     <section id="contact" class="contact">
-        <h2>Get in Touch</h2>
-        <p>Looking for specific part numbers or looking to expand your manufacturing footprint into India?</p>
-        
-        <form class="contact-form">
-            <input type="text" placeholder="Your Name / Company Name" required>
-            <input type="email" placeholder="Business Email" required>
-            <input type="text" placeholder="Part Number or Machine Model" required>
-            <textarea placeholder="Tell us what you need..." rows="5" required></textarea>
-            <button type="submit" class="btn-submit">Send Inquiry</button>
-        </form>
+        <div class="wrap contact-inner">
+            <div class="contact-copy">
+                <span class="eyebrow light">How can we help?</span>
+                <h2>Get in touch</h2>
+                <p>Looking for specific part numbers, or expanding your manufacturing footprint into
+                India? Send us your requirement and our team will respond promptly.</p>
+                <ul class="contact-details">
+                    <li><span>Email</span> <a href="mailto:dengle@eurotextilespares.com">dengle@eurotextilespares.com</a></li>
+                    <li><span>Phone</span> <a href="tel:+919881470883">+91&nbsp;98814&nbsp;70883</a> · <a href="tel:+919021467443">+91&nbsp;90214&nbsp;67443</a></li>
+                    <li><span>LinkedIn</span> <a href="https://www.linkedin.com/company/euro-textile-spares-private-limited" target="_blank" rel="noopener">Euro Textile Spares Pvt. Ltd.</a></li>
+                </ul>
+            </div>
+            <form class="contact-form" novalidate>
+                <input type="text" name="name" placeholder="Your name / company name" required>
+                <input type="email" name="email" placeholder="Business email" required>
+                <input type="text" name="part" placeholder="Part number or machine model" required>
+                <textarea name="message" placeholder="Tell us what you need…" rows="5" required></textarea>
+                <button type="submit" class="btn-submit">Send Inquiry</button>
+                <p class="form-status" role="status" aria-live="polite"></p>
+            </form>
+        </div>
     </section>
 
-    <footer>
-        <p>&copy; 2024 Euro Textile Spares Pvt. Ltd. All rights reserved.</p>
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="wrap footer-grid">
+            <div class="footer-brand">
+                <img src="images/logo (1).png" alt="Euro Textile Spares Pvt. Ltd." class="footer-logo">
+                <p>Sole-selling agent &amp; distributor supplying India's premium spinning mills with
+                genuine European textile-machinery spare parts.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Products</h4>
+                <ul>
+                    <li><a href="#products">Rotors</a></li>
+                    <li><a href="#products">Rotor Cups &amp; Bearings</a></li>
+                    <li><a href="#products">Navels</a></li>
+                    <li><a href="#products">Autoconer &amp; Autocoro</a></li>
+                    <li><a href="#products">Ring Frame · Twin Discs</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#manufacturers">Manufacturers</a></li>
+                    <li><a href="#capabilities">Capabilities</a></li>
+                    <li><a href="#clients">Clients</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <ul>
+                    <li><a href="mailto:dengle@eurotextilespares.com">dengle@eurotextilespares.com</a></li>
+                    <li><a href="tel:+919881470883">+91 98814 70883</a></li>
+                    <li><a href="https://www.linkedin.com/company/euro-textile-spares-private-limited" target="_blank" rel="noopener">LinkedIn ↗</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="wrap">
+                <p>&copy; <span id="year"></span> Euro Textile Spares Pvt. Ltd. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
-<script src="script.js"></script>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+        <button class="lb-close" aria-label="Close">&times;</button>
+        <button class="lb-nav lb-prev" aria-label="Previous">&#8249;</button>
+        <img class="lb-img" id="lbImg" alt="Catalogue page">
+        <button class="lb-nav lb-next" aria-label="Next">&#8250;</button>
+        <span class="lb-counter" id="lbCounter"></span>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

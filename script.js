@@ -185,24 +185,138 @@
   function wireForm() {
     var form = document.querySelector(".contact-form");
     if (!form) return;
+    var status = form.querySelector(".form-status");
+    var btn = form.querySelector(".btn-submit");
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var status = form.querySelector(".form-status");
-      if (!form.checkValidity()) { status.textContent = "Please fill in all fields so we can help."; status.classList.add("show"); return; }
-      form.reset();
-      status.textContent = "Thank you — your inquiry has been noted. Our team will be in touch shortly.";
-      status.classList.add("show");
+      if (!form.checkValidity()) {
+        status.textContent = "Please fill in your name, email and part / machine details.";
+        status.classList.add("show");
+        return;
+      }
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Sending…";
+      status.textContent = "";
+      status.classList.remove("show");
+      fetch(form.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(form)
+      }).then(function (res) {
+        if (!res.ok) throw new Error("Bad response");
+        form.reset();
+        status.textContent = "Thank you — your inquiry has been sent. Our team will be in touch shortly.";
+        status.classList.add("show");
+      }).catch(function () {
+        status.textContent = "Sorry, something went wrong. Please email dengle@eurotextilespares.com directly.";
+        status.classList.add("show");
+      }).finally(function () {
+        btn.disabled = false;
+        btn.textContent = label;
+      });
     });
   }
 
-  /* ---- Scroll-reveal (always-visible elements only) ----------------------- */
-  function wireReveal() {
-    var els = document.querySelectorAll(".section-head, .mfr-card, .cap-card, .value-item");
+  /* ---- Motion layer (GSAP, with graceful fallbacks) ----------------------- */
+  var REVEAL_SEL = ".section-head, .about-intro, .mfr-card, .cap-card, .value-item";
+
+  // Fallback reveal when GSAP is unavailable (offline / vendor files missing)
+  function legacyReveal() {
     if (!("IntersectionObserver" in window)) return;
     var io = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("reveal-visible"); obs.unobserve(en.target); } });
     }, { threshold: 0.12 });
-    els.forEach(function (el) { el.classList.add("reveal-hidden"); io.observe(el); });
+    document.querySelectorAll(REVEAL_SEL).forEach(function (el) { el.classList.add("reveal-hidden"); io.observe(el); });
+  }
+
+  // Hero entrance: choreographed timeline (eyebrow → h1 → lead → actions → cred cards)
+  var HERO_SEL = [".hero-copy .eyebrow", ".hero-copy h1", ".hero-lead", ".hero-actions", ".hero-badge .cred-item"];
+  function heroIntro(gsap) {
+    if (!document.querySelector(".hero")) return;
+    gsap.timeline({ defaults: { ease: "power3.out", duration: 0.7 } })
+      .from(HERO_SEL[0], { y: 20, autoAlpha: 0 })
+      .from(HERO_SEL[1], { y: 28, autoAlpha: 0 }, "-=0.45")
+      .from(HERO_SEL[2], { y: 24, autoAlpha: 0 }, "-=0.45")
+      .from(HERO_SEL[3], { y: 20, autoAlpha: 0 }, "-=0.45")
+      .from(HERO_SEL[4], { y: 24, autoAlpha: 0, stagger: 0.12 }, "-=0.40");
+    // Failsafe (native timer, independent of GSAP's rAF ticker): the hero is above the fold,
+    // so if the ticker is ever throttled (e.g. page loaded in a background tab) force it visible.
+    setTimeout(function () {
+      gsap.set(HERO_SEL, { autoAlpha: 1, clearProps: "transform,opacity,visibility" });
+    }, 2600);
+  }
+
+  // Count-up the credibility numbers, preserving any prefix/suffix (100%, 290+); skip non-numeric (Pune)
+  function countUp(gsap, ST) {
+    document.querySelectorAll(".cred-num").forEach(function (el) {
+      var original = el.textContent.trim();
+      var m = original.match(/^(\D*)(\d[\d,]*)(.*)$/);
+      if (!m) return;
+      var prefix = m[1], target = parseInt(m[2].replace(/,/g, ""), 10), suffix = m[3];
+      if (!isFinite(target)) return;
+      var obj = { v: 0 };
+      gsap.to(obj, {
+        v: target, duration: 1.4, ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 90%", once: true },
+        onUpdate: function () { el.textContent = prefix + Math.round(obj.v) + suffix; }
+      });
+      // Failsafe: for a number already in view at load, guarantee the final value lands even if the
+      // ticker is throttled (background tab). Skip off-screen numbers so their count-up still triggers on scroll.
+      if (el.getBoundingClientRect().top < (window.innerHeight || 0)) {
+        setTimeout(function () { el.textContent = original; }, 2600);
+      }
+    });
+  }
+
+  // Scroll-reveal always-visible sections via one batched trigger (never per-card across the 290+ catalog)
+  function scrollReveals(gsap, ST) {
+    var els = gsap.utils.toArray(REVEAL_SEL);
+    if (!els.length) return;
+    gsap.set(els, { autoAlpha: 0, y: 32 });
+    ST.batch(els, {
+      start: "top 85%",
+      onEnter: function (batch) {
+        gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.12, overwrite: true });
+      }
+    });
+  }
+
+  // About stat-line: draw the curve in and stagger the nodes when it scrolls into view.
+  // The SVG is fully visible via CSS by default — this only enhances; skipped if the path can't be measured.
+  function aboutCurve(gsap, ST) {
+    var line = document.querySelector(".stats-line");
+    var nodes = gsap.utils.toArray(".stat-node");
+    if (!line || !line.getTotalLength || !nodes.length) return;
+    var len = line.getTotalLength();
+    if (!len) return;
+    var trig = { trigger: ".about-stats", start: "top 80%", once: true };
+    gsap.set(line, { strokeDasharray: len, strokeDashoffset: len });
+    gsap.to(line, { strokeDashoffset: 0, duration: 1.1, ease: "power2.out", scrollTrigger: trig });
+    gsap.from(nodes, { autoAlpha: 0, y: 14, duration: 0.5, stagger: 0.12, ease: "power2.out", scrollTrigger: trig });
+  }
+
+  function wireMotion() {
+    var gsap = window.gsap;
+    var ST = window.ScrollTrigger;
+    var prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // No GSAP (e.g. offline without the vendor files) → lightweight fallback reveal, content always ends visible
+    if (!gsap || !ST) { legacyReveal(); return; }
+    // Reduced motion → leave everything in its natural, fully-visible state; no animation
+    if (prefersReduced) return;
+
+    gsap.registerPlugin(ST);
+    // matchMedia auto-reverts if the user flips the reduced-motion setting at runtime
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", function () {
+      heroIntro(gsap);
+      scrollReveals(gsap, ST);
+      countUp(gsap, ST);
+      aboutCurve(gsap, ST);
+    });
+    ST.refresh();
+    // Lazy-loaded catalog images can shift layout after init — recalc trigger positions once loaded.
+    window.addEventListener("load", function () { ST.refresh(); });
   }
 
   /* ---- init --------------------------------------------------------------- */
@@ -217,7 +331,7 @@
     wireLightbox();
     wireNav();
     wireForm();
-    wireReveal();
+    wireMotion();
     var yr = document.getElementById("year"); if (yr) yr.textContent = new Date().getFullYear();
   });
 })();

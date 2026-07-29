@@ -30,17 +30,6 @@
     el.innerHTML = parts.map(partCard).join("");
     updateCount(id);
   }
-  function renderGrouped(id, parts) {
-    var el = document.getElementById(id);
-    if (!el || !parts) return;
-    var html = "", current = null;
-    parts.forEach(function (p) {
-      if (p.group !== current) { current = p.group; html += '<h4 class="parts-group-title">' + esc(p.group) + "</h4>"; }
-      html += partCard(p);
-    });
-    el.innerHTML = html;
-    updateCount(id);
-  }
 
   /* ---- Rotor type tables (PhiComp AG) -------------------------------------- */
   // The coating is the suffix of the rotor type: "C536/U-DN" -> "DN", "T 34 DDN" -> "DDN".
@@ -178,14 +167,16 @@
     tabs = document.querySelectorAll(".cat-tab");
     panels = document.querySelectorAll(".cat-panel");
     tabs.forEach(function (tab) {
-      tab.addEventListener("click", function () { activateCat(tab.getAttribute("data-cat")); });
+      // No scroll happens here (the user is already looking at #products), so the trigger
+      // positions can be refreshed immediately.
+      tab.addEventListener("click", function () { activateCat(tab.getAttribute("data-cat")); refreshMotion(); });
     });
     // Products dropdown links jump to the right category + scroll to catalog
     document.querySelectorAll(".dropdown a[data-cat]").forEach(function (a) {
       a.addEventListener("click", function () {
         activateCat(a.getAttribute("data-cat"));
         var products = document.getElementById("products");
-        if (products) products.scrollIntoView({ behavior: "smooth" });
+        if (products) { products.scrollIntoView({ behavior: "smooth" }); refreshAfterScroll(); }
         closeMenu();
       });
     });
@@ -284,6 +275,35 @@
   /* ---- Motion layer (GSAP, with graceful fallbacks) ----------------------- */
   var REVEAL_SEL = ".section-head, .about-intro, .mfr-card, .cap-card, .value-item";
 
+  // Reveal timings. Capabilities is a common jump target ("Capabilities" in the nav) and sits
+  // just below the tall product catalog, so it starts earlier and resolves faster — landing on a
+  // still-fading section reads as the page being slow. Everything else keeps the original rhythm.
+  var REVEAL_BASE = { start: "top 85%", interval: 0.1, duration: 0.7, stagger: 0.12 };
+  var REVEAL_FAST = { start: "top 92%", interval: 0.06, duration: 0.55, stagger: 0.08 };
+
+  // Panel swaps change the document height by thousands of pixels (Autoconer/Autocoro render 124
+  // cards each, Twin Discs is one info-card), which leaves every trigger below #products pointing
+  // at the old layout — the reveals then fire at the wrong scroll position, or not at all.
+  // Guarded so the tabs still work with the vendor files missing.
+  function refreshMotion() {
+    var ST = window.ScrollTrigger;
+    if (!ST) return;
+    // One frame is enough: .cat-panel's fade keyframe animates opacity/transform only, so the
+    // new panel's height is final as soon as the class toggle has been applied.
+    requestAnimationFrame(function () { ST.refresh(); });
+  }
+
+  // ScrollTrigger.refresh() briefly snaps the scroll position to remeasure, which cancels an
+  // in-flight scrollIntoView({behavior:"smooth"}) if fired on the same frame (this is what broke
+  // the Products dropdown links: activateCat's refresh raced the nav's own smooth scroll and
+  // stranded it near the start). Defer the refresh until scrolling has actually settled instead.
+  function refreshAfterScroll() {
+    var done = false;
+    function run() { if (done) return; done = true; refreshMotion(); }
+    window.addEventListener("scrollend", run, { once: true });
+    setTimeout(run, 700); // fallback for browsers without `scrollend` (e.g. Safari < 16.4)
+  }
+
   // Fallback reveal when GSAP is unavailable (offline / vendor files missing)
   function legacyReveal() {
     if (!("IntersectionObserver" in window)) return;
@@ -332,15 +352,35 @@
     });
   }
 
-  // Scroll-reveal always-visible sections via one batched trigger (never per-card across the 290+ catalog)
-  function scrollReveals(gsap, ST) {
-    var els = gsap.utils.toArray(REVEAL_SEL);
+  // Scroll-reveal always-visible sections via batched triggers (never per-card across the 290+ catalog)
+  function revealBatch(gsap, ST, els, cfg) {
     if (!els.length) return;
     gsap.set(els, { autoAlpha: 0, y: 32 });
     ST.batch(els, {
-      start: "top 85%",
+      start: cfg.start,
+      interval: cfg.interval,
       onEnter: function (batch) {
-        gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.12, overwrite: true });
+        gsap.to(batch, { autoAlpha: 1, y: 0, duration: cfg.duration, ease: "power3.out", stagger: cfg.stagger, overwrite: true });
+      }
+    });
+  }
+  function scrollReveals(gsap, ST) {
+    var cap = [], rest = [];
+    gsap.utils.toArray(REVEAL_SEL).forEach(function (el) {
+      (el.closest("#capabilities") ? cap : rest).push(el);
+    });
+    revealBatch(gsap, ST, rest, REVEAL_BASE);
+    revealBatch(gsap, ST, cap, REVEAL_FAST);
+  }
+
+  // Last resort, in the spirit of the hero's timer failsafe: nothing inside the viewport may stay
+  // invisible. Covers a trigger left stale by a layout change we didn't refresh for.
+  function guardVisible(gsap) {
+    var h = window.innerHeight || 0;
+    document.querySelectorAll(REVEAL_SEL).forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < h && r.bottom > 0 && getComputedStyle(el).visibility === "hidden") {
+        gsap.set(el, { autoAlpha: 1, y: 0 });
       }
     });
   }
@@ -378,15 +418,17 @@
       aboutCurve(gsap, ST);
     });
     ST.refresh();
+    // Manrope loads with display=swap, so the swap can still reflow text heights after init.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ST.refresh(); });
     // Lazy-loaded catalog images can shift layout after init — recalc trigger positions once loaded.
-    window.addEventListener("load", function () { ST.refresh(); });
+    window.addEventListener("load", function () { ST.refresh(); guardVisible(gsap); });
   }
 
   /* ---- init --------------------------------------------------------------- */
   document.addEventListener("DOMContentLoaded", function () {
     renderNavels();
     renderFlat("autoconerParts", typeof AUTOCONER_PARTS !== "undefined" ? AUTOCONER_PARTS : []);
-    renderGrouped("autocoroParts", typeof AUTOCORO_PARTS !== "undefined" ? AUTOCORO_PARTS : []);
+    renderFlat("autocoroParts", typeof AUTOCORO_PARTS !== "undefined" ? AUTOCORO_PARTS : []);
     renderFlat("rieterParts", typeof RIETER_PARTS !== "undefined" ? RIETER_PARTS : []);
     renderFlat("zinserParts", typeof ZINSER_PARTS !== "undefined" ? ZINSER_PARTS : []);
     renderRotorCupTable();

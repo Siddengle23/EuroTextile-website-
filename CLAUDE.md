@@ -89,9 +89,9 @@ hamburger is purely CSS-driven — so this is safe to move.
 
 ### Motion layer (script.js `wireMotion()`)
 GSAP drives the site's animation: a hero-entrance timeline, `ScrollTrigger.batch` scroll-reveals
-over `REVEAL_SEL` (`.section-head, .about-intro, .mfr-card, .cap-card, .value-item` — one batched
-trigger, **never one per part-card**, to keep the 290+ catalog smooth), a hero credential count-up,
-and the About stat-line draw-in (`aboutCurve()`). Three rules this layer follows — keep them when
+over `REVEAL_SEL` (`.section-head, .about-intro, .mfr-card, .cap-card, .value-item` — batched
+triggers, **never one per part-card**, to keep the 160+ catalog smooth), a hero credential count-up,
+and the About stat-line draw-in (`aboutCurve()`). Four rules this layer follows — keep them when
 editing:
 1. **Graceful fallback** — if `window.gsap`/`ScrollTrigger` are absent, it calls `legacyReveal()`
    (IntersectionObserver + `.reveal-hidden`/`.reveal-visible`), so content still appears.
@@ -100,7 +100,34 @@ editing:
    block. Animations use `gsap.matchMedia("(prefers-reduced-motion: no-preference)")`.
 3. **Never leave content stuck hidden** — anything animated with `.from()`/`autoAlpha:0` that is
    above the fold has a native `setTimeout` failsafe forcing the visible end-state (guards against a
-   throttled rAF ticker in a background tab). Preserve these failsafes.
+   throttled rAF ticker in a background tab). `guardVisible()` extends the same idea below the fold:
+   on `window.load`, it sweeps `REVEAL_SEL` and forces `autoAlpha:1` on anything inside the viewport
+   still computed `visibility:hidden` — a last-resort net for a trigger left stale by a layout change
+   the code below didn't refresh for. Preserve all of these failsafes.
+4. **`scrollReveals()` uses two batches, not one** — `REVEAL_BASE` (`start:"top 85%"`, 0.7s,
+   stagger 0.12) for everything, and `REVEAL_FAST` (`start:"top 92%"`, 0.55s, stagger 0.08) for just
+   `#capabilities`. Capabilities is a common nav jump target ("Capabilities" link) that sits right
+   below the tall product catalog, so a slower reveal reads as the page being stuck; the rest of the
+   page keeps the original rhythm. Both run through a shared `revealBatch(gsap, ST, els, cfg)`
+   helper — add a third timing tier by partitioning into a third array and calling it again, not by
+   forking the batch logic itself.
+
+**`activateCat()` must trigger a `ScrollTrigger.refresh()` after every category swap, but the two
+call sites need different timing.** Panel heights differ by thousands of pixels (Autoconer/Autocoro
+run 27–124 cards, Twin Discs is one `.info-card`), so every trigger below `#products` — Manufacturers,
+Capabilities — goes stale after a swap unless refreshed; without this, some swaps left Capabilities'
+cards permanently invisible (wrong cached trigger position). But `ScrollTrigger.refresh()` briefly
+snaps scroll position to remeasure, and if that happens on the same frame as an in-flight
+`scrollIntoView({behavior:"smooth"})`, it aborts the smooth scroll outright (any direct scroll write
+cancels a CSS smooth scroll per spec) — this is exactly what broke the Products dropdown links
+(tab/panel switched correctly, but the page never scrolled there). The fix, in `wireTabs()`:
+- `.cat-tab` clicks call `refreshMotion()` immediately — no scroll happens here, so there's no race.
+- `.dropdown a[data-cat]` clicks call `scrollIntoView` then `refreshAfterScroll()`, which defers the
+  refresh until scrolling actually settles (`scrollend` event, with a 700ms `setTimeout` fallback for
+  browsers without it) instead of firing on the same frame.
+
+Both helpers live next to `REVEAL_SEL`. Don't collapse them back into one immediate call — that's
+the exact regression this documents.
 
 Two ambient infinite loops are **CSS keyframes**, not GSAP — that is the convention here:
 - the clients marquee (`#clients`, `@keyframes scrollTrack`), which intentionally does **not** pause
@@ -135,12 +162,18 @@ than as a column that repeats one value 37 times.
 
 ### Data-driven rendering (script.js)
 `data.js` arrays are rendered into placeholder `<div>`s by ID (`navelGrid`, `autoconerParts`,
-`autocoroParts`, `rieterParts`, `zinserParts`) via `renderNavels()`, `renderFlat()`, and
-`renderGrouped()`. `renderGrouped()` is used where a part array carries a `group` field
-(`AUTOCORO_PARTS`) and inserts a `.parts-group-title` heading whenever `group` changes — the array
-order therefore determines the visual grouping, so entries sharing a `group` must stay adjacent.
+`autocoroParts`, `rieterParts`, `zinserParts`) via `renderNavels()` and `renderFlat()`. All four part
+grids render flat now — `AUTOCORO_PARTS` used to carry a `group` field and render through a
+`renderGrouped()` that inserted a `.parts-group-title` heading per machine subsystem, but that was
+retired when the Autocoro photos were replaced (see "Product photo pipeline" below): far fewer
+parts have real photography than the old cropped set, so the subsystem grouping was dropped in
+favour of one flat list, matching Autoconer. `.parts-group-title` itself is still live CSS — the
+Rotors panel's coating-key and rotor-cup/SolidRotor headings are hand-written instances of it,
+just never programmatically generated any more.
 
-Each part record is `{ en, img, code?, group? }`. `ROTOR_CUP_BEARING` (`{ type, speed }`) and
+Each part record is `{ en, img, code?, group? }`, though no live array currently populates `code` or
+`group` — both remain supported for a future dataset that needs them. `ROTOR_CUP_BEARING`
+(`{ type, speed }`) and
 `SOLID_ROTOR` (`{ type }`) are the exception — no `img`. `renderRotorCupTable()` writes `<tr>`s into
 the `<tbody id="rotorCupTable">`; `renderSolidRotorList()` writes `<li>` chips into the
 `<ul id="solidRotorTable">` (the id keeps its `Table` name so the `data-target`/`data-count`
@@ -176,25 +209,42 @@ wrapper, for `<tbody>` targets) rather than appended inside the target itself �
 directly into a `<tbody>` would sit outside the valid table content model.
 
 ### Product photo pipeline (images/parts/)
-The 280+ photos in `images/parts/` are **not individual photographs** — they were programmatically
-cropped (via a headless-Chrome canvas script, not committed to this repo) from multi-part composite
-spec-sheet page images that were themselves extracted from the manufacturer PDF catalogues in
-`catalogues/`. The composite source pages are not part of this repo; only the final per-part crops
-in `images/parts/` are committed. Practically: if a part photo is mis-cropped (wrong object,
-cut off, overlapping a neighboring part), the fix is a new crop from the original PDF, not a
-different source photo — there is no "clean" alternate image to swap in.
+`images/parts/` holds two generations of photos, both committed:
 
-**The crops are not all square, and `.part-photo { min-height: 0 }` is load-bearing because of
+- **`autoconer-NNN.jpg` / `autocoro-NNN.jpg` / `rieter-NN.jpg` / `zinser-NN.jpg`** (~281 files) —
+  the original photos, **not individual photographs**: they were programmatically cropped (via a
+  headless-Chrome canvas script, not committed to this repo) from multi-part composite spec-sheet
+  page images extracted from the manufacturer PDF catalogues in `catalogues/`. **No longer
+  referenced by `data.js`** as of 2026-07 (superseded by real photography, below) — kept on disk
+  deliberately rather than deleted, in case they're needed again. The composite source pages
+  themselves are not part of this repo.
+- **`autoconer-v2-NN.jpg` / `autocoro-v2-NN.jpg` / `rieter-v2-NN.jpg` / `zinser-v2-NN.jpg`** (96
+  files) — real product photography, supplied directly (not derived from the PDF catalogues) and
+  currently live in `data.js`. Far fewer parts have a photo this way than the old cropped set
+  (27/40/15/14 vs. 124/124/17/16), which is why Autocoro dropped its subsystem grouping (see
+  "Data-driven rendering" above) and why Ring Frame's Rieter/Zinser split is now maintained by
+  hand-classifying each photo rather than reading a `code` prefix (no live entry has a `code` field
+  any more). Source files ranged 0.4–10MB each (~274MB total) straight from the camera/upload —
+  resized to a 1200px-max-dimension JPEG at quality 82 (~10–180KB each) before committing, via
+  PowerShell + .NET `System.Drawing` (`Add-Type -AssemblyName System.Drawing`), since this
+  environment has no ImageMagick/Python/sharp available. Any transparency in the source is
+  flattened onto white during that resize, since JPEG has no alpha channel.
+
+Practically: if an *old* crop is mis-cropped, the fix is a new crop from the original PDF — there
+is no clean alternate image for that generation. If a *new* (`-v2-`) photo has a quality issue,
+it needs a re-shoot/re-upload; there's no PDF to re-crop from for these.
+
+**Not all photos are square, and `.part-photo { min-height: 0 }` is load-bearing because of
 that.** `.part-photo` sets `aspect-ratio: 1 / 1`, but it is also a flex item of the column-flex
-`.part-card`, so its default `min-height: auto` resolves to its *content's* height — a portrait crop
-(e.g. `246×579`) then stretches the box to ~403px and silently overrides the aspect ratio, leaving
-the grid ragged with no error anywhere and the CSS still reporting `aspect-ratio: 1 / 1` as
+`.part-card`, so its default `min-height: auto` resolves to its *content's* height — a portrait
+photo (e.g. `246×579`) then stretches the box to ~403px and silently overrides the aspect ratio,
+leaving the grid ragged with no error anywhere and the CSS still reporting `aspect-ratio: 1 / 1` as
 computed. `min-height: 0` is what makes the square box actually hold. It reads like removable
-tidying; it is not. Autoconer/Autocoro crops happen to be square, so the symptom only ever surfaced
-in Ring Frame — meaning a regression here would again be invisible in the two biggest grids.
-`.ring-grid` additionally sets `grid-auto-rows: 1fr` to level the residual row-height differences
-that come from name length; do **not** line-clamp those names, as the four Rieter carrier parts
-differ only by their `(Peg left/right · Gauge 70/75 mm)` suffix.
+tidying; it is not. The original crops happened to be pre-cropped square, so the symptom only
+surfaced in Ring Frame; the `-v2-` real-photography set (resized preserving aspect ratio, not
+forced square — see "Product photo pipeline" above) makes this fix load-bearing everywhere, not
+just Ring Frame. `.ring-grid` additionally sets `grid-auto-rows: 1fr` to level the residual
+row-height differences that come from name length; do **not** line-clamp those names.
 
 ### English-only data convention
 Catalog part names in `data.js` are deliberately English-only, even though the source PDF
@@ -202,15 +252,33 @@ catalogues are bilingual (German/English). When adding new catalogue-derived ent
 or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"`.
 
 ### Reference material vs. served assets
-- `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, etc.). Reference only;
-  not linked from the site.
-- `docs/` — one PDF (`Autocoro338_Parts_list_revised.pdf`) that *is* linked from the Autocoro panel
-  ("Additional Parts" button).
+- `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, etc.), **linked from
+  the site** via a "Browse Catalogue ↗" button (`target="_blank"`, native browser PDF viewer — no
+  custom viewer built) on the Autoconer, Autocoro and Ring Frame panels. Autoconer's catalogue file
+  is literally named `Autconer Catalogue Euro Textile.pdf` (typo in the file itself) — the href
+  matches it exactly; don't "fix" the spelling without renaming the actual file to match.
+- `docs/` — one PDF (`Autocoro338_Parts_list_revised.pdf`) that's also linked from the Autocoro
+  panel, as a **second**, separate button ("Additional Parts ↗") alongside "Browse Catalogue ↗" —
+  the two are different documents (a supplementary parts list vs. the manufacturer catalogue) and
+  both stay.
 - `images/catalogue/` — Broell navel photos (16). `images/machines/` — the 3 category hero photos.
-  `images/manufacturers/` — 4 partner logos. `images/parts/` — the cropped product photos described
-  above. `images/clients/` — client logos for the "Our Clients" marquee (SVG/PNG; note
-  `vardhman.svg` is the trimmed icon-only mark, paired with hand-set brand text in the markup).
-  `images/` root holds the company logo files — see "Header brand block & logo assets" above.
+  `images/manufacturers/` — 4 partner logos. `images/parts/` — the product photos, both generations
+  described in "Product photo pipeline" above. `images/clients/` — client logos for the "Our
+  Clients" marquee (SVG/PNG/JPG; note `vardhman.svg` is the trimmed icon-only mark, paired with
+  hand-set brand text in the markup). `sri-bhagirath.jpg` is a second instance of this pattern for a
+  different reason: the only logo image findable for that client is actually the "S B Rander Group"
+  mark (what the company itself uses on its own directory listings), not literally the client's own
+  name — so it's paired with an explicit `.client-logo-name` span reading "Sri Bhagirath Textiles",
+  same markup pattern as Nahar Spinning Mills. `gimatex.png` was cropped from a much wider source
+  image that had the real logo content only in its left ~200px (the rest opaque white, not
+  transparent — a plain crop, not a `min-height:0`-style aspect-ratio bug); if it ever needs
+  re-sourcing, expect the same wide-canvas issue and crop before using it, or it'll render with a
+  large dead-space gap next to it in the marquee. `images/` root holds the company logo files — see
+  "Header brand block & logo assets" above. `images/Autocoro/`, `images/Autoconor/` (folder name is
+  a typo in the folder itself — it holds the Autoconer category's photos) and `images/Ringframe/`
+  are the raw, full-resolution source uploads for the `-v2-` photo generation — reference-only, like
+  `catalogues/`, not linked or served directly; the resized/compressed copies actually served live
+  in `images/parts/`.
 
 ### Rotor spec-sheet drawing (Complete Rotors panel)
 `.rotor-spec` is the site's second hand-authored inline SVG — a rotor drawn as a dimensioned section

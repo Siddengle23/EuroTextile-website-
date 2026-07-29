@@ -1,7 +1,7 @@
 /* ============================================================================
    Euro Textile Spares — site interactions
    Depends on data.js (NAVELS, NAVEL_MACHINES, AUTOCONER_PARTS, AUTOCORO_PARTS,
-   RIETER_PARTS, ZINSER_PARTS)
+   RIETER_PARTS, ZINSER_PARTS, ROTOR_CUP_BEARING, SOLID_ROTOR)
    ========================================================================== */
 (function () {
   "use strict";
@@ -42,6 +42,51 @@
     updateCount(id);
   }
 
+  /* ---- Rotor type tables (PhiComp AG) -------------------------------------- */
+  // The coating is the suffix of the rotor type: "C536/U-DN" -> "DN", "T 34 DDN" -> "DDN".
+  // Longest alternatives first, so DDN/DD/DN win over a bare D. Derived rather than stored
+  // in data.js so it can never drift out of sync with the type name.
+  function coatingOf(type) {
+    var m = /(DDN|DD|DN|D|N)$/.exec(type);
+    return m ? m[1] : "";
+  }
+  // Leaflet p.3: "D: > 20'000 h, DD: > 35'000 h". N is only a smooth top layer over the same
+  // diamond coating, so DN tracks D and DDN tracks DD.
+  function serviceLife(type) {
+    var c = coatingOf(type);
+    if (c === "N") return "—";          // no diamond layer, no stated life
+    return c.indexOf("DD") === 0 ? "> 35,000 h" : "> 20,000 h";
+  }
+  // Search on the type alone — the coating suffix is already part of it. Appending
+  // coatingOf() as well would make "T 34 D"+"D" normalise to "t34dd" and collide with
+  // "T 34 DD", so a search for T34DD would wrongly return the plain-D rotor too.
+  function rotorCupRow(r) {
+    var search = r.type.toLowerCase();
+    return '<tr data-search="' + esc(search) + '">' +
+      "<td>" + esc(r.type) + "</td>" +
+      "<td>&lt; " + esc(r.speed) + " rpm</td>" +
+      "<td>" + esc(serviceLife(r.type)) + "</td>" +
+    "</tr>";
+  }
+  function renderRotorCupTable() {
+    var el = document.getElementById("rotorCupTable");
+    if (!el || typeof ROTOR_CUP_BEARING === "undefined") return;
+    el.innerHTML = ROTOR_CUP_BEARING.map(rotorCupRow).join("");
+    updateCount("rotorCupTable");
+  }
+  // Every SolidRotor is DD-coated for Autocoro 8-11, so service life and warranty are stated
+  // once beside the list and the type is the only value that varies — chips rather than a
+  // one-column table. The [data-search] attribute is what the search wires onto, not the tag.
+  function solidRotorChip(r) {
+    return '<li data-search="' + esc(r.type.toLowerCase()) + '">' + esc(r.type) + "</li>";
+  }
+  function renderSolidRotorList() {
+    var el = document.getElementById("solidRotorTable");
+    if (!el || typeof SOLID_ROTOR === "undefined") return;
+    el.innerHTML = SOLID_ROTOR.map(solidRotorChip).join("");
+    updateCount("solidRotorTable");
+  }
+
   /* ---- Navels ------------------------------------------------------------- */
   function renderNavels() {
     var grid = document.getElementById("navelGrid");
@@ -53,7 +98,8 @@
           '<span class="type">' + esc(n.type) + "</span>" +
           '<span class="series">' + esc(n.series) + "</span>" +
           '<p class="navel-spec"><b>Fibre:</b> ' + esc(n.fibre) + "</p>" +
-          '<p class="navel-spec"><b>Counts:</b> ' + esc(n.counts) + " · <b>Use:</b> " + esc(n.endUse) + "</p>" +
+          '<p class="navel-spec"><b>Counts:</b> ' + esc(n.counts) + "</p>" +
+          '<p class="navel-spec"><b>Use:</b> ' + esc(n.endUse) + "</p>" +
           '<ul class="navel-benefits">' + n.benefits.map(function (b) { return "<li>" + esc(b) + "</li>"; }).join("") + "</ul>" +
         "</div></article>";
     }).join("");
@@ -64,42 +110,59 @@
   }
 
   /* ---- Parts search ------------------------------------------------------- */
+  function normalizeSearch(s) { return s.replace(/[^a-z0-9]/g, ""); }
   function updateCount(id) {
     var el = document.getElementById(id);
     var badge = document.querySelector('.parts-count[data-count="' + id + '"]');
     if (!el || !badge) return;
     var visible = 0;
-    el.querySelectorAll(".part-card").forEach(function (c) { if (c.style.display !== "none") visible++; });
+    el.querySelectorAll("[data-search]").forEach(function (c) { if (c.style.display !== "none") visible++; });
     badge.textContent = visible + " part" + (visible === 1 ? "" : "s") + " shown";
+  }
+  function filterContainer(el, q, qNorm) {
+    var anyVisible = false;
+    el.querySelectorAll("[data-search]").forEach(function (c) {
+      var raw = c.getAttribute("data-search");
+      var show = !q || raw.indexOf(q) !== -1 || normalizeSearch(raw).indexOf(qNorm) !== -1;
+      c.style.display = show ? "" : "none";
+      if (show) anyVisible = true;
+    });
+    el.querySelectorAll(".parts-group-title").forEach(function (title) {
+      var any = false, node = title.nextElementSibling;
+      while (node && !node.classList.contains("parts-group-title")) {
+        if (node.hasAttribute("data-search") && node.style.display !== "none") any = true;
+        node = node.nextElementSibling;
+      }
+      title.style.display = any ? "" : "none";
+    });
+    return anyVisible;
+  }
+  function setEmptyState(id, el, anyVisible, queryValue) {
+    var host = el.closest(".table-scroll") || el;
+    var empty = document.querySelector('.parts-empty[data-empty-for="' + id + '"]');
+    if (!anyVisible) {
+      if (!empty) {
+        empty = document.createElement("p");
+        empty.className = "parts-empty";
+        empty.setAttribute("data-empty-for", id);
+        host.insertAdjacentElement("afterend", empty);
+      }
+      empty.textContent = "No results match “" + queryValue + "”. Try a different term or send us an inquiry.";
+    } else if (empty) { empty.remove(); }
   }
   function wireSearch() {
     document.querySelectorAll(".parts-search").forEach(function (input) {
+      var ids = input.getAttribute("data-target").split(",").map(function (s) { return s.trim(); });
       input.addEventListener("input", function () {
-        var id = input.getAttribute("data-target");
-        var el = document.getElementById(id);
-        if (!el) return;
         var q = input.value.trim().toLowerCase();
-        var anyVisible = false;
-        el.querySelectorAll(".part-card").forEach(function (c) {
-          var show = !q || c.getAttribute("data-search").indexOf(q) !== -1;
-          c.style.display = show ? "" : "none";
-          if (show) anyVisible = true;
+        var qNorm = normalizeSearch(q);
+        ids.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          var anyVisible = filterContainer(el, q, qNorm);
+          setEmptyState(id, el, anyVisible, input.value);
+          updateCount(id);
         });
-        el.querySelectorAll(".parts-group-title").forEach(function (title) {
-          var any = false, node = title.nextElementSibling;
-          while (node && !node.classList.contains("parts-group-title")) {
-            if (node.classList.contains("part-card") && node.style.display !== "none") any = true;
-            node = node.nextElementSibling;
-          }
-          title.style.display = any ? "" : "none";
-        });
-        var empty = el.querySelector(".parts-empty");
-        if (!anyVisible && !empty) {
-          empty = document.createElement("p"); empty.className = "parts-empty";
-          empty.textContent = "No parts match “" + input.value + "”. Try a different term or send us an inquiry.";
-          el.appendChild(empty);
-        } else if (anyVisible && empty) { empty.remove(); }
-        updateCount(id);
       });
     });
   }
@@ -247,7 +310,7 @@
     }, 2600);
   }
 
-  // Count-up the credibility numbers, preserving any prefix/suffix (100%, 290+); skip non-numeric (Pune)
+  // Count-up the credibility numbers, preserving any prefix/suffix (100%, 4000+); skip non-numeric (Pune)
   function countUp(gsap, ST) {
     document.querySelectorAll(".cred-num").forEach(function (el) {
       var original = el.textContent.trim();
@@ -326,6 +389,8 @@
     renderGrouped("autocoroParts", typeof AUTOCORO_PARTS !== "undefined" ? AUTOCORO_PARTS : []);
     renderFlat("rieterParts", typeof RIETER_PARTS !== "undefined" ? RIETER_PARTS : []);
     renderFlat("zinserParts", typeof ZINSER_PARTS !== "undefined" ? ZINSER_PARTS : []);
+    renderRotorCupTable();
+    renderSolidRotorList();
     wireSearch();
     wireTabs();
     wireLightbox();

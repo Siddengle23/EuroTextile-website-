@@ -77,3 +77,68 @@ const AUTOCORO_PARTS = [{"en":"Adapter Plate LH","img":"images/parts/autocoro-00
 const RIETER_PARTS = [{"code":"RSM.R026","en":"Membrane small grey","img":"images/parts/rieter-01.jpg"},{"code":"RSM.R022","en":"Metal Ring small","img":"images/parts/rieter-02.jpg"},{"code":"RSM.R024","en":"Rubber Seal black","img":"images/parts/rieter-03.jpg"},{"code":"RSM.R025","en":"Spring","img":"images/parts/rieter-04.jpg"},{"code":"RSM.R041","en":"Clip for Outside Gripper","img":"images/parts/rieter-05.jpg"},{"code":"RSM.R020","en":"Outside Gripper (body only)","img":"images/parts/rieter-06.jpg"},{"code":"RSM.R018","en":"Outside Gripper complete","img":"images/parts/rieter-07.jpg"},{"code":"RSM.R001","en":"Bobbin Peg red","img":"images/parts/rieter-08.jpg"},{"code":"RSM.R002","en":"Bobbin Peg blue","img":"images/parts/rieter-09.jpg"},{"code":"RSM.R038","en":"Peg Tray","img":"images/parts/rieter-10.jpg"},{"code":"RSM.R016","en":"Carrier Bottom Part","img":"images/parts/rieter-11.jpg"},{"code":"RSM.R039","en":"Carrier Bottom Part short","img":"images/parts/rieter-12.jpg"},{"code":"RSM.R028","en":"Spindle Brake","img":"images/parts/rieter-13.jpg"},{"code":"RSM.R034","en":"Carrier Upper Part (Peg left · Gauge 70 mm)","img":"images/parts/rieter-14.jpg"},{"code":"RSM.R017","en":"Carrier Upper Part (Peg right · Gauge 70 mm)","img":"images/parts/rieter-15.jpg"},{"code":"RSM.R036","en":"Carrier Upper Part (Peg left · Gauge 75 mm)","img":"images/parts/rieter-16.jpg"},{"code":"RSM.R035","en":"Carrier Upper Part (Peg right · Gauge 75 mm)","img":"images/parts/rieter-17.jpg"}];
 
 const ZINSER_PARTS = [{"code":"RSM.Z100","en":"Driver","img":"images/parts/zinser-01.jpg"},{"code":"RSM.Z150","en":"Deflector","img":"images/parts/zinser-02.jpg"},{"code":"RSM.Z153","en":"Cheese Head Screw M5×15","img":"images/parts/zinser-03.jpg"},{"code":"RSM.Z152","en":"Thrust Piece","img":"images/parts/zinser-04.jpg"},{"code":"RSM.Z050","en":"Grey Insert 26/28","img":"images/parts/zinser-05.jpg"},{"code":"RSM.Z051","en":"Red Insert 20/23","img":"images/parts/zinser-06.jpg"},{"code":"RSM.Z052","en":"Blue Insert 23/26","img":"images/parts/zinser-07.jpg"},{"code":"RSM.Z053","en":"Purple Insert 18/21","img":"images/parts/zinser-08.jpg"},{"code":"RSM.Z057","en":"PU-Insert","img":"images/parts/zinser-09.jpg"},{"code":"RSM.Z056","en":"Piston","img":"images/parts/zinser-10.jpg"},{"code":"RSM.Z058","en":"Piston with PU-Insert","img":"images/parts/zinser-11.jpg"},{"code":"RSM.Z055","en":"Spring","img":"images/parts/zinser-12.jpg"},{"code":"RSM.Z054","en":"Membrane","img":"images/parts/zinser-13.jpg"},{"code":"RSM.Z049","en":"Rear Plate with Metal Insert","img":"images/parts/zinser-14.jpg"},{"code":"RSM.Z045","en":"Front Head (colour inserts)","img":"images/parts/zinser-15.jpg"},{"code":"RSM.Z041","en":"Complete Outside Gripper","img":"images/parts/zinser-16.jpg"}];
+
+/* ---- PhiComp AG (Switzerland) — Rotor cup & bearing, semi-automated OE machines
+   (Schlafhorst/Oerlikon/Saurer BD-series, Rieter BT9xx/R3x, Taitan, Rifa). Speed is
+   the rotor's rated max rpm. Coating and service life are derived from the type's
+   suffix by coatingOf()/serviceLife() in script.js, so they are not stored here.
+   PhiComp's order numbers are deliberately not published — do not add them back. */
+const ROTOR_CUP_BEARING = [
+  { type: "C533/U-D", speed: "110,000" },
+  { type: "C536/U-D", speed: "90,000" },
+  { type: "C536/U-DN", speed: "90,000" },
+  { type: "S536/U-D", speed: "90,000" },
+  { type: "C338/U-D", speed: "90,000" },
+  { type: "C341/U-D", speed: "90,000" },
+  { type: "C344/U-D", speed: "70,000" },
+  { type: "C250/U-D", speed: "65,000" },
+  { type: "C254/U-D", speed: "60,000" },
+  { type: "C531/T-D", speed: "110,000" },
+  { type: "C533/T-D", speed: "110,000" },
+  { type: "S533/Tr-D", speed: "110,000" },
+  { type: "C533/Tr-D", speed: "110,000" },
+  { type: "C531/R-D", speed: "110,000" },
+  { type: "C248/S-D", speed: "65,000" },
+  { type: "T 32 D", speed: "110,000" },
+  { type: "T 32 DN", speed: "110,000" },
+  { type: "T 33 D", speed: "110,000" },
+  { type: "T 33 DN", speed: "110,000" },
+  { type: "T 34 D", speed: "110,000" },
+  { type: "T 34 DN", speed: "110,000" },
+  { type: "T 34 DD", speed: "110,000" },
+  { type: "T 34 DDN", speed: "110,000" },
+  { type: "Ts 36 D", speed: "90,000" },
+  { type: "Ts 36 DN", speed: "90,000" },
+  { type: "Ts 40 D", speed: "80,000" },
+  { type: "Ts 40 DN", speed: "80,000" },
+  { type: "Ts 43 D", speed: "75,000" },
+  { type: "Ts 43 DN", speed: "75,000" },
+  { type: "Vs 34 DN", speed: "110,000" },
+  { type: "Vs 36 DN", speed: "90,000" },
+  { type: "Vs 43 DN", speed: "75,000" },
+  { type: "Z 37 DN", speed: "90,000" },
+  { type: "Z 40 DN", speed: "80,000" },
+  { type: "Z 43 DN", speed: "75,000" },
+  { type: "Tc 36 DN", speed: "90,000" },
+  { type: "R 36 D", speed: "90,000" }
+];
+
+/* ---- PhiComp AG (Switzerland) — SolidRotor, single-piece rotor for Autocoro 8-11 */
+const SOLID_ROTOR = [
+  { type: "G 628 DD" },
+  { type: "G 630 DD" },
+  { type: "G 631 DD" },
+  { type: "G 633 DD" },
+  { type: "G 636 DD" },
+  { type: "T 633 DD" },
+  { type: "Tx 633 DD" },
+  { type: "T 636 DD" },
+  { type: "T 640 DD" },
+  { type: "T 646 DD" },
+  { type: "Tc 636 DD" },
+  { type: "Tc 640 DD" },
+  { type: "Tc 646 DD" },
+  { type: "U 640 DD" },
+  { type: "S 652 DD" },
+  { type: "K 631 DD" }
+];

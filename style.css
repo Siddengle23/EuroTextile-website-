@@ -91,8 +91,9 @@ img { max-width: 100%; }
     transition: box-shadow .3s ease, padding .3s ease;
 }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 84px; }
-.logo { display: flex; align-items: center; }
-.nav-logo-img { height: 58px; width: auto; display: block; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.nav-logo-img { height: 48px; width: auto; display: block; }
+.logo-word { font-size: 17px; font-weight: 800; color: var(--ink); letter-spacing: .01em; line-height: 1.1; white-space: nowrap; }
 .nav-links { list-style: none; display: flex; align-items: center; gap: 26px; }
 .nav-links > li { position: relative; }
 .nav-links a { color: var(--ink); font-weight: 600; font-size: 15px; transition: color .2s; }
@@ -125,6 +126,8 @@ img { max-width: 100%; }
 }
 .hero-inner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 2; }
 .hero h1 { font-size: 54px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 22px; }
+.h1-brand  { color: var(--primary); }
+.h1-suffix { color: var(--charcoal); font-size: .52em; font-weight: 700; letter-spacing: 0; }
 .hero-lead { font-size: 18px; color: var(--charcoal); max-width: 620px; }
 .hero-lead strong { color: var(--ink); }
 .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
@@ -175,7 +178,8 @@ img { max-width: 100%; }
 /* small-screen fallback grid */
 .about-stats-grid { display: none; grid-template-columns: 1fr 1fr; gap: 16px; }
 .mini-stat { background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card); box-shadow: var(--shadow-lift); padding: 22px 20px; text-align: center; }
-.mini-num { display: block; font-size: 36px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.01em; }
+/* fluid: the longest values (35,000+ / 110,000) overflow a fixed 36px inside the 2-col grid on narrow phones */
+.mini-num { display: block; font-size: clamp(22px, 6.5vw, 34px); font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.01em; }
 .mini-num b { color: var(--primary); }
 .mini-label { display: block; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--graphite); }
 @media (max-width: 820px) {
@@ -244,6 +248,72 @@ section { padding: var(--gap-section) 0; }
 .panel-intro h3 { font-size: 26px; margin: 10px 0 10px; }
 .panel-intro p { color: var(--charcoal); max-width: 680px; }
 
+/* ---- Spec tables (Rotors order-number lookup) ----------------------------- */
+.rotor-tables { margin-top: 28px; }
+.rotor-tables .parts-group-title { margin-top: 32px; }
+.rotor-tables .parts-group-title:first-child { margin-top: 0; }
+.panel-note { color: var(--charcoal); font-size: 14.5px; max-width: 680px; margin: 0 0 14px; }
+.table-scroll { overflow-x: auto; border: 1px solid var(--hairline); border-radius: var(--r-card); background: #fff; margin-bottom: 8px; }
+.spec-table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
+.spec-table th, .spec-table td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--hairline); }
+.spec-table thead th { background: var(--cloud); font-weight: 700; color: var(--ink); text-transform: uppercase; font-size: 12px; letter-spacing: .04em; }
+.spec-table tbody tr:last-child td { border-bottom: none; }
+.spec-table tbody tr:hover { background: var(--primary-soft); }
+
+/* ---- Rotor spec-sheet drawing (Complete Rotors panel) --------------------- */
+/* Draughting vernacular borrowed from the PhiComp catalogue: concentric geometry,
+   a turning index ring, one speed note and a Ø dimension line. Both labels sit on
+   the vertical centre line so they can never collide with the ring. */
+.rotor-spec { max-width: 420px; margin: 0 auto 30px; text-align: center; }
+.rotor-spec-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.rotor-spec-svg text { font-family: var(--ff); font-variant-numeric: tabular-nums; }
+
+/* index ring — the only animated element; one turn per 90s, ambient */
+@keyframes rotorIndex { to { transform: rotate(360deg); } }
+.rotor-index {
+    /* both circles are concentric, so the group's fill-box centre is exactly the
+       rotor centre — no need to hardcode 300/210 here */
+    transform-box: fill-box; transform-origin: center;
+    animation: rotorIndex 90s linear infinite;
+}
+.rotor-tick { fill: none; stroke: var(--steel); stroke-width: 8; }
+/* majors read as *longer* ticks, not fatter ones: stroke-width is the radial length,
+   the dash is the tick's width — so keep the dash close to the minors' */
+.rotor-tick-major { fill: none; stroke: var(--primary); stroke-width: 16; opacity: .45; }
+
+/* cup body */
+.rotor-rim { fill: none; stroke: var(--primary); stroke-width: 2.2; }
+.rotor-wall { fill: none; stroke: var(--primary); stroke-width: 1.4; opacity: .5; }
+.rotor-groove { fill: none; stroke: var(--primary); stroke-width: 2.6; }
+.rotor-cone { fill: none; stroke: var(--steel); stroke-width: 1; }
+.rotor-hub { fill: var(--primary-soft); stroke: var(--primary); stroke-width: 1.6; }
+.rotor-shaft { fill: #fff; stroke: var(--primary); stroke-width: 1.6; }
+.rotor-centre { fill: none; stroke: var(--graphite); stroke-width: .9; opacity: .55; stroke-dasharray: 16 4 3 4; }
+
+/* Ø dimension line */
+.dim-ext, .dim-line { fill: none; stroke: var(--graphite); stroke-width: .9; opacity: .45; }
+.dim-arrow { fill: var(--graphite); opacity: .7; }
+.dim-label { fill: var(--ink); font-size: 19px; font-weight: 700; letter-spacing: .01em; }
+
+/* speed note leader */
+.spec-leader { fill: none; stroke: var(--graphite); stroke-width: .9; opacity: .45; }
+.spec-note { fill: var(--graphite); font-size: 13px; font-weight: 700; letter-spacing: .08em; }
+
+.rotor-spec-cap { font-size: 13px; line-height: 1.6; color: var(--graphite); max-width: 62ch; margin: 14px auto 0; }
+
+/* ---- Coating key (decodes the D/N suffix used in both rotor tables) -------- */
+.coating-key { margin-bottom: 30px; }
+.coating-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 26px; margin-top: 14px; }
+.coating-list > div { display: flex; align-items: baseline; gap: 12px; }
+/* same chip treatment as .info-tags li, so the key reads as part of the same system */
+.coating-list dt { flex: none; min-width: 46px; text-align: center; font-size: 13px; font-weight: 700; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-badge); padding: 5px 10px; }
+.coating-list dd { color: var(--charcoal); font-size: 14.5px; }
+/* footnote carrying the values that are identical on every row of a table */
+.spec-foot { font-size: 13px; margin: 10px 0 0; }
+/* SolidRotor types — chips reusing .info-tags, since the type is the only varying value */
+.rotor-type-list { margin: 0 0 4px; }
+.rotor-type-list li { font-size: 14px; font-variant-numeric: tabular-nums; }
+
 /* ---- Navel photo cards ---------------------------------------------------- */
 .navel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 16px; }
 .navel-card { background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card); overflow: hidden; box-shadow: var(--shadow-lift); display: flex; flex-direction: column; transition: transform .2s, box-shadow .2s; }
@@ -272,7 +342,12 @@ section { padding: var(--gap-section) 0; }
 .parts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 14px; }
 .part-card { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-badge); overflow: hidden; transition: transform .18s, border-color .18s, box-shadow .18s; }
 .part-card:hover { border-color: var(--primary); box-shadow: var(--shadow-lift); transform: translateY(-3px); }
-.part-photo { aspect-ratio: 1 / 1; background: #fff; padding: 6px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; }
+/* min-height:0 is load-bearing, not tidying. .part-photo is a flex item of the column-flex
+   .part-card, so its default min-height:auto resolves to its content's height — a portrait
+   crop (e.g. 246x579) then forced the box to 403px and silently overrode aspect-ratio,
+   which is what made the Ring Frame grid ragged. Autoconer's crops are all square so it
+   never showed. Removing this brings the bug back for any non-square photo. */
+.part-photo { aspect-ratio: 1 / 1; min-height: 0; background: #fff; padding: 6px; display: flex; align-items: center; justify-content: center; cursor: zoom-in; }
 .part-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .part-fallback { width: 40px; height: 40px; color: var(--steel); }
 .part-text { padding: 10px 12px 12px; }
@@ -287,7 +362,14 @@ section { padding: var(--gap-section) 0; }
 /* Ring frame groups */
 .ring-group-title { font-size: 18px; font-weight: 800; color: var(--ink); margin: 8px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); }
 .ring-group-title:nth-of-type(2), .parts-grid + .ring-group-title { margin-top: 34px; }
-.ring-grid { margin-bottom: 8px; }
+/* With the .part-photo fix above, the only remaining height variation is name length —
+   one line ("Spring") vs three ("Carrier Upper Part (Peg left · Gauge 70 mm)"). 1fr
+   implicit rows all resolve to the tallest row in an auto-height grid, so this levels
+   them at any breakpoint without a min-height to retune as the columns reflow. Only
+   worth it here, where the two ranges sit side by side; Autoconer/Autocoro keep auto
+   rows. Never line-clamp these names — the four Rieter carrier parts differ only by
+   "(Peg left/right · Gauge 70/75 mm)". */
+.ring-grid { margin-bottom: 8px; grid-auto-rows: 1fr; }
 
 /* ---- Manufacturers -------------------------------------------------------- */
 .mfr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
@@ -315,11 +397,14 @@ section { padding: var(--gap-section) 0; }
 .contact-details li { padding: 12px 0; border-top: 1px solid rgba(255,255,255,.14); font-size: 15px; color: rgba(255,255,255,.9); }
 .contact-details li span { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--primary-soft); margin-bottom: 3px; }
 .contact-details a { color: #fff; }
-.contact-form { background: #fff; border-radius: var(--r-card); padding: 32px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow-float); }
-.contact-form input, .contact-form textarea { width: 100%; font-family: var(--ff); font-size: 15px; padding: 13px 15px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; color: var(--ink); }
+.contact-details address { font-style: normal; line-height: 1.5; }
+.contact-form { background: #fff; border-radius: var(--r-card); padding: 38px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-float); }
+.contact-form input, .contact-form textarea { width: 100%; font-family: var(--ff); font-size: 16px; padding: 15px 17px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; color: var(--ink); }
 .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--primary); }
 .contact-form textarea { resize: vertical; }
-.btn-submit { background: var(--primary); color: #fff; border: none; }
+/* Sized here, not in the shared .btn-primary/.btn-outline/.btn-submit rule — that one
+   governs every button on the site. Same specificity, later in the file, so it wins. */
+.btn-submit { background: var(--primary); color: #fff; border: none; font-size: 15px; padding: 16px 26px; }
 .btn-submit:hover { background: var(--primary-deep); }
 .form-status { font-size: 14px; font-weight: 600; color: var(--primary-deep); min-height: 1px; }
 .form-status.show { padding-top: 4px; }
@@ -374,19 +459,12 @@ section { padding: var(--gap-section) 0; }
 /* ============================================================================
    Responsive
    ========================================================================== */
-@media (max-width: 1024px) {
-    .hero h1 { font-size: 44px; }
-    .about-grid { grid-template-columns: 1fr; }
-    .mfr-grid { grid-template-columns: repeat(2, 1fr); }
-    .footer-grid { grid-template-columns: 1fr 1fr; }
-    .chevron { width: 150px; }
-}
-
-@media (max-width: 900px) {
-    :root { --gap-section: 56px; }
+/* The logo wordmark widens the brand block enough that the inline nav links stop fitting
+   below ~1100px, so the hamburger takes over here rather than at the 900px layout breakpoint. */
+@media (max-width: 1100px) {
     .nav-toggle { display: flex; }
     .nav-links {
-        position: absolute; top: 68px; left: 0; right: 0;
+        position: absolute; top: 100%; left: 0; right: 0;
         flex-direction: column; align-items: stretch; gap: 0;
         background: #fff; border-bottom: 1px solid var(--hairline);
         box-shadow: var(--shadow-lift); padding: 8px 0;
@@ -406,18 +484,35 @@ section { padding: var(--gap-section) 0; }
     .dropdown a { padding: 12px 24px 12px 40px; font-size: 14px; }
     .dropdown li { border-top: 1px solid var(--hairline); }
     .caret { display: none; }
+}
+
+@media (max-width: 1024px) {
+    .hero h1 { font-size: 44px; }
+    .about-grid { grid-template-columns: 1fr; }
+    .mfr-grid { grid-template-columns: repeat(2, 1fr); }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .chevron { width: 150px; }
+}
+
+@media (max-width: 900px) {
+    :root { --gap-section: 56px; }
+    .logo-word { font-size: 15px; }
     .hero-inner { grid-template-columns: 1fr; gap: 32px; }
     .contact-inner { grid-template-columns: 1fr; gap: 34px; }
     .cap-grid { grid-template-columns: 1fr; }
     .chevron { display: none; }
     .panel-feature { grid-template-columns: 1fr; gap: 18px; }
+    .coating-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
+    .logo-word { font-size: 12.5px; }
+    .nav-logo-img { height: 40px; }
     .hero { padding: 56px 0 64px; }
     .hero h1 { font-size: 34px; }
     .hero-lead { font-size: 16px; }
     .section-head h2, .contact-copy h2 { font-size: 30px; }
+    .contact-form { padding: 24px; }
     .cred-num { font-size: 30px; }
     .info-card { grid-template-columns: 1fr; gap: 20px; padding: 26px 22px; }
     .info-icon { width: 84px; height: 84px; }
@@ -427,6 +522,11 @@ section { padding: var(--gap-section) 0; }
     .parts-toolbar { flex-direction: column; align-items: stretch; }
     .toolbar-actions { justify-content: stretch; }
     .toolbar-actions .btn-outline, .toolbar-actions .btn-primary { flex: 1; }
+    /* SVG text scales with the viewBox, so it shrinks with the drawing. Sizes here are
+       user units — enlarging them makes the labels bigger *relative to* the rotor. The
+       figure is only 420px wide now, so it renders near 1:1 on a phone and needs little. */
+    .dim-label { font-size: 21px; }
+    .spec-note { font-size: 15px; }
     .client-logo { padding: 0 36px; gap: 10px; }
     .client-logo-img { height: 40px; }
     .vardhman-name { font-size: 16px; }
@@ -470,6 +570,7 @@ button:focus-visible,
         transition-duration: .001ms !important;
     }
     .slider-track { animation: none !important; transform: none !important; }
+    .rotor-index { animation: none !important; transform: none !important; }
     .cat-panel.is-active { animation: none !important; }
     .reveal-hidden { opacity: 1; transform: none; }
 }

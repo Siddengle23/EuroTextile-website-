@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Single-page site: one real URL. The #fragments are not listed — search engines index
+     the page, not its anchors, and listing fragments as separate <url> entries is ignored
+     at best. Update <lastmod> when the page content changes materially. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.eurotextilespares.com/</loc>
+    <lastmod>2026-08-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

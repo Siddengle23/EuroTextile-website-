@@ -1,0 +1,22 @@
+# Raw, full-resolution source photo uploads — reference-only, never served.
+# The resized/compressed copies that the site actually loads live in images/parts/
+# and ARE tracked. See CLAUDE.md, "Product photo pipeline" and "Reference material
+# vs. served assets". These folders total ~275 MB straight from the camera; keeping
+# them out of the repo is what stops a static deploy shipping them.
+# (Folder name "Autoconor" is a typo in the folder itself — it holds Autoconer photos.)
+images/Autocoro/
+images/Autoconor/
+images/Ringframe/
+images/Rotors/
+images/Twin Disc/
+
+# OS / editor cruft
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+
+# Throwaway copies of index.html used to force a state for a headless-Chrome
+# screenshot (see CLAUDE.md) — these must never be committed.
+index.screenshot*.html

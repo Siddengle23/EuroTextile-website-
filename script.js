@@ -1,7 +1,8 @@
 /* ============================================================================
    Euro Textile Spares — site interactions
    Depends on data.js (NAVELS, NAVEL_MACHINES, AUTOCONER_PARTS, AUTOCORO_PARTS,
-   RIETER_PARTS, ZINSER_PARTS, ROTOR_CUP_BEARING, SOLID_ROTOR)
+   RIETER_PARTS, ZINSER_PARTS, ROTOR_CUP_BEARING, SOLID_ROTOR, TWIN_DISCS,
+   FRICTION_DISC, PU_FRICTION_WHEEL)
    ========================================================================== */
 (function () {
   "use strict";
@@ -11,16 +12,21 @@
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   /* ---- Part card (image + English name, optional RSM code) ---------------- */
+  // The photo is a <button>, not a <div>: it opens the lightbox, so it has to be reachable
+  // and operable from the keyboard. wireLightbox() delegates on [data-img], so the tag it
+  // lives on is not what wires the zoom — but changing it back to a div would silently make
+  // every catalog photo mouse-only again.
   function partCard(p) {
     var code = p.code ? '<span class="code">' + esc(p.code) + "</span>" : "";
     var search = (p.en + " " + (p.code || "") + " " + (p.group || "")).toLowerCase();
     return '<div class="part-card" data-search="' + esc(search) + '">' +
-      '<div class="part-photo" data-img="' + esc(p.img) + '" data-label="' + esc(p.en) + '">' +
+      '<button type="button" class="part-photo" data-img="' + esc(p.img) + '" ' +
+        'data-label="' + esc(p.en) + '" aria-label="Enlarge photo: ' + esc(p.en) + '">' +
         FALLBACK +
         '<img loading="lazy" src="' + esc(p.img) + '" alt="' + esc(p.en) + '" ' +
         'onload="this.previousSibling && this.previousSibling.remove && this.previousSibling.remove()" ' +
         'onerror="this.remove()">' +
-      "</div>" +
+      "</button>" +
       '<div class="part-text">' + code + '<span class="en">' + esc(p.en) + "</span></div>" +
     "</div>";
   }
@@ -76,13 +82,71 @@
     updateCount("solidRotorTable");
   }
 
+  /* ---- Friction Disc / PU Friction Wheel tables (CPU) ---------------------- */
+  // No per-SKU photography for either family (the catalogue shows one composite cluster photo
+  // per family, not one clean shot per lettered type) — same situation as ROTOR_CUP_BEARING
+  // above, so these render as text tables too.
+  function frictionDiscRow(r) {
+    var search = r.type.toLowerCase();
+    return '<tr data-search="' + esc(search) + '">' +
+      "<td>" + esc(r.type) + "</td>" +
+      "<td>" + esc(r.od) + "</td>" +
+      "<td>" + esc(r.thickness) + "</td>" +
+      "<td>" + esc(r.bore) + "</td>" +
+    "</tr>";
+  }
+  function renderFrictionDiscTable() {
+    var el = document.getElementById("frictionDiscTable");
+    if (!el || typeof FRICTION_DISC === "undefined") return;
+    el.innerHTML = FRICTION_DISC.map(frictionDiscRow).join("");
+    updateCount("frictionDiscTable");
+  }
+  function puFrictionWheelRow(r) {
+    var search = (r.type + " " + r.code).toLowerCase();
+    return '<tr data-search="' + esc(search) + '">' +
+      "<td>" + esc(r.type) + "</td>" +
+      "<td>" + esc(r.code) + "</td>" +
+      "<td>" + esc(r.od) + "</td>" +
+    "</tr>";
+  }
+  function renderPUFrictionWheelTable() {
+    var el = document.getElementById("puFrictionWheelTable");
+    if (!el || typeof PU_FRICTION_WHEEL === "undefined") return;
+    el.innerHTML = PU_FRICTION_WHEEL.map(puFrictionWheelRow).join("");
+    updateCount("puFrictionWheelTable");
+  }
+
   /* ---- Navels ------------------------------------------------------------- */
+  // data.js series string -> the anchor id and short heading the Products dropdown's Navels
+  // sub-links point at. Keep this in sync with those four <a data-sub="..."> in index.html —
+  // an entry missing here still renders (raw series string, no id), it just can't be linked to.
+  var NAVEL_SERIES = {
+    "Quality — high performance": { id: "sub-navel-high-performance", label: "High Performance" },
+    "Basic — standard":           { id: "sub-navel-standard",         label: "Standard" },
+    "Smooth — even yarn":         { id: "sub-navel-even-yarn",        label: "Even Yarn" },
+    "Soft — high volume yarn":    { id: "sub-navel-high-volume-yarn", label: "High Volume Yarn" }
+  };
   function renderNavels() {
     var grid = document.getElementById("navelGrid");
     if (!grid || typeof NAVELS === "undefined") return;
+    // NAVELS is already in catalogue order (4 per series), so a heading whenever the series
+    // changes is enough — no sorting or bucketing. .parts-group-title is grid-column: 1/-1,
+    // so it spans the row rather than sitting in a card slot.
+    var seen = null;
     grid.innerHTML = NAVELS.map(function (n) {
-      return '<article class="navel-card">' +
-        '<div class="navel-photo"><img loading="lazy" src="' + n.img + '" alt="Broell navel ' + esc(n.type) + '" onerror="this.parentNode.style.background=\'var(--primary-soft)\';this.remove();"></div>' +
+      var head = "";
+      if (n.series !== seen) {
+        seen = n.series;
+        var s = NAVEL_SERIES[n.series];
+        head = '<h4 class="parts-group-title"' + (s ? ' id="' + s.id + '"' : "") + ">" +
+               esc(s ? s.label : n.series) + "</h4>";
+      }
+      return head +
+        '<article class="navel-card">' +
+        '<button type="button" class="navel-photo" data-img="' + esc(n.img) + '" ' +
+          'data-label="Broell navel ' + esc(n.type) + '" aria-label="Enlarge photo: Broell navel ' + esc(n.type) + '">' +
+          '<img loading="lazy" src="' + esc(n.img) + '" alt="Broell navel ' + esc(n.type) + '" ' +
+          'onerror="this.parentNode.style.background=\'var(--primary-soft)\';this.remove();"></button>' +
         '<div class="navel-info">' +
           '<span class="type">' + esc(n.type) + "</span>" +
           '<span class="series">' + esc(n.series) + "</span>" +
@@ -160,51 +224,154 @@
   var tabs, panels;
   function activateCat(cat) {
     if (!tabs) return;
-    tabs.forEach(function (t) { t.classList.toggle("is-active", t.getAttribute("data-cat") === cat); });
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-cat") === cat;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      // Roving tabindex: the tablist is one Tab stop, arrows move between tabs (WAI-ARIA
+      // tabs pattern). Without this all six land in the Tab order and the arrow keys do nothing.
+      t.setAttribute("tabindex", on ? "0" : "-1");
+    });
     panels.forEach(function (p) { p.classList.toggle("is-active", p.getAttribute("data-panel") === cat); });
   }
+
+  // The tab/panel ARIA relationship is generated from the data-cat/data-panel strings that
+  // already exist, rather than hand-written id=/aria-controls pairs in the markup. That keeps
+  // the sync points at the three CLAUDE.md documents (nav link, .cat-tab, .cat-panel) — adding
+  // a category still needs no extra attributes here.
+  function wireTabAria() {
+    tabs.forEach(function (t) {
+      var cat = t.getAttribute("data-cat");
+      t.setAttribute("role", "tab");
+      t.id = "cat-tab-" + cat;
+      t.setAttribute("aria-controls", "cat-panel-" + cat);
+    });
+    panels.forEach(function (p) {
+      var cat = p.getAttribute("data-panel");
+      p.setAttribute("role", "tabpanel");
+      p.id = "cat-panel-" + cat;
+      p.setAttribute("aria-labelledby", "cat-tab-" + cat);
+      p.setAttribute("tabindex", "0");   // a scrollable panel must be keyboard-scrollable
+    });
+  }
+
+  // Left/Right (plus Home/End) move between tabs and activate, per the WAI-ARIA tabs pattern.
+  function wireTabKeys() {
+    var list = document.querySelector(".cat-tabs");
+    if (!list) return;
+    list.addEventListener("keydown", function (e) {
+      var order = Array.prototype.slice.call(tabs);
+      var i = order.indexOf(document.activeElement);
+      if (i === -1) return;
+      var next = -1;
+      if (e.key === "ArrowRight") next = (i + 1) % order.length;
+      else if (e.key === "ArrowLeft") next = (i - 1 + order.length) % order.length;
+      else if (e.key === "Home") next = 0;
+      else if (e.key === "End") next = order.length - 1;
+      if (next === -1) return;
+      e.preventDefault();
+      activateCat(order[next].getAttribute("data-cat"));
+      order[next].focus();
+      refreshMotion();
+    });
+  }
+
   function wireTabs() {
     tabs = document.querySelectorAll(".cat-tab");
     panels = document.querySelectorAll(".cat-panel");
+    wireTabAria();
+    // Sync the ARIA state to whichever tab carries .is-active in the markup. Without this the
+    // landing category renders with no aria-selected and no roving tabindex — all six tabs sit
+    // in the Tab order and none is announced as selected until the user clicks something.
+    var initial = document.querySelector(".cat-tab.is-active");
+    if (initial) activateCat(initial.getAttribute("data-cat"));
+    wireTabKeys();
     tabs.forEach(function (tab) {
       // No scroll happens here (the user is already looking at #products), so the trigger
       // positions can be refreshed immediately.
       tab.addEventListener("click", function () { activateCat(tab.getAttribute("data-cat")); refreshMotion(); });
     });
-    // Products dropdown links jump to the right category + scroll to catalog
-    document.querySelectorAll(".dropdown a[data-cat]").forEach(function (a) {
+    // Category links that live outside the tab strip: the Products dropdown (including its
+    // .subdropdown sub-links) and the footer's Products column. Both jump to the right category
+    // and scroll to the catalog. The selector is deliberately `a[data-cat]` and not
+    // `[data-cat]` — the .cat-tab elements are <button>, handled above, and must not also
+    // scroll. Any new category link anywhere on the page is wired just by being an <a>
+    // that carries data-cat.
+    document.querySelectorAll("a[data-cat]").forEach(function (a) {
       a.addEventListener("click", function () {
         activateCat(a.getAttribute("data-cat"));
-        var products = document.getElementById("products");
-        if (products) { products.scrollIntoView({ behavior: "smooth" }); refreshAfterScroll(); }
+        // Sub-links carry href="#<anchor>" and let the browser's own hash jump scroll — a click
+        // listener runs before the default action, so activateCat above has already un-hidden the
+        // panel by the time the anchor is resolved. Scrolling here as well would fight it.
+        if (!a.getAttribute("data-sub")) {
+          var products = document.getElementById("products");
+          if (products) products.scrollIntoView({ behavior: "smooth" });
+        }
+        refreshAfterScroll();
         closeMenu();
       });
     });
   }
 
+  // A sub-category link is a real anchor, so it can be copied or bookmarked. On a cold load the
+  // target sits inside a .cat-panel that is display:none unless it happens to be the landing
+  // category, and the browser silently skips the jump — activate the owning panel and scroll it
+  // into view ourselves.
+  function wireHashDeepLink() {
+    if (!location.hash || location.hash.length < 2) return;
+    var target;
+    try { target = document.querySelector(location.hash); } catch (e) { return; }
+    if (!target) return;
+    var panel = target.closest(".cat-panel");
+    if (!panel) return;                       // ordinary section anchor, browser handles it
+    activateCat(panel.getAttribute("data-panel"));
+    // Panel visibility only lands on the next frame, so measure the scroll after it.
+    requestAnimationFrame(function () {
+      target.scrollIntoView();
+      refreshAfterScroll();
+    });
+  }
+
   /* ---- Lightbox (zoom a clicked part / navel photo) ----------------------- */
+  // The trigger contract is the [data-img] / [data-label] attribute pair, NOT a class — that is
+  // what lets one delegated listener serve both .part-photo (renderFlat) and .navel-photo
+  // (renderNavels). partCard()/renderNavels() write those attributes; a renderer that stops
+  // writing them silently loses zoom with no console error.
   function wireLightbox() {
     var box = document.getElementById("lightbox");
     if (!box) return;
     var img = document.getElementById("lbImg");
     var counter = document.getElementById("lbCounter");
-    box.querySelectorAll(".lb-nav").forEach(function (n) { n.style.display = "none"; });
-    if (counter) counter.textContent = "";
+    var closeBtn = box.querySelector(".lb-close");
+    var lastFocus = null;
 
     function open(src, label) {
+      lastFocus = document.activeElement;
       img.src = src; img.alt = label || "";
       if (counter) counter.textContent = label || "";
       box.classList.add("open"); box.setAttribute("aria-hidden", "false");
+      if (closeBtn) closeBtn.focus();
     }
-    function close() { box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); img.src = ""; }
+    function close() {
+      box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); img.src = "";
+      // Return focus to the photo that opened it, so keyboard users don't get dumped at the
+      // top of the document halfway down a 124-card grid.
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+      lastFocus = null;
+    }
 
     document.addEventListener("click", function (e) {
-      var photo = e.target.closest(".part-photo");
-      if (photo && photo.getAttribute("data-img")) open(photo.getAttribute("data-img"), photo.getAttribute("data-label"));
+      var photo = e.target.closest("[data-img]");
+      if (photo) open(photo.getAttribute("data-img"), photo.getAttribute("data-label"));
     });
-    box.querySelector(".lb-close").addEventListener("click", close);
+    if (closeBtn) closeBtn.addEventListener("click", close);
     box.addEventListener("click", function (e) { if (e.target === box) close(); });
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && box.classList.contains("open")) close(); });
+    document.addEventListener("keydown", function (e) {
+      if (!box.classList.contains("open")) return;
+      if (e.key === "Escape") { close(); return; }
+      // Only the close button is focusable inside, so the "trap" is simply: keep Tab on it.
+      if (e.key === "Tab") { e.preventDefault(); if (closeBtn) closeBtn.focus(); }
+    });
   }
 
   /* ---- Navbar shrink + hamburger ------------------------------------------ */
@@ -219,9 +386,15 @@
     var navbar = document.querySelector(".navbar");
     toggleEl = document.querySelector(".nav-toggle");
     linksEl = document.querySelector(".nav-links");
+    // Only write when the state actually flips. Assigning the same string on every scroll event
+    // still dirties the style and costs a recalc on a page this tall.
+    var lifted = null;
     window.addEventListener("scroll", function () {
-      navbar.style.boxShadow = window.scrollY > 40 ? "0 4px 16px rgba(14,42,69,.10)" : "none";
-    });
+      var now = window.scrollY > 40;
+      if (now === lifted) return;
+      lifted = now;
+      navbar.style.boxShadow = now ? "0 4px 16px rgba(14,42,69,.10)" : "none";
+    }, { passive: true });
     if (toggleEl && linksEl) {
       toggleEl.addEventListener("click", function () {
         var open = linksEl.classList.toggle("open");
@@ -273,7 +446,7 @@
   }
 
   /* ---- Motion layer (GSAP, with graceful fallbacks) ----------------------- */
-  var REVEAL_SEL = ".section-head, .about-intro, .mfr-card, .cap-card, .value-item";
+  var REVEAL_SEL = ".section-head, .about-intro, .mfr-card, .cap-card";
 
   // Reveal timings. Capabilities is a common jump target ("Capabilities" in the nav) and sits
   // just below the tall product catalog, so it starts earlier and resolves faster — landing on a
@@ -281,9 +454,10 @@
   var REVEAL_BASE = { start: "top 85%", interval: 0.1, duration: 0.7, stagger: 0.12 };
   var REVEAL_FAST = { start: "top 92%", interval: 0.06, duration: 0.55, stagger: 0.08 };
 
-  // Panel swaps change the document height by thousands of pixels (Autoconer/Autocoro render 124
-  // cards each, Twin Discs is one info-card), which leaves every trigger below #products pointing
-  // at the old layout — the reveals then fire at the wrong scroll position, or not at all.
+  // Panel swaps change the document height by thousands of pixels (Autocoro renders 40 cards and
+  // Autoconer 27, while Twin Discs is 4 cards plus two short spec tables, and Complete Rotors runs
+  // past 7000px on its own), which leaves every trigger below #products pointing at the old
+  // layout — the reveals then fire at the wrong scroll position, or not at all.
   // Guarded so the tabs still work with the vendor files missing.
   function refreshMotion() {
     var ST = window.ScrollTrigger;
@@ -433,8 +607,12 @@
     renderFlat("zinserParts", typeof ZINSER_PARTS !== "undefined" ? ZINSER_PARTS : []);
     renderRotorCupTable();
     renderSolidRotorList();
+    renderFlat("twinDiscParts", typeof TWIN_DISCS !== "undefined" ? TWIN_DISCS : []);
+    renderFrictionDiscTable();
+    renderPUFrictionWheelTable();
     wireSearch();
     wireTabs();
+    wireHashDeepLink();
     wireLightbox();
     wireNav();
     wireForm();

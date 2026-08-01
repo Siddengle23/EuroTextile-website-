@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Raw source-photo folders are not deployed (see .gitignore), but disallow them
+# explicitly in case a copy is ever uploaded by hand.
+Disallow: /images/Autocoro/
+Disallow: /images/Autoconor/
+Disallow: /images/Ringframe/
+Disallow: /images/Rotors/
+Disallow: /images/Twin Disc/
+
+Sitemap: https://www.eurotextilespares.com/sitemap.xml

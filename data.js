@@ -1,9 +1,12 @@
 /* ============================================================================
    Euro Textile Spares — catalogue data
-   Parsed from the European manufacturer catalogues (Samatex, Emil Broell).
+   Parsed from the manufacturer catalogues (Samatex, Emil Broell, PhiComp, CPU).
    Consumed by script.js to render the product catalog sections.
-   Each part carries an English (en) and German (de) name as printed in the
-   original OEM catalogues.
+
+   Part names are English-only, deliberately — the source catalogues are bilingual
+   (German/English), but bilingual strings like "Driver / Mitnehmer" are translated
+   or stripped on the way in. There is no `de` field. See CLAUDE.md,
+   "English-only data convention".
    ========================================================================== */
 
 /* ---- Emil Broell (Austria) — Navels for rotor spinning --------------------
@@ -147,4 +150,32 @@ const SOLID_ROTOR = [
   { type: "U 640 DD" },
   { type: "S 652 DD" },
   { type: "K 631 DD" }
+];
+
+/* ---- CPU (Taiwan) — Twin discs (supporting discs), open-end/rotor-spinning machines.
+   Real photography supplied directly. */
+const TWIN_DISCS = [
+  { en: "Twin Disc N Type", img: "images/parts/twindisc-01.jpg" },
+  { en: "Twin Disc Laser Type", img: "images/parts/twindisc-02.jpg" },
+  { en: "Twin Disc Reflector Type", img: "images/parts/twindisc-03.jpg" },
+  { en: "Twin Disc Magnetic (Rieter OE)", img: "images/parts/twindisc-04.jpg" }
+];
+
+/* ---- CPU (Taiwan) — Polyurethane Friction Disc, for Barmag/ICBT/RPR/Rieter-Scragg/Teijin/Toray
+   M/C. Hardness (85/86/89/92/93 Shore A) and the compatible-machine list are identical across
+   every type, so they live in a static caption/foot note rather than as columns here. */
+const FRICTION_DISC = [
+  { type: "A", od: "52 mm", thickness: "9 mm", bore: "12 mm" },
+  { type: "B", od: "52 mm", thickness: "9 mm", bore: "14.45 mm" },
+  { type: "C", od: "50 mm", thickness: "6 mm", bore: "12 mm" },
+  { type: "D", od: "45 mm", thickness: "6 mm", bore: "12 mm" }
+];
+
+/* ---- CPU (Taiwan) — PU Friction Wheel. CPU's own part codes are the product's model
+   designation, not a hidden order/pricing number, so they're shown (unlike PhiComp's order
+   numbers — see the note above ROTOR_CUP_BEARING). */
+const PU_FRICTION_WHEEL = [
+  { type: "A", code: "CPU3422V", od: "34.2 × (22+4) mm" },
+  { type: "B", code: "CPU3826NC", od: "38 × 26 mm" },
+  { type: "C", code: "CPU3828NC", od: "38 × 28 mm" }
 ];

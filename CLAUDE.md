@@ -311,6 +311,14 @@ and `.info-card` (Complete Rotors, Twin Discs — a static icon + text card, use
 photo existed yet). `.info-card`/`.info-icon`/`.info-body` are retired now that all 6 categories
 have a photo — don't reintroduce them for a future category; extend `.panel-feature` instead.
 
+**`.panel-intro` can hold more than one `<p>` — Rotors is the only panel that currently does.** Its
+intro splits into two paragraphs (Rotor cup & bearing, then SolidRotor) so the two product lines
+read as visually distinct rather than one dense block. `.panel-intro p + p { margin-top: 14px; }`
+supplies the gap — the site's `* { margin: 0 }` reset means splitting the markup into two `<p>`s
+alone produces zero visible space; 14px matches `.panel-note`'s own bottom margin. The rule is
+inert on the other five panels, which still have exactly one `<p>` — a panel that grows a second
+paragraph gets the spacing for free, no new class needed.
+
 Complete Rotors, Navels, and Twin Discs sell components fitted *inside* open-end/rotor-spinning
 machines (Rieter R-series, Schlafhorst/Saurer SE/BD/Autocoro, Suessen SC-series, Taitan, Rifa) —
 none of them is a standalone machine the way Autoconer/Autocoro/Ring Frame are. Their photos
@@ -348,7 +356,9 @@ pattern, copy the markup; there is nothing to register in `script.js`.
 from `data.js` — dropping the columns alone would have left all 53 numbers readable by anyone
 opening `data.js`, which is served as plain text. Do not reintroduce them. Values identical on every
 row (warranty, and SolidRotor's service life) live in a `.spec-foot` note beside each list rather
-than as a column that repeats one value 37 times.
+than as a column that repeats one value 37 times. Both `.spec-foot` notes carry a hard `<br>`
+immediately before `Warranty:` so that sentence starts its own line instead of running on after the
+service-life caveat — deliberate spacing, not a stray tag to clean up.
 
 ### Data-driven rendering (script.js)
 `data.js` arrays are rendered into placeholder `<div>`s by ID (`navelGrid`, `autoconerParts`,
@@ -426,6 +436,15 @@ slashes (e.g. `"T34DD"`) still matches a stored value like `"t 34 dd"`. The "no 
 (`.parts-empty`) is inserted as a sibling *after* the search target (or after its `.table-scroll`
 wrapper, for `<tbody>` targets) rather than appended inside the target itself — appending a `<p>`
 directly into a `<tbody>` would sit outside the valid table content model.
+
+**Not every panel has a search box, and the `.parts-count` badges work regardless.** Twin Discs
+deliberately has none — 4 cards plus two short tables didn't justify one — yet all three of its
+counts still read "N parts shown", because `updateCount()` is called by the renderers themselves
+(`renderFlat()`, `renderRotorCupTable()`, `renderSolidRotorList()`,
+`renderFrictionDiscTable()`, `renderPUFrictionWheelTable()` each end with it), not only by
+`wireSearch()`'s `input` handler. So a `.parts-count` with no matching `.parts-search` is correct,
+not an orphan — don't delete it, and don't re-add a search box to "make it work". `wireSearch()`
+iterates `.parts-search` elements, so a panel without one is simply skipped.
 
 ### Product photo pipeline (images/parts/)
 `images/parts/` holds two generations of photos, both committed:
@@ -508,10 +527,10 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
   match. `BROELL_Navel catalogue.pdf` and `CPU Main Catalogue.pdf` are reference-only, like the
   source photos below — on disk for provenance/future cropping, not linked from the Navels or Twin
   Discs panels.
-- `docs/` — one PDF (`Autocoro338_Parts_list_revised.pdf`) that's also linked from the Autocoro
-  panel, as a **second**, separate button ("Additional Parts ↗") alongside "Browse Catalogue ↗" —
-  the two are different documents (a supplementary parts list vs. the manufacturer catalogue) and
-  both stay.
+  There is no `docs/` folder. It held one PDF (`Autocoro338_Parts_list_revised.pdf`) behind a
+  second Autocoro button ("Additional Parts ↗") next to "Browse Catalogue ↗"; both the button and
+  the 7.9 MB file were removed on request, so every panel that links a PDF now links exactly one.
+  The file is still recoverable from git history if it's ever wanted back.
 - **The raw source-photo folders are `.gitignore`d, not committed.** `images/Autocoro/`,
   `images/Autoconor/`, `images/Ringframe/`, `images/Rotors/` and `images/Twin Disc/` hold the
   full-resolution originals (~275 MB) behind the `-v2-` and named photo generations. They were
@@ -598,5 +617,34 @@ and the caption always change together.)
 The About section (`#about`) is a two-column intro plus a hand-authored inline **SVG infographic**
 (`.about-stats`): a curved `.stats-line` path whose cubic-segment anchors are the four `.stat-node`
 points (so the node dots sit exactly on the curve). Editing a node means keeping its `<circle>`,
-`.stat-drop` line, and `<text>` coordinates in sync with the path anchor. Below `820px` the SVG is
-hidden and `.about-stats-grid` (a 2×2 card fallback) shows the same four stats — update both.
+`.stat-drop` line, and `<text>` coordinates in sync with the path anchor.
+
+**Each stat exists in three places, and all three must change together:**
+1. The `<g class="stat-node">` in the SVG — the `.stat-num` value and the two `.stat-label` tspans.
+2. The matching `.mini-stat` in `.about-stats-grid`, the 2×2 card fallback shown below `820px`
+   where `.stats-curve` goes `display: none`.
+3. **The `<svg aria-label>`**, which restates all four facts as one prose sentence — the same
+   pattern as the rotor drawing's `aria-hidden` + figcaption pair. It is the only copy a screen
+   reader gets, and nothing will flag it when it drifts.
+
+Current order, left to right: `18+` years supplying India's spinning mills, `70+` spinning mills
+served pan-India, `Authorized` distributor, `Uniform` yarn CV across the lifecycle. These are
+company facts, not product specifications — two PhiComp component specs ("35,000+ hours of rotor
+service life", "110,000 rpm sustained bearing speed") used to lead the line originally and were
+removed: in the About section a rotor's rated life reads as a claim about the company. Keep new
+stats at that altitude, and out of the hero badge's territory (4 OEM partners / 100% genuine /
+6500+ parts / Pune).
+
+**Reordering which fact appears where means moving text content between the existing `<g>` groups,
+not cutting and pasting the groups themselves.** The four `<g class="stat-node">` elements sit at
+fixed x-positions (150/470/770/1050) pinned to the curve's cubic anchors — moving a whole `<g>`
+would either break that alignment or leave the DOM order out of sync with the visual left-to-right
+order, which matters because `aboutCurve()` staggers `.stat-node` in DOM order
+(`gsap.utils.toArray(".stat-node")` in script.js). So a reorder always rewrites three groups' text
+at once — the moved stat's new slot, and every slot it displaces by one — and never touches a
+coordinate.
+
+`.stat-num .accent` and `.mini-num b` style the blue trailing `+` — live on both `18+` and `70+`
+today. Changing the longest `.stat-num` value means re-checking `.mini-num`'s
+`clamp(22px, 6.5vw, 34px)`, which exists solely to stop that value overflowing its card in the
+2-column grid on narrow phones; the comment above it names whichever value currently drives it.

@@ -299,10 +299,22 @@ phones.** Both fix the same reported symptom — "some logos just disappear as t
   the default `flex-shrink: 1` then squeezes slides until logos collapse or clip. Pinning the basis
   makes the loop geometry independent of how the engine resolves the track width, and keeps the two
   hand-duplicated halves exactly equal — which is what makes `translateX(-50%)` seamless.
-- The mask is a **percentage of the container**, so it scales the wrong way: 10% of a 1200px desktop
-  band is a soft ~120px ramp, but 10% of a 390px phone is ~39px — about one logo wide, so a logo was
-  fully transparent for most of its time on screen. The `≤640px` block overrides it to 4%. The
-  `-webkit-mask-image` and `mask-image` declarations are a pair in both places; edit them together.
+- The mask is a **fixed 24px ramp**, and **there is deliberately no per-breakpoint override.** It
+  used to be a percentage (`10%`, briefly `4%` on phones), which is the wrong unit: a percentage
+  scales the fade *up* with the container, so it was a soft ~120px ramp on desktop but ~82px on an
+  iPad and ~39px on a phone — on the smaller screens it dissolved a logo well before it reached the
+  edge. Fixing the distance makes every width behave identically. The `-webkit-mask-image` and
+  `mask-image` declarations are a pair; edit them together (Safari uses the prefixed one).
+  Re-adding a percentage, or a `≤640px` mask override, is the exact bug this replaced.
+
+**A continuous marquee clips at the viewport edge by definition — the mask is not the lever for
+that.** When the complaint is "the logos are always half cut off" on a phone rather than "they fade
+out early", the cause is slide width: at ≤640px each slide is the logo plus `.client-logo`'s
+horizontal padding, and with the widest marks near 300px only about one and a half fit a 390px
+screen, so something is always straddling an edge. The `≤640px` padding is `22px` (down from 36px)
+for exactly that reason. The next lever after padding is `.client-logo-img`'s 40px height, not more
+padding. Making a logo *never* partially visible is not achievable here at all — that needs a
+stepped/paged carousel rather than a continuous scroll.
 
 ### Header brand block & logo assets
 The navbar brand (`a.logo`) is the ETS monogram **plus a live text wordmark** (`.logo-word`,

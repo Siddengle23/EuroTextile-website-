@@ -595,9 +595,15 @@ section { padding: var(--gap-section) 0; }
 .clients { padding: 72px 0 56px; background: #fff; overflow: hidden; }
 .clients-eyebrow { display: block; text-align: center; }
 .clients-heading { text-align: center; font-size: 44px; font-weight: 800; color: var(--ink); margin-bottom: 46px; letter-spacing: -.01em; }
+/* The edge fade is a FIXED 24px ramp, deliberately not a percentage, and there is deliberately no
+   per-breakpoint override. A percentage scales the fade up with the screen, which is backwards:
+   10% was a soft ~120px ramp on desktop but ~82px on an iPad and ~39px on a phone — i.e. on the
+   smaller screens it dissolved a logo well before it reached the edge, which is what "the logos
+   disappear a bit early" was. A fixed distance behaves identically at every width. The two
+   declarations are a pair — Safari uses the -webkit- one; edit them together. */
 .slider-container { position: relative; width: 100%; overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent); }
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%); }
 .slider-track { display: flex; width: max-content; animation: scrollTrack 35s linear infinite; }
 /* flex:0 0 auto keeps a slide at its natural width. The track is `width: max-content`, which
    SHOULD mean no item is ever compressed — but WebKit resolves max-content unreliably on a flex
@@ -731,15 +737,12 @@ section { padding: var(--gap-section) 0; }
     /* Stay two-up rather than stacking — the pair is a comparison, and stacking breaks it. */
     .rotor-photo-pair { gap: 12px; }
     .rotor-photo-pair .rotor-spec img { height: 170px; }
-    /* The fade is a percentage of the container, so it scales down with the viewport in the wrong
-       direction: 10% of 1200px is a soft ~120px ramp, but 10% of a 390px phone is ~39px — about
-       one logo wide, so a logo was fully transparent for most of its time on screen. 4% keeps the
-       edge softening without eating a slide. Both declarations are a pair — edit them together. */
-    .slider-container {
-        -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
-        mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
-    }
-    .client-logo { padding: 0 36px; gap: 10px; }
+    /* No .slider-container mask override here on purpose — the base rule's fixed 24px ramp already
+       behaves the same at every width. Adding a percentage back is the bug this replaced.
+       22px (was 36px) narrows every slide by ~28px, which is what brings a second logo onto a
+       390px screen. A continuous marquee always clips at the viewport edge, so the lever for "the
+       logos are always half cut off" on a phone is slide width, not the mask. */
+    .client-logo { padding: 0 22px; gap: 10px; }
     .client-logo-img { height: 40px; }
     .gimatex-logo { height: 52px; }
     .vardhman-name { font-size: 16px; }

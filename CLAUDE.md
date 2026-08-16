@@ -292,6 +292,18 @@ track has scrolled exactly the first copy's width, so it lands back on an identi
 one desynchronises the halves and the loop visibly jumps once per cycle — and because the seam
 passes by only every 35s, it is easy to miss in a quick check.
 
+**`.client-logo` carries `flex: 0 0 auto`, and `.slider-container`'s edge mask is narrowed on
+phones.** Both fix the same reported symptom — "some logos just disappear as they move left":
+- The track is `width: max-content`, which *should* mean no slide is ever compressed, but WebKit
+  resolves `max-content` unreliably on a flex container inside an `overflow: hidden` ancestor, and
+  the default `flex-shrink: 1` then squeezes slides until logos collapse or clip. Pinning the basis
+  makes the loop geometry independent of how the engine resolves the track width, and keeps the two
+  hand-duplicated halves exactly equal — which is what makes `translateX(-50%)` seamless.
+- The mask is a **percentage of the container**, so it scales the wrong way: 10% of a 1200px desktop
+  band is a soft ~120px ramp, but 10% of a 390px phone is ~39px — about one logo wide, so a logo was
+  fully transparent for most of its time on screen. The `≤640px` block overrides it to 4%. The
+  `-webkit-mask-image` and `mask-image` declarations are a pair in both places; edit them together.
+
 ### Header brand block & logo assets
 The navbar brand (`a.logo`) is the ETS monogram **plus a live text wordmark** (`.logo-word`,
 "Euro Textile Spares Pvt. Ltd." in `--ink`) — not a single image. The `<img>` therefore carries
@@ -314,19 +326,57 @@ the nav-collapse rules live in their own `@media (max-width: 1100px)` block, sep
 taller mark) means re-checking that boundary. Nothing in `script.js` hardcodes a breakpoint — the
 hamburger is purely CSS-driven — so this is safe to move.
 
+**`.navbar` deliberately has no `backdrop-filter`.** It used to carry
+`saturate(140%) blur(6px)` over an `rgba(255,255,255,.96)` background — 96% opaque, so the blur was
+imperceptible anyway — and `backdrop-filter` on a `position: sticky` element is a known
+compositing-failure combination on both WebKit and Blink that can blank the bar's own children
+while scrolling. It was one of the suspects behind the "I can't see the menu icon" report. The
+background is now plain `#fff`, which is visually identical and removes the whole bug class. Don't
+re-add the filter as a polish touch.
+
+Below 1100px the hamburger is a **visible bordered plate** (`--cloud` fill, hairline border,
+`--r-badge` corners, `--navy` bars) rather than three bare bars on white — the owner reported not
+being able to find it. See the `.nav-toggle` entries under "Mobile & touch invariants" for the
+padding arithmetic that border forces.
+
 ### Mobile & touch invariants
-Six rules that a desktop-only check will not catch. All were regressions found in a mobile audit;
+Nine rules that a desktop-only check will not catch. All were regressions found in a mobile audit;
 none of them shows up in a screenshot.
 
 - **Any focusable input stays at `font-size: 16px` or larger.** iOS Safari auto-zooms the page when
   a focused input is under 16px and never zooms back out. This binds `.parts-search` and
   `.contact-form input, .contact-form textarea`. Shrinking either to fit a layout breaks the page
   on every iPhone.
-- **`.nav-toggle` is 44×44 with `padding: 8px 5px`, and the padding is what does the work.** Under
-  the global `border-box` that leaves the content box at exactly 34×28, which is what the three
-  bars and the `.nav-toggle.open` X animation are drawn against — its `translateY(±9px)` values are
-  tuned to that 28px height. Resize the button via the padding, never the height, or the X stops
-  meeting in the middle.
+- **A `flex-basis` written for a row becomes a *height* the moment that container turns into a
+  column.** `.parts-search` is `flex: 1 1 320px` for the desktop `.parts-toolbar` row, where 320px
+  is a width; the `@media (max-width: 640px)` block flips the toolbar to `flex-direction: column`,
+  which moved the main axis to vertical and rendered every catalogue search box as a **320px-tall
+  slab** with the placeholder floating in its middle. The `≤640px` block therefore re-states
+  `.parts-search { flex: 0 0 auto }`. Any future `flex: … <basis>` on an element whose container
+  changes direction at a breakpoint needs the same treatment. Note the fix must not touch
+  `font-size` — see the 16px floor above.
+- **Under the global `border-box`, `max-height: 0` cannot collapse a box that has padding or a
+  border.** The closed mobile `.nav-links` kept `padding: 8px 0` + `border-bottom: 1px` alongside
+  `max-height: 0`, so it sat **17px tall, white and shadowed**, pinned at `top: 100%` of the sticky
+  navbar at every width ≤1100px — present on cold load, not just after closing the menu, which is
+  what made it read as "the menu didn't close properly". The padding, border-width and box-shadow
+  now live on `.nav-links.open`; the closed rule keeps only `border-bottom: 0 solid` so the
+  width can animate back. Don't move them back onto the base rule.
+- **`.nav-toggle` is 44×44 and the *padding* is what does the work — the border counts too.** Under
+  the global `border-box` the content box must stay exactly 34×28, which is what the three bars and
+  the `.nav-toggle.open` X animation are drawn against — its `translateY(±9px)` values are tuned to
+  that 28px height. The base rule is `padding: 8px 5px`; the ≤1100px block adds a 1px border for
+  the visible button plate and drops the padding to `7px 4px` to compensate, keeping 34×28. Resize
+  via the padding, never the height, and re-do that arithmetic if the border width changes.
+- **`.nav-toggle` needs `flex: 0 0 auto`, and its bars need an explicit `width`.** As a flex item of
+  `.nav-inner` the button defaults to `flex-shrink: 1`, and because its three `<span>`s are *empty*
+  its `min-content` width is 0 — while `.logo` beside it is unshrinkable (`.logo-word` is
+  `white-space: nowrap` from 421px up). Under width pressure the flex algorithm therefore collapses
+  the hamburger to nothing rather than the logo. Separately the bars set only `height: 3px` and
+  relied on `align-items: stretch` for their 34px width, which Safari drops when a `<button>` fails
+  to act as a flex container — 0px-wide invisible bars inside a button still occupying its 44px.
+  Both were reported as "the menu icon is white/invisible on mobile" and **neither reproduces in
+  headless Chrome**, which renders the button correctly.
 - **`wireNav()` closes the menu on *every* link tap, `.dropdown-toggle` included.** It used to skip
   the Products parent, which is right on desktop (a hover flyout must stay open) and wrong on
   mobile, where the dropdown is already flattened to a permanently visible list: the tap is pure
@@ -348,6 +398,18 @@ none of them shows up in a screenshot.
 - **Touch targets are 44px at ≤640px**, which is where `.btn-sm` (the "Enquire about …" /
   "Browse Catalogue ↗" buttons) and `.cat-tab` get their larger padding. Their desktop sizes are
   smaller on purpose; don't unify them.
+- **The page declares `color-scheme: only light`** — in `:root` *and* as a `<meta name="color-scheme">`
+  in the `<head>`. There is one palette and no dark theme, and without the declaration Android
+  Chrome's Auto Dark Theme force-darkens the page, characteristically lightening `var(--ink)` text
+  while leaving `rgba()` white backgrounds alone (i.e. white on white). The two declarations are a
+  pair — change both or neither.
+- **The utility strip shows the tagline on phone portrait, not the phone number and email.** The
+  `≤640px` block hides `.util-contacts` and shows `.util-tagline`; the contacts are already in the
+  Contact section and the footer, and the positioning line is the more useful thing to lead with.
+  Width alone is the test — phone landscape is wider than 640px — so **don't add an
+  `orientation: portrait` query**; a second breakpoint axis would compete with the width one. The
+  block also relaxes `.util-inner`'s fixed `height: 38px` to `min-height`, because the tagline wraps
+  to two lines below ~400px and a fixed height would clip the second.
 
 `.table-scroll` also carries a scroll-shadow background at ≤640px so a table that continues
 off-screen says so. It is self-hiding — the `local` white covers move with the content, the

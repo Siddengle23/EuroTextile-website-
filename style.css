@@ -2,6 +2,12 @@
    Euro Textile Spares — brand-blue adaptation of the HP design language
    ========================================================================== */
 :root {
+    /* The site has one palette and no dark theme. Declaring it stops Android Chrome's Auto Dark
+       Theme force-darkening the page, which characteristically lightens var(--ink) text while
+       leaving an rgba() white background alone — i.e. white on white. Paired with
+       <meta name="color-scheme" content="only light"> in index.html; keep the two together. */
+    color-scheme: only light;
+
     --primary: #2565a5;        /* logo blue */
     --primary-deep: #17426b;   /* pressed / hover-deep */
     --primary-bright: #2f74bb;
@@ -83,10 +89,14 @@ img { max-width: 100%; }
 .util-contacts a:hover { color: #fff; }
 
 /* ---- Navbar --------------------------------------------------------------- */
+/* Deliberately NO backdrop-filter here. It used to carry saturate(140%) blur(6px) over a
+   rgba(255,255,255,.96) background — 96% opaque, so the blur was imperceptible anyway — and
+   backdrop-filter on a position:sticky element is a known compositing-failure combination on
+   both WebKit and Blink that can blank the bar's own children while scrolling. Opaque #fff is
+   visually identical and removes the whole bug class. Don't re-add it as a polish touch. */
 .navbar {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(255,255,255,.96);
-    backdrop-filter: saturate(140%) blur(6px);
+    background: #fff;
     border-bottom: 1px solid var(--hairline);
     transition: box-shadow .3s ease, padding .3s ease;
 }
@@ -129,8 +139,16 @@ img { max-width: 100%; }
    under the global border-box, so the three bars and the .nav-toggle.open X below — whose
    translateY(9px) values are tuned to that 28px height — are geometrically unchanged. Resize via
    the padding, never the height, or the X stops meeting in the middle. */
-.nav-toggle { display: none; background: none; border: none; cursor: pointer; width: 44px; height: 44px; padding: 8px 5px; flex-direction: column; justify-content: space-between; }
-.nav-toggle span { display: block; height: 3px; border-radius: 2px; background: var(--ink); transition: .3s; }
+/* flex:0 0 auto is load-bearing. As a flex item of .nav-inner the button defaults to
+   flex-shrink:1, and because its three spans are EMPTY its min-content width is 0 — while .logo
+   beside it is unshrinkable (.logo-word is white-space:nowrap from 421px up). Under any width
+   pressure the flex algorithm therefore collapses the hamburger to nothing rather than the logo.
+   width:100% on the bars is the same reason: they set only a height and relied on flex
+   align-items:stretch for their 34px width, which Safari drops when a <button> fails to act as a
+   flex container — leaving 0px-wide, invisible bars inside a button still occupying its 44px.
+   Both are geometrically identical to what worked before; neither changes the X animation. */
+.nav-toggle { display: none; flex: 0 0 auto; background: none; border: none; cursor: pointer; width: 44px; height: 44px; padding: 8px 5px; flex-direction: column; justify-content: space-between; }
+.nav-toggle span { display: block; width: 100%; height: 3px; border-radius: 2px; background: var(--ink); transition: .3s; }
 .nav-toggle.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
 .nav-toggle.open span:nth-child(2) { opacity: 0; }
 .nav-toggle.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
@@ -305,7 +323,8 @@ section { padding: var(--gap-section) 0; }
     border-radius: var(--r-pill); padding: 10px 20px; transition: all .2s;
 }
 .cat-tab:hover { border-color: var(--primary); color: var(--primary); }
-.cat-tab.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.cat-tab.is-active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.cat-tab.is-active:hover { background: var(--primary-deep); color: #fff; border-color: var(--primary-deep); }
 
 .cat-panel { display: none; }
 .cat-panel.is-active { display: block; animation: fade .35s ease; }
@@ -580,7 +599,13 @@ section { padding: var(--gap-section) 0; }
     -webkit-mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
     mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent); }
 .slider-track { display: flex; width: max-content; animation: scrollTrack 35s linear infinite; }
-.client-logo { padding: 0 60px; display: flex; align-items: center; justify-content: center; gap: 14px; white-space: nowrap; cursor: default; }
+/* flex:0 0 auto keeps a slide at its natural width. The track is `width: max-content`, which
+   SHOULD mean no item is ever compressed — but WebKit resolves max-content unreliably on a flex
+   container inside an overflow:hidden ancestor, and the default flex-shrink:1 then squeezes the
+   slides until logos collapse or clip. Pinning the basis makes the loop geometry independent of
+   how the engine resolves the track width; it also keeps the two hand-duplicated halves exactly
+   equal, which is what makes translateX(-50%) seamless. */
+.client-logo { flex: 0 0 auto; padding: 0 60px; display: flex; align-items: center; justify-content: center; gap: 14px; white-space: nowrap; cursor: default; }
 .client-logo-img { height: 52px; width: auto; object-fit: contain; }
 .gimatex-logo { height: 70px; }
 .client-logo-name { font-size: 22px; font-weight: 700; color: var(--ink); }
@@ -597,18 +622,33 @@ section { padding: var(--gap-section) 0; }
    below ~1100px, so the hamburger takes over here rather than at the 900px layout breakpoint. */
 @media (max-width: 1100px) {
     .nav-toggle { display: flex; }
+    /* Visible affordance: on a white bar three thin ink bars read as decoration, not a control.
+       The border counts toward the border box under the global border-box, so the horizontal
+       padding drops 5px -> 4px to keep the CONTENT box at exactly 34x28 — which is what the
+       .nav-toggle.open X's translateY(±9px) is tuned to. Resize via padding, never height. */
+    .nav-toggle {
+        background: var(--cloud); border: 1px solid var(--hairline);
+        border-radius: var(--r-badge); padding: 7px 4px;
+    }
+    .nav-toggle span { background: var(--navy); }
+    /* padding / border / box-shadow live on .open, NOT here. Under the global border-box a box can
+       never collapse below its own padding + border, so `max-height: 0` with `padding: 8px 0` and a
+       1px border left a 17px white shadowed sliver pinned under the navbar at every width <=1100px,
+       open or not. Putting them on .open is what makes the closed state truly zero-height. */
     .nav-links {
         position: absolute; top: 100%; left: 0; right: 0;
         flex-direction: column; align-items: stretch; gap: 0;
-        background: #fff; border-bottom: 1px solid var(--hairline);
-        box-shadow: var(--shadow-lift); padding: 8px 0;
+        background: #fff; border-bottom: 0 solid var(--hairline);
         max-height: 0; overflow: hidden; transition: max-height .3s ease;
     }
     /* 85vh, not a pixel figure: the open menu is 6 categories + 13 sub-items + 5 top-level
        links + the CTA, which runs past 1000px and silently clipped at the old 720px cap.
        Being a viewport fraction plus overflow-y:auto, it absorbs new sub-items on its own —
        but re-check it here whenever the flyouts grow. */
-    .nav-links.open { max-height: 85vh; overflow-y: auto; }
+    .nav-links.open {
+        max-height: 85vh; overflow-y: auto;
+        border-bottom-width: 1px; box-shadow: var(--shadow-lift); padding: 8px 0;
+    }
     .nav-links li { border-top: 1px solid var(--hairline); }
     .nav-links li:first-child { border-top: none; }
     .nav-links a { display: block; padding: 14px 24px; }
@@ -675,6 +715,12 @@ section { padding: var(--gap-section) 0; }
     .mfr-grid { grid-template-columns: 1fr; }
     .footer-grid { grid-template-columns: 1fr; gap: 26px; padding: 40px 24px 30px; }
     .parts-toolbar { flex-direction: column; align-items: stretch; }
+    /* flex:0 0 auto is a BUG FIX, not tidying. .parts-search is `flex: 1 1 320px` for the desktop
+       row, where 320px is a flex-basis on the horizontal main axis — i.e. a width. The line above
+       flips the toolbar to a column, which makes the main axis vertical, so that same 320px became
+       a HEIGHT and the input rendered as a ~320px-tall slab with the placeholder floating in the
+       middle of it. Sizing to content here; align-items:stretch above still gives it full width. */
+    .parts-search { flex: 0 0 auto; padding: 11px 14px; }
     .toolbar-actions { justify-content: stretch; }
     .toolbar-actions .btn-outline, .toolbar-actions .btn-primary { flex: 1; }
     /* SVG text scales with the viewBox, so it shrinks with the drawing. Sizes here are
@@ -685,6 +731,14 @@ section { padding: var(--gap-section) 0; }
     /* Stay two-up rather than stacking — the pair is a comparison, and stacking breaks it. */
     .rotor-photo-pair { gap: 12px; }
     .rotor-photo-pair .rotor-spec img { height: 170px; }
+    /* The fade is a percentage of the container, so it scales down with the viewport in the wrong
+       direction: 10% of 1200px is a soft ~120px ramp, but 10% of a 390px phone is ~39px — about
+       one logo wide, so a logo was fully transparent for most of its time on screen. 4% keeps the
+       edge softening without eating a slide. Both declarations are a pair — edit them together. */
+    .slider-container {
+        -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+        mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+    }
     .client-logo { padding: 0 36px; gap: 10px; }
     .client-logo-img { height: 40px; }
     .gimatex-logo { height: 52px; }
@@ -692,8 +746,16 @@ section { padding: var(--gap-section) 0; }
     .vardhman-tagline { font-size: 9px; }
     .client-logo-name { font-size: 17px; }
     .clients-heading { font-size: 34px; }
-    .util-tagline { display: none; }
-    .util-inner { justify-content: center; }
+    /* Phone portrait shows the positioning line, not the contact details — the number and email are
+       already in the Contact section and the footer, and the tagline is the thing worth saying to a
+       first-time visitor. Width alone is the right test: phone landscape is wider than 640px, so
+       this block already means "phone portrait" without introducing an orientation media query.
+       The 38px fixed row has to relax to a min-height too — the tagline wraps to two lines below
+       ~400px, and a fixed height would clip the second one. */
+    .utility-strip { font-size: 11.5px; }
+    .util-contacts { display: none; }
+    .util-tagline { display: block; text-align: center; line-height: 1.35; }
+    .util-inner { justify-content: center; height: auto; min-height: 38px; padding: 7px 0; }
     /* Touch targets. .btn-sm carries "Enquire about …" and "Browse Catalogue ↗" — the conversion
        actions inside every product panel — and was ~34px tall; .cat-tab was ~40px. Both to 44px. */
     .btn-sm { padding: 13px 20px; }

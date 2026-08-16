@@ -179,3 +179,45 @@ const PU_FRICTION_WHEEL = [
   { type: "B", code: "CPU3826NC", od: "38 × 26 mm" },
   { type: "C", code: "CPU3828NC", od: "38 × 28 mm" }
 ];
+
+/* ---- Samatex (Germany) — steel strips / steel conveyor belts for Rieter ring frames.
+   Transcribed from the RIETER Zinser Ringspinning catalogue, "commonly used belts" table.
+   The letters match the RSM.R100 drawing shown above the table on the page:
+     A end offset · B pitch between hole rows · C length of the hole rows ·
+     D total length · E number of hole rows · F number of distances.
+   The three "Lock" rows dimension the joint piece in the drawing's detail view instead, so
+   they carry A and B only — the empty strings render as an em dash.
+   Decimal commas in the catalogue ("16,5mm") are points here, per the English-only convention;
+   the catalogue's own ATTENTION line already writes 16.5 mm.
+   Self-check if these are ever re-keyed: C = B × F, E = F + 1, D = C + 2A + 20 mm. */
+const RIETER_STEEL_BELTS = [
+  { name: "Lock: 0",                 code: "RSM.R101", a: "54 mm",   b: "34 mm",    c: "",         d: "",         e: "",       f: "",       coated: false },
+  { name: "Lock: -1",                code: "RSM.R102", a: "53 mm",   b: "33 mm",    c: "",         d: "",         e: "",       f: "",       coated: false },
+  { name: "Lock: +1",                code: "RSM.R103", a: "55 mm",   b: "35 mm",    c: "",         d: "",         e: "",       f: "",       coated: false },
+  { name: "Steel Strip-Section (1)", code: "RSM.R110", a: "14 mm",   b: "70 mm",    c: "1610 mm",  d: "1658 mm",  e: "24 pcs", f: "23 pcs", coated: false },
+  { name: "Steel Strip-Section (2)", code: "RSM.R111", a: "14 mm",   b: "70 mm",    c: "3290 mm",  d: "3338 mm",  e: "48 pcs", f: "47 pcs", coated: false },
+  { name: "Steel Strip Position",    code: "RSM.R112", a: "16.5 mm", b: "116 mm",   c: "232 mm",   d: "285 mm",   e: "3 pcs",  f: "2 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R113", a: "16.5 mm", b: "176 mm",   c: "1056 mm",  d: "1109 mm",  e: "7 pcs",  f: "6 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R114", a: "16.5 mm", b: "176 mm",   c: "1232 mm",  d: "1285 mm",  e: "8 pcs",  f: "7 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R115", a: "16.5 mm", b: "176 mm",   c: "1936 mm",  d: "1989 mm",  e: "12 pcs", f: "11 pcs", coated: false },
+  { name: "Steel Strip",             code: "RSM.R116", a: "16.5 mm", b: "176 mm",   c: "1936 mm",  d: "1989 mm",  e: "12 pcs", f: "11 pcs", coated: true  },
+  { name: "Steel Strip",             code: "RSM.R117", a: "16.5 mm", b: "176.5 mm", c: "1941.5 mm", d: "1994.5 mm", e: "12 pcs", f: "11 pcs", coated: false },
+  { name: "Steel Strip",             code: "RSM.R118", a: "16.5 mm", b: "176.5 mm", c: "1941.5 mm", d: "1994.5 mm", e: "12 pcs", f: "11 pcs", coated: true  },
+  { name: "Steel Strip",             code: "RSM.R119", a: "16.5 mm", b: "178 mm",   c: "1246 mm",  d: "1299 mm",  e: "8 pcs",  f: "7 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R120", a: "16.5 mm", b: "193 mm",   c: "1737 mm",  d: "1790 mm",  e: "10 pcs", f: "9 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R121", a: "16.5 mm", b: "193 mm",   c: "1737 mm",  d: "1790 mm",  e: "10 pcs", f: "9 pcs",  coated: true  },
+  { name: "Steel Strip",             code: "RSM.R122", a: "16.5 mm", b: "194 mm",   c: "1164 mm",  d: "1217 mm",  e: "7 pcs",  f: "6 pcs",  coated: false },
+  { name: "Steel Strip",             code: "RSM.R123", a: "16.5 mm", b: "194 mm",   c: "1164 mm",  d: "1217 mm",  e: "7 pcs",  f: "6 pcs",  coated: true  },
+  { name: "Steel Strip",             code: "RSM.R124", a: "16.5 mm", b: "197 mm",   c: "1970 mm",  d: "2023 mm",  e: "11 pcs", f: "10 pcs", coated: false },
+  { name: "Steel Strip",             code: "RSM.R125", a: "16.5 mm", b: "197 mm",   c: "1970 mm",  d: "2023 mm",  e: "11 pcs", f: "10 pcs", coated: true  },
+  { name: "Steel Strip Foot",        code: "RSM.R126", a: "16.5 mm", b: "197.5 mm", c: "1975 mm",  d: "2028 mm",  e: "11 pcs", f: "10 pcs", coated: false },
+  { name: "Steel Strip Foot",        code: "RSM.R127", a: "16.5 mm", b: "197.5 mm", c: "1975 mm",  d: "2028 mm",  e: "11 pcs", f: "10 pcs", coated: true  },
+  { name: "Steel Strip",             code: "RSM.R128", a: "16.5 mm", b: "198 mm",   c: "2376 mm",  d: "2429 mm",  e: "13 pcs", f: "12 pcs", coated: false },
+  { name: "Steel Strip Drive End",   code: "RSM.R129", a: "16.5 mm", b: "202 mm",   c: "1616 mm",  d: "1669 mm",  e: "9 pcs",  f: "8 pcs",  coated: false },
+  { name: "Steel Strip Drive End",   code: "RSM.R130", a: "16.5 mm", b: "202 mm",   c: "1616 mm",  d: "1669 mm",  e: "9 pcs",  f: "8 pcs",  coated: true  },
+  { name: "Steel Strip Drive End",   code: "RSM.R131", a: "16.5 mm", b: "202.5 mm", c: "1620 mm",  d: "1673 mm",  e: "9 pcs",  f: "8 pcs",  coated: false },
+  { name: "Steel Strip Drive End",   code: "RSM.R132", a: "16.5 mm", b: "202.5 mm", c: "1620 mm",  d: "1673 mm",  e: "9 pcs",  f: "8 pcs",  coated: true  },
+  { name: "Steel Strip",             code: "RSM.R133", a: "16.5 mm", b: "230 mm",   c: "920 mm",   d: "973 mm",   e: "5 pcs",  f: "4 pcs",  coated: false },
+  { name: "Steel Strip Section (1)", code: "RSM.R134", a: "16.5 mm", b: "75 mm",    c: "1725 mm",  d: "1778 mm",  e: "24 pcs", f: "23 pcs", coated: false },
+  { name: "Steel Strip Section (2)", code: "RSM.R135", a: "16.5 mm", b: "75 mm",    c: "3525 mm",  d: "3578 mm",  e: "48 pcs", f: "47 pcs", coated: false }
+];

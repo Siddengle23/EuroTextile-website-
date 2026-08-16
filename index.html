@@ -9,17 +9,17 @@
     <meta name="theme-color" content="#2565a5">
 
     <!-- Canonical + social preview.
-         NOTE: the absolute URLs below assume the site is served from
-         https://www.eurotextilespares.com/ (inferred from the contact email domain).
-         If the real host differs, these four URLs must be updated — og:url and og:image
-         MUST be absolute, relative paths are ignored by WhatsApp/LinkedIn/Facebook. -->
-    <link rel="canonical" href="https://www.eurotextilespares.com/">
+         The production host is https://www.eurotextilespares.in/ — confirmed by the owner.
+         Note the contact email stays on the .com domain; don't "align" the two.
+         og:url and og:image MUST stay absolute — relative paths are ignored by
+         WhatsApp/LinkedIn/Facebook. -->
+    <link rel="canonical" href="https://www.eurotextilespares.in/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Euro Textile Spares Pvt. Ltd.">
-    <meta property="og:url" content="https://www.eurotextilespares.com/">
+    <meta property="og:url" content="https://www.eurotextilespares.in/">
     <meta property="og:title" content="Euro Textile Spares Pvt. Ltd. — Genuine European Spinning-Mill Spares">
     <meta property="og:description" content="Pune-based import & distribution hub supplying India's premium spinning mills with genuine textile machinery spare parts — Phicomp (CH), Emil Broell (AT), Samatex (DE) and CPU (Taiwan).">
-    <meta property="og:image" content="https://www.eurotextilespares.com/images/og-image.jpg">
+    <meta property="og:image" content="https://www.eurotextilespares.in/images/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Euro Textile Spares Pvt. Ltd. — genuine European spinning-mill spare parts">
@@ -27,7 +27,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Euro Textile Spares Pvt. Ltd. — Genuine European Spinning-Mill Spares">
     <meta name="twitter:description" content="Genuine textile-machinery spare parts for India's premium spinning mills, sourced direct from Phicomp (CH), Emil Broell (AT), Samatex (DE) and CPU (Taiwan).">
-    <meta name="twitter:image" content="https://www.eurotextilespares.com/images/og-image.jpg">
+    <meta name="twitter:image" content="https://www.eurotextilespares.in/images/og-image.jpg">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,9 +42,9 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Euro Textile Spares Pvt. Ltd.",
-      "url": "https://www.eurotextilespares.com/",
-      "logo": "https://www.eurotextilespares.com/images/Logo_black.png",
-      "image": "https://www.eurotextilespares.com/images/og-image.jpg",
+      "url": "https://www.eurotextilespares.in/",
+      "logo": "https://www.eurotextilespares.in/images/Logo_black.png",
+      "image": "https://www.eurotextilespares.in/images/og-image.jpg",
       "description": "Pune-based importer and distributor of genuine European and Taiwanese textile-machinery spare parts for India's spinning mills.",
       "email": "dengle@eurotextilespares.com",
       "telephone": "+91-98814-70883",
@@ -115,7 +115,9 @@
                             <a href="#products" data-cat="ringframe">Ring Frame <span class="caret caret-sub" aria-hidden="true">▸</span></a>
                             <ul class="subdropdown">
                                 <li><a href="#sub-rieter-ring" data-cat="ringframe" data-sub="sub-rieter-ring">Rieter Ring</a></li>
+                                <li><a href="#sub-rieter-belts" data-cat="ringframe" data-sub="sub-rieter-belts">Rieter Steel Belts</a></li>
                                 <li><a href="#sub-zinser-ring" data-cat="ringframe" data-sub="sub-zinser-ring">Zinser Ring</a></li>
+                                <li><a href="#sub-zinser-belts" data-cat="ringframe" data-sub="sub-zinser-belts">Zinser Steel Belts</a></li>
                             </ul>
                         </li>
                         <li class="has-sub">
@@ -130,7 +132,7 @@
                         <li class="has-sub">
                             <a href="#products" data-cat="twindiscs">Twin Discs <span class="caret caret-sub" aria-hidden="true">▸</span></a>
                             <ul class="subdropdown">
-                                <li><a href="#sub-twin-discs" data-cat="twindiscs" data-sub="sub-twin-discs">Twin Discs</a></li>
+                                <li><a href="#sub-twin-discs" data-cat="twindiscs" data-sub="sub-twin-discs">Supporting Discs</a></li>
                                 <li><a href="#sub-friction-disc" data-cat="twindiscs" data-sub="sub-friction-disc">Polyurethane Friction Disc</a></li>
                                 <li><a href="#sub-friction-wheel" data-cat="twindiscs" data-sub="sub-friction-wheel">PU Friction Wheel</a></li>
                             </ul>
@@ -151,11 +153,19 @@
         <span class="chevron chevron-right" aria-hidden="true"></span>
         <div class="wrap hero-inner">
             <div class="hero-copy">
-                <span class="eyebrow">Germany · Austria · Switzerland · Taiwan → India</span>
-                <h1><span class="h1-brand">Euro Textile</span><br><span class="h1-brand">Spares</span> <span class="h1-suffix">Pvt. Ltd.</span></h1>
+                <span class="eyebrow">Germany · Austria · Switzerland → India</span>
+                <!-- Brand lockup: the mark is an <img> INSIDE the <h1>, so the heading's
+                     accessible name is still the real text "Euro Textile Spares Pvt. Ltd.".
+                     alt="" because that text already names the company (same reasoning as the
+                     nav logo). heroIntro() animates .lockup-mark then .lockup-name. -->
+                <h1 class="hero-lockup">
+                    <img src="images/Logo_black.png" alt="" class="lockup-mark">
+                    <span class="lockup-name"><span class="h1-brand">Euro Textile Spares</span>
+                    <span class="h1-suffix">Pvt. Ltd.</span></span>
+                </h1>
                 <p class="hero-lead">
                     We supply India's premium spinning mills with
-                    <strong>100% authentic, high performance spare parts</strong> sourced
+                    <strong>100% genuine, high performance spare parts</strong> sourced
                     from elite European manufacturers with strict OEM compatibility and superior
                     yarn formation quality. We bypass unverified secondary suppliers to eliminate
                     unexpected maintenance halts and protect your bottom line.
@@ -167,8 +177,8 @@
             </div>
             <div class="hero-badge">
                 <div class="cred-item">
-                    <span class="cred-num">4</span>
-                    <span class="cred-label">OEM manufacturing partners — Germany, Austria, Switzerland &amp; Taiwan</span>
+                    <span class="cred-num">3</span>
+                    <span class="cred-label">European OEM manufacturing partners — Germany, Austria &amp; Switzerland</span>
                 </div>
                 <div class="cred-item">
                     <span class="cred-num">100%</span>
@@ -179,8 +189,8 @@
                     <span class="cred-label">Parts available</span>
                 </div>
                 <div class="cred-item">
-                    <span class="cred-num">Pune</span>
-                    <span class="cred-label">Ready stock hub, pan India delivery</span>
+                    <span class="cred-num">Ex-stock</span>
+                    <span class="cred-label">Ready stock of fast-moving parts, others imported to order</span>
                 </div>
             </div>
         </div>
@@ -291,63 +301,74 @@
                             <span class="flag flag-ch" title="Switzerland"></span>
                             <span class="flag flag-at" title="Austria"></span>
                             <span class="flag flag-de" title="Germany"></span>
-                            <span class="flag flag-tw" title="Taiwan"></span>
                         </div>
-                        <span class="about-cluster-label">Direct from 4 elite OEM partners<br>Germany · Austria · Switzerland · Taiwan</span>
+                        <span class="about-cluster-label">Direct from 3 elite European OEM partners<br>Germany · Austria · Switzerland</span>
                     </div>
                 </div>
                 <div class="about-intro-right">
                     <h2><span class="muted">Your direct line to</span> genuine spinning mill spares<span class="muted">, sourced straight from the makers.</span></h2>
                     <p class="about-lead">
                         Euro Textile Spares Pvt. Ltd. is a Pune based import and distribution hub, acting as
-                        the on-the-ground representative in India for elite overseas machinery manufacturers.
+                        the on the ground representative in India for elite overseas machinery manufacturers.
                     </p>
                     <a href="#manufacturers" class="btn-primary about-cta">Meet our manufacturers <span aria-hidden="true">↗</span></a>
                 </div>
             </div>
 
-            <!-- Curved milestone stat-line (desktop) -->
-            <div class="about-stats">
-                <svg class="stats-curve" viewBox="0 0 1200 280" preserveAspectRatio="xMidYMid meet"
-                     role="img" aria-label="Key facts: 18+ years supplying India's spinning mills, 70+ spinning mills served pan-India, authorized distributor, uniform yarn CV across the lifecycle">
-                    <path class="stats-line" fill="none"
-                          d="M 20,58 C 80,64 110,67 150,62 C 300,72 360,86 470,95 C 590,105 690,113 770,120 C 880,125 970,129 1050,132 C 1110,133 1150,135 1180,137" />
-                    <g class="stat-node">
-                        <line class="stat-drop" x1="150" y1="74" x2="150" y2="112" />
-                        <circle class="stat-ring" cx="150" cy="62" r="8" />
-                        <circle class="stat-core" cx="150" cy="62" r="3.5" />
-                        <text class="stat-num" x="150" y="154" text-anchor="middle">18<tspan class="accent">+</tspan></text>
-                        <text class="stat-label" x="150" y="176" text-anchor="middle"><tspan x="150">years supplying</tspan><tspan x="150" dy="18">India's spinning mills</tspan></text>
-                    </g>
-                    <g class="stat-node">
-                        <line class="stat-drop" x1="470" y1="107" x2="470" y2="145" />
-                        <circle class="stat-ring" cx="470" cy="95" r="8" />
-                        <circle class="stat-core" cx="470" cy="95" r="3.5" />
-                        <text class="stat-num" x="470" y="187" text-anchor="middle">70<tspan class="accent">+</tspan></text>
-                        <text class="stat-label" x="470" y="209" text-anchor="middle"><tspan x="470">spinning mills</tspan><tspan x="470" dy="18">served pan-India</tspan></text>
-                    </g>
-                    <g class="stat-node">
-                        <line class="stat-drop" x1="770" y1="132" x2="770" y2="170" />
-                        <circle class="stat-ring" cx="770" cy="120" r="8" />
-                        <circle class="stat-core" cx="770" cy="120" r="3.5" />
-                        <text class="stat-num" x="770" y="212" text-anchor="middle">Authorized</text>
-                        <text class="stat-label" x="770" y="234" text-anchor="middle"><tspan x="770">distributor</tspan></text>
-                    </g>
-                    <g class="stat-node">
-                        <line class="stat-drop" x1="1050" y1="144" x2="1050" y2="182" />
-                        <circle class="stat-ring" cx="1050" cy="132" r="8" />
-                        <circle class="stat-core" cx="1050" cy="132" r="3.5" />
-                        <text class="stat-num" x="1050" y="224" text-anchor="middle">Uniform</text>
-                        <text class="stat-label" x="1050" y="246" text-anchor="middle"><tspan x="1050">yarn CV across</tspan><tspan x="1050" dy="18">the lifecycle</tspan></text>
-                    </g>
-                </svg>
+            <!-- Company facts, arranged around the brand hub. This is the SINGLE source of
+                 truth for them: the old .stats-curve SVG carried each fact three times over
+                 (the <g>, the .mini-stat fallback card, and the svg aria-label prose). These
+                 are real DOM text that reflows instead, so don't add a fallback grid back.
+                 The connector elbows are geometry-locked to .hub-core's size and .hub-badge's
+                 inset — see the contract comment in style.css before moving anything. -->
+            <div class="about-hub">
+                <div class="hub-core">
+                    <img src="images/Logo_black.png" alt="" class="hub-mark">
+                    <span class="hub-dot hub-dot-tl"></span>
+                    <span class="hub-dot hub-dot-bl"></span>
+                    <span class="hub-dot hub-dot-tr"></span>
+                    <span class="hub-dot hub-dot-br"></span>
+                </div>
 
-                <!-- Small-screen fallback -->
-                <div class="about-stats-grid">
-                    <div class="mini-stat"><span class="mini-num">18<b>+</b></span><span class="mini-label">years supplying India's spinning mills</span></div>
-                    <div class="mini-stat"><span class="mini-num">70<b>+</b></span><span class="mini-label">spinning mills served pan-India</span></div>
-                    <div class="mini-stat"><span class="mini-num">Authorized</span><span class="mini-label">distributor, not a reseller</span></div>
-                    <div class="mini-stat"><span class="mini-num">Uniform</span><span class="mini-label">yarn CV across the lifecycle</span></div>
+                <span class="hub-link hub-link-tl"></span>
+                <span class="hub-link hub-link-bl"></span>
+                <span class="hub-link hub-link-tr"></span>
+                <span class="hub-link hub-link-br"></span>
+
+                <div class="hub-card hub-card-tl">
+                    <span class="hub-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                    </span>
+                    <h3 class="hub-title">18<b>+</b> Years</h3>
+                    <p class="hub-text">Nearly two decades supplying India's spinning mills with
+                    genuine machine spares.</p>
+                </div>
+
+                <div class="hub-card hub-card-bl">
+                    <span class="hub-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M3 21V11l5 3V11l5 3V8l6 3.5V21Z"/><path d="M2 21h20"/></svg>
+                    </span>
+                    <h3 class="hub-title">100<b>+</b> Mills</h3>
+                    <p class="hub-text">Spinning mills served across India, supported by pan-India
+                    distribution.</p>
+                </div>
+
+                <div class="hub-card hub-card-tr">
+                    <span class="hub-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="m9.4 9 1.9 1.9L15 7.1"/><path d="M8.6 14.3 7 22l5-2.5L17 22l-1.6-7.7"/></svg>
+                    </span>
+                    <h3 class="hub-title">Authorized Distributor</h3>
+                    <p class="hub-text">The on the ground representative in India for 4 OEM
+                    partners.</p>
+                </div>
+
+                <div class="hub-card hub-card-br">
+                    <span class="hub-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="m12 2.5 9.5 5-9.5 5-9.5-5 9.5-5Z"/><path d="m2.5 12.5 9.5 5 9.5-5"/><path d="m2.5 17 9.5 5 9.5-5"/></svg>
+                    </span>
+                    <h3 class="hub-title">6 Product Ranges</h3>
+                    <p class="hub-text">Complete Rotors, Navels, Twin Discs, Autocoro, Autoconer
+                    &amp; Ring-Frame Autodoffing spares.</p>
                 </div>
             </div>
         </div>
@@ -600,10 +621,13 @@
                         reliable, repeatable performance and minimum downtime.</p>
                     </div>
                 </div>
-                <!-- One input drives both grids via the comma-separated data-target that
-                     wireSearch() already splits on — same pattern as the Rotors panel. -->
+                <!-- One input drives both grids and the steel-belt table via the
+                     comma-separated data-target that wireSearch() already splits on — same
+                     pattern as the Rotors panel. Each id here needs its own
+                     .parts-count[data-count] or updateCount() returns early and that badge
+                     silently never appears. -->
                 <div class="parts-toolbar">
-                    <input type="search" class="parts-search" data-target="rieterParts,zinserParts" placeholder="Search Ring Frame parts…" aria-label="Search Ring Frame parts">
+                    <input type="search" class="parts-search" data-target="rieterParts,zinserParts,steelBeltTable" placeholder="Search Ring Frame parts…" aria-label="Search Ring Frame parts">
                     <div class="toolbar-actions">
                         <a class="btn-primary btn-sm" href="catalogues/RIETER Zinser Ringspinning Parts Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
@@ -613,9 +637,64 @@
                 <p class="parts-count" data-count="rieterParts"></p>
                 <div class="parts-grid ring-grid" id="rieterParts"><!-- injected by script.js --></div>
 
+                <!-- Steel strips / conveyor belts, from the same Samatex catalogue linked
+                     above. The drawing is the catalogue's own RSM.R100 page, rotated to
+                     landscape and with the German half of each bilingual label removed —
+                     re-cropping it means going back to the PDF (page 5), which is a scan
+                     with no text layer. -->
+                <h4 class="ring-group-title" id="sub-rieter-belts">Rieter Steel Strips &amp; Conveyor Belts</h4>
+                <figure class="rotor-spec spec-wide">
+                    <img loading="lazy" src="images/parts/steel-belt-rieter.png" alt="Dimensioned drawing of steel conveyor belt RSM.R100 for Rieter ring frames: a 45 mm wide perforated steel strip with three rows of holes, shown with the dimension letters A to F and a detail view of the joint piece">
+                    <figcaption class="rotor-spec-cap"><strong>RSM.R100</strong> — steel conveyor
+                    belt for Rieter, 45 mm wide, with the joint piece shown separately below left.
+                    <strong>A</strong> end offset · <strong>B</strong> pitch between hole rows ·
+                    <strong>C</strong> length of the hole rows · <strong>D</strong> total length ·
+                    <strong>E</strong> number of hole rows · <strong>F</strong> number of
+                    distances.</figcaption>
+                </figure>
+                <p class="panel-note">These are the commonly used belts — any other size on
+                request. The three <strong>Lock</strong> rows dimension the joint piece, so they
+                carry A and B only.</p>
+                <p class="parts-count" data-count="steelBeltTable"></p>
+                <div class="table-scroll">
+                    <table class="spec-table">
+                        <thead><tr><th>Name</th><th>Part number</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>Coating</th></tr></thead>
+                        <tbody id="steelBeltTable"><!-- injected by script.js --></tbody>
+                    </table>
+                </div>
+                <p class="panel-note spec-foot">Measure A is always either 14 mm or 16.5 mm.<br>Belts
+                marked <strong>With emery coating</strong> carry an emery surface for high friction.</p>
+
                 <h4 class="ring-group-title" id="sub-zinser-ring">Zinser Ring</h4>
                 <p class="parts-count" data-count="zinserParts"></p>
                 <div class="parts-grid ring-grid" id="zinserParts"><!-- injected by script.js --></div>
+
+                <!-- RSM.Z000 is a blank spec form in the catalogue — the four legend rows have
+                     no values printed, because the belt is made to the customer's numbers. Same
+                     de-Germanised rotation as the Rieter drawing above (PDF page 9). -->
+                <h4 class="ring-group-title" id="sub-zinser-belts">Zinser Steel Conveyor Belts</h4>
+                <figure class="rotor-spec spec-wide">
+                    <img loading="lazy" src="images/parts/steel-belt-zinser.png" alt="Dimensioned drawing of steel conveyor belt RSM.Z000 for Zinser ring frames: a 50 mm wide steel strip with a single row of 8 by 14 mm slots, labelled A total length, B length of hole row, G gauge and E number of holes">
+                    <figcaption class="rotor-spec-cap"><strong>RSM.Z000</strong> — steel conveyor
+                    belt for Zinser, 50 mm wide, with 8 × 14 mm slots. Made to order: specify
+                    <strong>A</strong> total length, <strong>B</strong> length of the hole row,
+                    <strong>G</strong> gauge and <strong>E</strong> number of holes.</figcaption>
+                </figure>
+
+                <!-- The catalogue prints this heading into the photo itself (page 10). It is
+                     cropped off here because the heading above is real text — a re-crop that
+                     brings it back shows the same line twice. -->
+                <h4 class="parts-group-title">Steel conveyor belts for various ringspinning machines</h4>
+                <figure class="rotor-spec spec-wide">
+                    <img loading="lazy" src="images/parts/steel-belts-range.jpg" alt="Five steel conveyor belt plates of different lengths and hole patterns, stood upright side by side on a reflective surface">
+                    <figcaption class="rotor-spec-cap">Plain and pre-assembled belts, punched to
+                    the length and hole pattern the machine needs.</figcaption>
+                </figure>
+                <p class="panel-note">We can offer customized plain and already assembled steel
+                conveyor belts for various ringspinning machines and models such as Rieter G5/1,
+                G5/2, G30, G32, G33, G35, G36, G312, K40, K42, K44, K45, K46, Zinser 319, 320,
+                321, 350, 351, 421, 450, 451, 71, 72 and Marzoli NSF, NSF2, NSF3, NSF4. We also
+                offer steel belt rolls with holes punched through from the beginning to the end.</p>
             </div>
 
             <!-- NAVELS (rendered from data.js) -->
@@ -694,7 +773,7 @@
     <section id="manufacturers" class="manufacturers">
         <div class="wrap">
             <div class="section-head">
-                <span class="eyebrow">Sourced direct</span>
+                <span class="eyebrow">Sourced from</span>
                 <h2>Our manufacturing partners</h2>
                 <p class="section-subtext">
                     A dedicated pipeline of authentic components from Germany, Austria, Switzerland and
@@ -751,13 +830,13 @@
                 <div class="cap-card">
                     <div class="cap-num">02</div>
                     <h3>Pan-India Distribution</h3>
-                    <p>End-to-end local logistics that deliver genuine parts directly to textile mills
-                    across India from our Pune inventory hub.</p>
+                    <p>End-to-end local logistics delivering genuine parts to mills across India —
+                    fast-moving items from our Pune stock, the rest imported to order.</p>
                 </div>
                 <div class="cap-card">
                     <div class="cap-num">03</div>
                     <h3>Market Representation</h3>
-                    <p>The dedicated on-the-ground sales and support agent in India for elite
+                    <p>The dedicated on the ground sales and support agent in India for elite
                     suppliers.</p>
                 </div>
                 <div class="cap-card">

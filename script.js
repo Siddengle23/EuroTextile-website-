@@ -1,8 +1,8 @@
 /* ============================================================================
    Euro Textile Spares — site interactions
    Depends on data.js (NAVELS, NAVEL_MACHINES, AUTOCONER_PARTS, AUTOCORO_PARTS,
-   RIETER_PARTS, ZINSER_PARTS, ROTOR_CUP_BEARING, SOLID_ROTOR, TWIN_DISCS,
-   FRICTION_DISC, PU_FRICTION_WHEEL)
+   RIETER_PARTS, ZINSER_PARTS, RIETER_STEEL_BELTS, ROTOR_CUP_BEARING, SOLID_ROTOR,
+   TWIN_DISCS, FRICTION_DISC, PU_FRICTION_WHEEL)
    ========================================================================== */
 (function () {
   "use strict";
@@ -114,6 +114,31 @@
     if (!el || typeof PU_FRICTION_WHEEL === "undefined") return;
     el.innerHTML = PU_FRICTION_WHEEL.map(puFrictionWheelRow).join("");
     updateCount("puFrictionWheelTable");
+  }
+
+  /* ---- Steel strips / conveyor belts, Rieter ring frames (Samatex) --------- */
+  // A-F are the dimension letters on the RSM.R100 drawing above the table, not part
+  // attributes with names of their own — the legend beside the table is what decodes them.
+  // The three "Lock" rows only carry A and B, so blanks render as an em dash rather than
+  // leaving visibly empty cells in a 9-column table.
+  function beltCell(v) { return "<td>" + (v ? esc(v) : "—") + "</td>"; }
+  function steelBeltRow(r) {
+    // "with coating" is in the search string so the catalogue's own wording finds the
+    // coated rows, the same way a visitor would type it off the printed table.
+    var search = (r.name + " " + r.code + (r.coated ? " with emery coating" : "")).toLowerCase();
+    return '<tr data-search="' + esc(search) + '">' +
+      "<td>" + esc(r.name) + "</td>" +
+      "<td>" + esc(r.code) + "</td>" +
+      beltCell(r.a) + beltCell(r.b) + beltCell(r.c) +
+      beltCell(r.d) + beltCell(r.e) + beltCell(r.f) +
+      "<td>" + (r.coated ? "With emery coating" : "—") + "</td>" +
+    "</tr>";
+  }
+  function renderSteelBeltTable() {
+    var el = document.getElementById("steelBeltTable");
+    if (!el || typeof RIETER_STEEL_BELTS === "undefined") return;
+    el.innerHTML = RIETER_STEEL_BELTS.map(steelBeltRow).join("");
+    updateCount("steelBeltTable");
   }
 
   /* ---- Navels ------------------------------------------------------------- */
@@ -298,16 +323,38 @@
     // scroll. Any new category link anywhere on the page is wired just by being an <a>
     // that carries data-cat.
     document.querySelectorAll("a[data-cat]").forEach(function (a) {
-      a.addEventListener("click", function () {
+      a.addEventListener("click", function (e) {
+        // JS drives the scroll exclusively — preventDefault stops the browser's own hash jump.
+        // That native jump used to be trusted to do the scrolling (a plain href="#..." is already
+        // correct for every link, sub or not), but it was unreliable for two stacked reasons: (1)
+        // activateCat() below swaps .cat-panel visibility synchronously, so the browser could be
+        // computing the target's position against a layout that's still mid-change — panel heights
+        // differ by thousands of pixels, and .cat-panel.is-active also runs a translateY(8px)->0
+        // entrance animation; (2) a sub-link's scroll distance is far more variable than the
+        // top-level jump to #products, so refreshAfterScroll's fallback timer could fire (and
+        // ST.refresh() cancels an in-flight smooth scroll — see "Motion layer") before a long
+        // native scroll had actually finished, stopping it short. Deferring our own scrollIntoView
+        // one frame past activateCat() lets layout settle before we measure the target, and being
+        // the only scroll driver means refreshAfterScroll's scrollend detection is unambiguous.
+        e.preventDefault();
+        var hash = a.getAttribute("href");
         activateCat(a.getAttribute("data-cat"));
-        // Sub-links carry href="#<anchor>" and let the browser's own hash jump scroll — a click
-        // listener runs before the default action, so activateCat above has already un-hidden the
-        // panel by the time the anchor is resolved. Scrolling here as well would fight it.
-        if (!a.getAttribute("data-sub")) {
-          var products = document.getElementById("products");
-          if (products) products.scrollIntoView({ behavior: "smooth" });
-        }
+        // pushState (not location.hash =) updates the URL/keeps sub-links bookmarkable without
+        // itself triggering a second, competing native scroll.
+        if (hash && history.pushState) history.pushState(null, "", hash);
+        requestAnimationFrame(function () {
+          var target = hash ? document.querySelector(hash) : null;
+          if (target) target.scrollIntoView({ behavior: "smooth" });
+        });
         refreshAfterScroll();
+        // preventDefault above also suppresses the focus reset the browser's fragment navigation
+        // used to do for free. Without this blur, focus stays on the clicked link *inside*
+        // .dropdown, and style.css's `.has-dropdown:focus-within .dropdown` /
+        // `.has-sub:focus-within > .subdropdown` rules then pin the dropdown AND its sub-flyout
+        // open — the menu stops behaving as a hover menu at all. Load-bearing, not a stray line;
+        // the :focus-within rules themselves must stay (they are what makes the menu usable by
+        // keyboard).
+        a.blur();
         closeMenu();
       });
     });
@@ -350,10 +397,12 @@
       img.src = src; img.alt = label || "";
       if (counter) counter.textContent = label || "";
       box.classList.add("open"); box.setAttribute("aria-hidden", "false");
+      document.body.classList.add("no-scroll");
       if (closeBtn) closeBtn.focus();
     }
     function close() {
       box.classList.remove("open"); box.setAttribute("aria-hidden", "true"); img.src = "";
+      document.body.classList.remove("no-scroll");
       // Return focus to the photo that opened it, so keyboard users don't get dumped at the
       // top of the document halfway down a 124-card grid.
       if (lastFocus && lastFocus.focus) lastFocus.focus();
@@ -380,6 +429,7 @@
     if (linksEl && linksEl.classList.contains("open")) {
       linksEl.classList.remove("open"); toggleEl.classList.remove("open");
       toggleEl.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("no-scroll");
     }
   }
   function wireNav() {
@@ -400,10 +450,17 @@
         var open = linksEl.classList.toggle("open");
         toggleEl.classList.toggle("open", open);
         toggleEl.setAttribute("aria-expanded", open ? "true" : "false");
+        document.body.classList.toggle("no-scroll", open);
       });
-      // close when tapping a real navigation link (not the Products parent toggle)
+      // Close the open menu on ANY link tap, including the Products parent. This used to skip
+      // .dropdown-toggle, which is right on desktop (it's a hover flyout that must stay open) but
+      // wrong on mobile: there the dropdown is already flattened to a permanently visible list, so
+      // the tap is pure navigation and the 85vh menu was left covering the section just jumped to.
+      // No breakpoint test is needed — closeMenu() no-ops unless .nav-links carries .open, and
+      // .open is only ever set by the hamburger, which is display:none above 1100px. Keep it that
+      // way: nothing in this file hardcodes a breakpoint, so the nav stays purely CSS-driven.
       linksEl.querySelectorAll("a").forEach(function (a) {
-        a.addEventListener("click", function () { if (!a.classList.contains("dropdown-toggle")) closeMenu(); });
+        a.addEventListener("click", closeMenu);
       });
     }
   }
@@ -448,6 +505,11 @@
   /* ---- Motion layer (GSAP, with graceful fallbacks) ----------------------- */
   var REVEAL_SEL = ".section-head, .about-intro, .mfr-card, .cap-card";
 
+  // The About hub is choreographed by aboutHub() rather than batch-revealed, so REVEAL_SEL
+  // doesn't cover it — but motion-layer rule 3 still does: guardVisible() sweeps these too, so a
+  // stale trigger can't leave the hub blank. (The old .stat-node was in no failsafe list at all.)
+  var GUARD_EXTRA = ".hub-core, .hub-card";
+
   // Reveal timings. Capabilities is a common jump target ("Capabilities" in the nav) and sits
   // just below the tall product catalog, so it starts earlier and resolves faster — landing on a
   // still-fading section reads as the page being slow. Everything else keeps the original rhythm.
@@ -475,7 +537,11 @@
     var done = false;
     function run() { if (done) return; done = true; refreshMotion(); }
     window.addEventListener("scrollend", run, { once: true });
-    setTimeout(run, 700); // fallback for browsers without `scrollend` (e.g. Safari < 16.4)
+    // Fallback for browsers without `scrollend` (e.g. Safari < 17.4) — 1000ms rather than a
+    // tighter guess, since a sub-link's scroll distance is unpredictable (activateCat can swap in
+    // a panel thousands of pixels shorter/taller first) and firing this before a still-in-flight
+    // native scroll truly finishes is exactly what stops that scroll short.
+    setTimeout(run, 1000);
   }
 
   // Fallback reveal when GSAP is unavailable (offline / vendor files missing)
@@ -487,16 +553,23 @@
     document.querySelectorAll(REVEAL_SEL).forEach(function (el) { el.classList.add("reveal-hidden"); io.observe(el); });
   }
 
-  // Hero entrance: choreographed timeline (eyebrow → h1 → lead → actions → cred cards)
-  var HERO_SEL = [".hero-copy .eyebrow", ".hero-copy h1", ".hero-lead", ".hero-actions", ".hero-badge .cred-item"];
+  // Hero entrance: choreographed timeline
+  // (eyebrow → brand mark → company name → lead → actions → cred cards)
+  // The h1 is a lockup, so it animates in two beats: the mark pops in first, then the name
+  // unfurls rightward from beside it. Both halves must stay listed here — HERO_SEL is what the
+  // setTimeout failsafe below sweeps, so dropping either one leaves it uncovered if the ticker
+  // is throttled.
+  var HERO_SEL = [".hero-copy .eyebrow", ".hero-copy .lockup-mark", ".hero-copy .lockup-name",
+                  ".hero-lead", ".hero-actions", ".hero-badge .cred-item"];
   function heroIntro(gsap) {
     if (!document.querySelector(".hero")) return;
     gsap.timeline({ defaults: { ease: "power3.out", duration: 0.7 } })
       .from(HERO_SEL[0], { y: 20, autoAlpha: 0 })
-      .from(HERO_SEL[1], { y: 28, autoAlpha: 0 }, "-=0.45")
-      .from(HERO_SEL[2], { y: 24, autoAlpha: 0 }, "-=0.45")
-      .from(HERO_SEL[3], { y: 20, autoAlpha: 0 }, "-=0.45")
-      .from(HERO_SEL[4], { y: 24, autoAlpha: 0, stagger: 0.12 }, "-=0.40");
+      .from(HERO_SEL[1], { scale: 0.6, autoAlpha: 0, duration: 0.8, ease: "back.out(1.6)" }, "-=0.45")
+      .from(HERO_SEL[2], { x: -20, autoAlpha: 0 }, "-=0.15")
+      .from(HERO_SEL[3], { y: 24, autoAlpha: 0 }, "-=0.45")
+      .from(HERO_SEL[4], { y: 20, autoAlpha: 0 }, "-=0.45")
+      .from(HERO_SEL[5], { y: 24, autoAlpha: 0, stagger: 0.12 }, "-=0.40");
     // Failsafe (native timer, independent of GSAP's rAF ticker): the hero is above the fold,
     // so if the ticker is ever throttled (e.g. page loaded in a background tab) force it visible.
     setTimeout(function () {
@@ -504,7 +577,7 @@
     }, 2600);
   }
 
-  // Count-up the credibility numbers, preserving any prefix/suffix (100%, 4000+); skip non-numeric (Pune)
+  // Count-up the credibility numbers, preserving any prefix/suffix (100%, 4000+); skip non-numeric (Ex-stock)
   function countUp(gsap, ST) {
     document.querySelectorAll(".cred-num").forEach(function (el) {
       var original = el.textContent.trim();
@@ -551,7 +624,7 @@
   // invisible. Covers a trigger left stale by a layout change we didn't refresh for.
   function guardVisible(gsap) {
     var h = window.innerHeight || 0;
-    document.querySelectorAll(REVEAL_SEL).forEach(function (el) {
+    document.querySelectorAll(REVEAL_SEL + ", " + GUARD_EXTRA).forEach(function (el) {
       var r = el.getBoundingClientRect();
       if (r.top < h && r.bottom > 0 && getComputedStyle(el).visibility === "hidden") {
         gsap.set(el, { autoAlpha: 1, y: 0 });
@@ -559,18 +632,21 @@
     });
   }
 
-  // About stat-line: draw the curve in and stagger the nodes when it scrolls into view.
-  // The SVG is fully visible via CSS by default — this only enhances; skipped if the path can't be measured.
-  function aboutCurve(gsap, ST) {
-    var line = document.querySelector(".stats-line");
-    var nodes = gsap.utils.toArray(".stat-node");
-    if (!line || !line.getTotalLength || !nodes.length) return;
-    var len = line.getTotalLength();
-    if (!len) return;
-    var trig = { trigger: ".about-stats", start: "top 80%", once: true };
-    gsap.set(line, { strokeDasharray: len, strokeDashoffset: len });
-    gsap.to(line, { strokeDashoffset: 0, duration: 1.1, ease: "power2.out", scrollTrigger: trig });
-    gsap.from(nodes, { autoAlpha: 0, y: 14, duration: 0.5, stagger: 0.12, ease: "power2.out", scrollTrigger: trig });
+  // About hub: pop the brand plate, then radiate out to the dots, connectors and fact cards.
+  // Everything is .from(), so the natural state is the finished one and reduced motion needs no
+  // special case. The connectors fade rather than animating width/clip-path — a stale layout can
+  // then never leave an elbow drawn half-way to nowhere.
+  function aboutHub(gsap) {
+    if (!document.querySelector(".about-hub")) return;
+    gsap.timeline({
+      scrollTrigger: { trigger: ".about-hub", start: "top 80%", once: true },
+      defaults: { ease: "power3.out", duration: 0.6 }
+    })
+      .from(".hub-core",  { scale: 0.85, autoAlpha: 0, duration: 0.75, ease: "back.out(1.5)" })
+      .from(".hub-dot",   { scale: 0, autoAlpha: 0, stagger: 0.06 }, "-=0.35")
+      .from(".hub-link",  { autoAlpha: 0, stagger: 0.06 }, "-=0.30")
+      .from(".hub-card",  { y: 18, autoAlpha: 0, stagger: 0.10 }, "-=0.35")
+      .from(".hub-badge", { scale: 0.6, autoAlpha: 0, stagger: 0.08 }, "-=0.40");
   }
 
   function wireMotion() {
@@ -589,7 +665,7 @@
       heroIntro(gsap);
       scrollReveals(gsap, ST);
       countUp(gsap, ST);
-      aboutCurve(gsap, ST);
+      aboutHub(gsap);
     });
     ST.refresh();
     // Manrope loads with display=swap, so the swap can still reflow text heights after init.
@@ -605,6 +681,7 @@
     renderFlat("autocoroParts", typeof AUTOCORO_PARTS !== "undefined" ? AUTOCORO_PARTS : []);
     renderFlat("rieterParts", typeof RIETER_PARTS !== "undefined" ? RIETER_PARTS : []);
     renderFlat("zinserParts", typeof ZINSER_PARTS !== "undefined" ? ZINSER_PARTS : []);
+    renderSteelBeltTable();
     renderRotorCupTable();
     renderSolidRotorList();
     renderFlat("twinDiscParts", typeof TWIN_DISCS !== "undefined" ? TWIN_DISCS : []);

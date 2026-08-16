@@ -17,13 +17,18 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
   blue: `--cloud` (section tint), `--mist` (lighter gradient top), `--glow` (faint hero accent) —
   do not revert these to plain greys.
 - `data.js` — catalog data as plain global `const` arrays (`NAVELS`, `NAVEL_MACHINES`,
-  `AUTOCONER_PARTS`, `AUTOCORO_PARTS`, `RIETER_PARTS`, `ZINSER_PARTS`, `ROTOR_CUP_BEARING`,
-  `SOLID_ROTOR`, `TWIN_DISCS`, `FRICTION_DISC`, `PU_FRICTION_WHEEL`). Loaded via `<script>` tag
-  *before* `script.js`, so these are consumed as globals, not imports.
+  `AUTOCONER_PARTS`, `AUTOCORO_PARTS`, `RIETER_PARTS`, `ZINSER_PARTS`, `RIETER_STEEL_BELTS`,
+  `ROTOR_CUP_BEARING`, `SOLID_ROTOR`, `TWIN_DISCS`, `FRICTION_DISC`, `PU_FRICTION_WHEEL`).
+  Loaded via `<script>` tag *before* `script.js`, so these are consumed as globals, not imports.
 - `robots.txt` / `sitemap.xml` / `images/og-image.jpg` — SEO and social-preview assets. The
   absolute URLs in the `<head>` meta block, in `robots.txt` and in `sitemap.xml` all assume the
-  site is served from `https://www.eurotextilespares.com/` (inferred from the contact email
-  domain, **not confirmed**). `og:url`/`og:image` must stay absolute — relative paths are ignored
+  site is served from `https://www.eurotextilespares.in/` — **confirmed by the owner at launch.**
+  Note the `.in`: the host was previously guessed as `.com` from the contact email domain, and that
+  guess was wrong. The contact email *does* stay `dengle@eurotextilespares.com`, so the two domains
+  deliberately differ — do not "align" them, and in particular never bulk-replace the domain, since
+  the contact form's endpoint is `formsubmit.co/ajax/dengle@eurotextilespares.com` and repointing it
+  would silently send submissions to an unactivated address.
+  `og:url`/`og:image` must stay absolute — relative paths are ignored
   by WhatsApp/LinkedIn/Facebook. `og-image.jpg` is 1200×630, generated with PowerShell +
   `System.Drawing` from `images/Logo_black.png`; the generator is not committed.
 - `.gitignore` — keeps the raw source-photo folders out of the repo. See "Reference material vs.
@@ -33,6 +38,17 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
 - `js/vendor/` — vendored GSAP runtime (`gsap.min.js`, `ScrollTrigger.min.js`), loaded from local
   files (not a CDN) *before* `data.js`/`script.js` so the site animates even when opened over
   `file://` offline. See "Motion layer" below.
+- `README.md` — the GitHub landing page. **It is a front door, not a second copy of this file**:
+  what the site is, the stack, how to run it, a file map, and a pre-deploy checklist, then it points
+  here for anything deeper. Keep it that way — depth added there is depth that will drift out of
+  sync with this file. Three things in it *are* duplicated from here and must be updated together:
+  the `https://www.eurotextilespares.in/` host, the formsubmit.co activation caveat, and
+  the note that the raw photo folders still sit in git history. It also quotes two measured figures
+  (~24 MB working tree against a ~311 MB `git clone`) — re-measure rather than trusting them if the
+  history is ever rewritten. There is deliberately **no LICENSE file**: the repo carries the
+  manufacturer catalogue PDFs, the manufacturer marks and the client logos, none of which are the
+  company's to license, so an open-source licence would over-grant. The README says so explicitly;
+  don't "fix" the omission by adding MIT.
 
 There is no `package.json`, no linter, no test suite, and no build tooling — this is intentional,
 not an oversight. To preview changes, open `index.html` directly in a browser or serve the folder
@@ -60,6 +76,20 @@ For automated checking, headless Chrome works, with several Windows gotchas:
 - **The count-up numbers are mid-animation in any screenshot.** `countUp()` animates `.cred-num`
   from 0, so the hero credentials capture as arbitrary intermediate values (`2458+`, `38%`, `2`).
   That is not a bug and not a data error — read the final values from `index.html`, not the PNG.
+- **`--virtual-time-budget` never fires `requestAnimationFrame`, so GSAP's ticker never runs** —
+  anything animated with `.from()` stays stuck at its *start* state (invisible) in the screenshot.
+  `REVEAL_SEL` elements are rescued by `guardVisible()`'s native `setTimeout` on `window.load`, the
+  hero by `heroIntro()`'s own timer, and the About hub by `GUARD_EXTRA` — but anything animated
+  outside all three lists captures at its invisible start state. That is a capture artifact, not a
+  broken page.
+  **Add `--force-prefers-reduced-motion` to see the true final state**: `wireMotion()` then bails
+  early by design and every element renders in its natural, fully-visible form. This is the
+  reliable way to screenshot anything GSAP touches. (It also means a screenshot can never show
+  the animation itself — only the resting state; use a real browser for motion.)
+- **CSS smooth scrolling and `scrollIntoView({behavior:"smooth"})` also don't animate** under
+  virtual time, for the same reason. To measure a real scroll landing position, override
+  `html{scroll-behavior:auto}` and patch `Element.prototype.scrollIntoView` to force
+  `behavior:"auto"` in the throwaway probe copy — then the final position is exact and immediate.
 - **If the page scrolls itself, the screenshot goes unreliable.** Loading a URL with a hash that
   lands inside a `.cat-panel` (see `wireHashDeepLink()`) scrolls the document, and a
   viewport-sized `--window-size` then captures a blank or misaligned frame. Use the tall window
@@ -147,28 +177,64 @@ silently, with no console error.
 
 **Sub-categories are a fourth sync point.** Four of the six categories carry a `.subdropdown`
 flyout in the nav (`<li class="has-sub">`): Complete Rotors → rotor cup & bearing / SolidRotor,
-Ring Frame → Rieter / Zinser, Navels → the four Broell series, Twin Discs → twin discs / friction
-disc / friction wheel. Autocoro and Autoconer have none. Each sub-link is
+Ring Frame → Rieter Ring / Rieter Steel Belts / Zinser Ring / Zinser Steel Belts, Navels → the
+four Broell series, Twin Discs → supporting discs / friction disc / friction wheel. Autocoro and
+Autoconer have none. Each sub-link is
 `<a href="#<id>" data-cat="<category>" data-sub="<id>">`, and `<id>` must match an `id=` on a
 heading **inside that category's panel** — `sub-rotor-cup`, `sub-solid-rotor`, `sub-rieter-ring`,
-`sub-zinser-ring`, `sub-twin-discs`, `sub-friction-disc`, `sub-friction-wheel` sit on hand-written
+`sub-rieter-belts`, `sub-zinser-ring`, `sub-zinser-belts`, `sub-twin-discs`, `sub-friction-disc`,
+`sub-friction-wheel` sit on hand-written
 headings in the markup; the four `sub-navel-*` ids are **generated** by `renderNavels()` from the
 `NAVEL_SERIES` map in `script.js` (see "Data-driven rendering"). A typo'd id fails silently — the
 panel still switches, the page just doesn't scroll.
 
-The scroll itself is the **browser's own hash jump**, not `scrollIntoView`: a click listener runs
-before the default action, so `activateCat()` has already un-hidden the panel by the time the
-anchor resolves. That is why `wireTabs()` skips its `scrollIntoView` when `data-sub` is present —
-two scrolls to different targets on one frame would fight, and the native one wins. It still calls
-`refreshAfterScroll()` on both paths (see "Motion layer"). `.parts-group-title, .ring-group-title`
-carry `scroll-margin-top: 100px` to clear the sticky 84px navbar; a new anchor on some other
-element needs its own. `wireHashDeepLink()` handles the cold-load case (a copied/bookmarked
-sub-link), where the target's panel is `display:none` and the browser skips the jump entirely.
+**A sub-link's visible label and its `<id>` are independent, and one pair deliberately disagrees.**
+Twin Discs' first sub-link reads "Supporting Discs" while its `href`, `data-sub` and target heading
+id all stay `sub-twin-discs`. The label was changed so the flyout stops repeating its own parent
+("Twin Discs → Twin Discs"); the id was left alone because renaming it means renaming the heading
+id in the panel to match, which is exactly the silent-failure case above. Don't "fix" the id to
+agree with the label.
+
+**The scroll is driven entirely by JS, not the browser's native hash jump.** Every `a[data-cat]`
+click handler (category-level or sub-link — same code, no branching on `data-sub`) calls
+`e.preventDefault()`, runs `activateCat()`, updates the URL with
+`history.pushState(null, "", href)` (keeps the link bookmarkable without itself triggering a
+scroll), then scrolls to `document.querySelector(href)` via `scrollIntoView({behavior:"smooth"})`
+inside a `requestAnimationFrame` — deferred one frame so the panel's freshly-toggled `display` and
+its `.cat-panel.is-active` entrance animation (see "Motion layer") have settled before the target's
+position is measured. It calls `refreshAfterScroll()` on every `a[data-cat]` click (see "Motion
+layer"). `.parts-group-title, .ring-group-title` carry `scroll-margin-top: 100px` to clear the
+sticky 84px navbar; a new anchor on some other element needs its own. `wireHashDeepLink()` handles
+the cold-load case (a copied/bookmarked sub-link), where the target's panel is `display:none` and a
+native jump would skip it entirely.
+
+**`a.blur()` in that same handler is load-bearing — it is what closes the menu after a click.**
+`preventDefault()` suppresses the browser's fragment navigation, and that navigation is also what
+used to move focus off the clicked link (for a non-focusable target like an `<h4>`, focus resets to
+the document). A real mouse press focuses the link, so without the blur focus simply stays there,
+and `.has-dropdown:focus-within .dropdown` / `.has-sub:focus-within > .subdropdown` (style.css) keep
+the dropdown *and* its sub-flyout visible indefinitely — the nav stops behaving as a hover menu and
+the two flyouts sit overlapping on top of the page. The fix is the blur, **not** deleting those
+`:focus-within` selectors: they are what makes the menu usable by keyboard at all. Note this is a
+desktop-pointer bug, so a screenshot won't catch it — and it can't be reproduced headlessly either
+(the links start `visibility: hidden`, which blocks both focus and, in practice, any attempt to
+force them visible from script), so verify it in a real browser.
+
+**This went through two broken designs before landing here — don't reintroduce either.** First, a
+manual `scrollIntoView()` alongside an un-prevented native jump double-scrolled to the same target
+(fixed by relying on the native jump alone). Then the native-jump-alone version turned out to be
+unreliable specifically for sub-links: their scroll distance is far more variable than the
+top-level jump to `#products`, so `refreshAfterScroll()`'s fallback timer could fire — and
+`ScrollTrigger.refresh()` cancels an in-flight smooth scroll — before a long native scroll had
+actually finished, stopping it visibly short of the section. `preventDefault()` plus a single
+JS-driven `scrollIntoView()` is what actually removes the race: one deterministic scroll driver,
+measured only after layout has settled.
 
 Adding nav items also means re-checking `.nav-links.open`'s `max-height` in the 1100px block — the
-flyouts flatten into a static indented list below that width, and the 11 sub-items already pushed
+flyouts flatten into a static indented list below that width, and the 13 sub-items already pushed
 the open menu past the old 720px cap (now `85vh`, with the `overflow-y: auto` that was already
-there).
+there). Being a viewport fraction rather than a pixel figure, it absorbs new sub-items on its own
+— the open menu simply scrolls — but confirm that rather than assuming it.
 
 **The 1100px flatten rules deliberately repeat their `:hover` / `:focus-within` selectors — that
 is a specificity guard, not redundancy.** `.has-dropdown:hover .dropdown` is `(0,3,0)` because a
@@ -248,11 +314,91 @@ the nav-collapse rules live in their own `@media (max-width: 1100px)` block, sep
 taller mark) means re-checking that boundary. Nothing in `script.js` hardcodes a breakpoint — the
 hamburger is purely CSS-driven — so this is safe to move.
 
+### Mobile & touch invariants
+Six rules that a desktop-only check will not catch. All were regressions found in a mobile audit;
+none of them shows up in a screenshot.
+
+- **Any focusable input stays at `font-size: 16px` or larger.** iOS Safari auto-zooms the page when
+  a focused input is under 16px and never zooms back out. This binds `.parts-search` and
+  `.contact-form input, .contact-form textarea`. Shrinking either to fit a layout breaks the page
+  on every iPhone.
+- **`.nav-toggle` is 44×44 with `padding: 8px 5px`, and the padding is what does the work.** Under
+  the global `border-box` that leaves the content box at exactly 34×28, which is what the three
+  bars and the `.nav-toggle.open` X animation are drawn against — its `translateY(±9px)` values are
+  tuned to that 28px height. Resize the button via the padding, never the height, or the X stops
+  meeting in the middle.
+- **`wireNav()` closes the menu on *every* link tap, `.dropdown-toggle` included.** It used to skip
+  the Products parent, which is right on desktop (a hover flyout must stay open) and wrong on
+  mobile, where the dropdown is already flattened to a permanently visible list: the tap is pure
+  navigation and the 85vh menu was left covering the section just jumped to. No breakpoint test is
+  needed, and **that is deliberate** — `closeMenu()` no-ops unless `.nav-links` carries `.open`, and
+  `.open` is only ever set by the hamburger, which is `display: none` above 1100px. Adding a
+  `matchMedia` check would work but would put the first hardcoded breakpoint into `script.js` and
+  couple it to the CSS; don't.
+- **Never add `overflow-x: hidden` to `html`/`body` as an overflow backstop.** `.navbar` is
+  `position: sticky`, and `overflow` on an ancestor re-parents a sticky element's scroll container —
+  the blanket rule silently breaks the sticky header. Fix the element that is actually too wide.
+  The one real candidate is the brand block: `.logo-word` is `white-space: nowrap`, and at 320px the
+  mark + gap + wordmark plus the 44px hamburger leaves no margin inside `.wrap`'s 24px padding.
+  Hence the **`@media (max-width: 420px)`** block, which lets the wordmark wrap to two lines.
+- **`body.no-scroll`** is toggled by the lightbox's `open()`/`close()` and by the hamburger /
+  `closeMenu()`. Without it, dragging over either overlay scrolls the page behind it on touch, so
+  closing the lightbox drops the user somewhere else. It is the 90% fix; watertight iOS handling
+  needs the `position: fixed` + scroll-restore dance, deliberately not done here.
+- **Touch targets are 44px at ≤640px**, which is where `.btn-sm` (the "Enquire about …" /
+  "Browse Catalogue ↗" buttons) and `.cat-tab` get their larger padding. Their desktop sizes are
+  smaller on purpose; don't unify them.
+
+`.table-scroll` also carries a scroll-shadow background at ≤640px so a table that continues
+off-screen says so. It is self-hiding — the `local` white covers move with the content, the
+`scroll` radial shadows are pinned to the box — so a table that fits shows nothing at all.
+
+**Headless Chrome cannot verify any of the widths that matter here.** It clamps `innerWidth` to
+500px even when asked for 360 (confirmed, not folklore), so 320–390px behaviour — the 420px block
+above especially — has to be checked in a real browser's responsive mode or on a device.
+
+### Hero brand lockup (the `<h1>`)
+The hero headline is a **brand lockup**, not plain text: `<h1 class="hero-lockup">` contains an
+`<img class="lockup-mark">` (the ETS mark, `images/Logo_black.png`) followed by
+`<span class="lockup-name">` holding the company name. The `<img>` sits *inside* the `<h1>` on
+purpose — the heading's accessible name stays the real text "Euro Textile Spares Pvt. Ltd.", so
+nothing is lost to SEO or screen readers, and the mark carries `alt=""` because that text already
+names the company (same reasoning as the nav logo's `alt=""`).
+
+Three things hold it together:
+
+- **`.lockup-mark` is sized in `em`, not px** (`width: 1.55em`). 1em is the `<h1>`'s own font-size,
+  which already steps 54 → 44 → 34px across the 900px and 640px breakpoints, so the mark rescales
+  with the headline at every width with no extra media query. Switching it to px means adding — and
+  maintaining — three of them.
+- **Both name spans are `display: block`, and that is a fix, not decoration.** Left to wrap freely
+  the name breaks wherever the column runs out; at 500px that split "Pvt." from "Ltd." across two
+  lines. Blocking them pins the break after the company name, and `.lockup-name`'s
+  `line-height: 1.04` keeps the two lines reading as one lockup beside the mark.
+- **`.hero-lockup .h1-brand` deliberately overrides the brand blue to `--ink`.** The lockup is
+  meant to read blue mark + near-black wordmark, matching the supplied logo animation. Deleting
+  that single rule restores the blue headline.
+
+It animates as **two beats inside the existing hero timeline** (`heroIntro()`): the mark pops in
+(`scale`, `back.out`), then the name unfurls rightward from beside it (`x: -20`). Both selectors
+must stay listed in `HERO_SEL` — that array is what the `setTimeout` failsafe sweeps, so dropping
+either half silently leaves it uncovered if the rAF ticker is throttled. Because the beats live in
+the one timeline, reduced-motion handling needs no special case: `heroIntro()` only runs inside
+`gsap.matchMedia("(prefers-reduced-motion: no-preference)")`, and `.from()` ends at the natural
+state, so the lockup simply renders static.
+
+**`images/ETS Logo GIF.gif` is reference-only and deliberately not referenced by the site.** It is
+the supplied 500×191 logo animation (72 frames: the mark draws in, then the company name appears
+**below** it, then a light sweep, resting on the final frame; 3.08s of animation plus a 2.2s hold).
+The lockup rebuilds that idea as mark-left/name-right instead, which the GIF can't provide — its
+text stacks underneath and it can't be cropped to a mark-only clip without re-encoding. It is on
+disk for provenance; don't wire it in assuming it was forgotten.
+
 ### Motion layer (script.js `wireMotion()`)
 GSAP drives the site's animation: a hero-entrance timeline, `ScrollTrigger.batch` scroll-reveals
 over `REVEAL_SEL` (`.section-head, .about-intro, .mfr-card, .cap-card` — batched
 triggers, **never one per part-card**, to keep the 100-card catalog smooth), a hero credential count-up,
-and the About stat-line draw-in (`aboutCurve()`). Four rules this layer follows — keep them when
+and the About hub entrance (`aboutHub()`). Four rules this layer follows — keep them when
 editing:
 1. **Graceful fallback** — if `window.gsap`/`ScrollTrigger` are absent, it calls `legacyReveal()`
    (IntersectionObserver + `.reveal-hidden`/`.reveal-visible`), so content still appears.
@@ -262,9 +408,11 @@ editing:
 3. **Never leave content stuck hidden** — anything animated with `.from()`/`autoAlpha:0` that is
    above the fold has a native `setTimeout` failsafe forcing the visible end-state (guards against a
    throttled rAF ticker in a background tab). `guardVisible()` extends the same idea below the fold:
-   on `window.load`, it sweeps `REVEAL_SEL` and forces `autoAlpha:1` on anything inside the viewport
-   still computed `visibility:hidden` — a last-resort net for a trigger left stale by a layout change
-   the code below didn't refresh for. Preserve all of these failsafes.
+   on `window.load`, it sweeps `REVEAL_SEL` **plus `GUARD_EXTRA`** (the About hub, which is
+   choreographed rather than batch-revealed, so `REVEAL_SEL` doesn't cover it) and forces
+   `autoAlpha:1` on anything inside the viewport still computed `visibility:hidden` — a last-resort
+   net for a trigger left stale by a layout change the code below didn't refresh for. Anything
+   animated with a new `.from()` belongs in one of those lists. Preserve all of these failsafes.
 4. **`scrollReveals()` uses two batches, not one** — `REVEAL_BASE` (`start:"top 85%"`, 0.7s,
    stagger 0.12) for everything, and `REVEAL_FAST` (`start:"top 92%"`, 0.55s, stagger 0.08) for just
    `#capabilities`. Capabilities is a common nav jump target ("Capabilities" link) that sits right
@@ -279,18 +427,44 @@ runs past 7000px, Autocoro 40 cards, Autoconer 27, Twin Discs 4 cards plus two s
 every trigger below `#products` — Manufacturers, Capabilities — goes stale after a swap unless
 refreshed; without this, some swaps left Capabilities'
 cards permanently invisible (wrong cached trigger position). But `ScrollTrigger.refresh()` briefly
-snaps scroll position to remeasure, and if that happens on the same frame as an in-flight
-`scrollIntoView({behavior:"smooth"})`, it aborts the smooth scroll outright (any direct scroll write
-cancels a CSS smooth scroll per spec) — this is exactly what broke the Products dropdown links
-(tab/panel switched correctly, but the page never scrolled there). The fix, in `wireTabs()`:
+snaps scroll position to remeasure, and if that happens on the same frame as an in-flight smooth
+scroll, it aborts that scroll outright (any direct scroll write cancels a CSS smooth scroll per
+spec). The fix, in `wireTabs()`:
 - `.cat-tab` clicks call `refreshMotion()` immediately — no scroll happens here, so there's no race.
-- `a[data-cat]` clicks (nav dropdown, sub-links, footer) call `scrollIntoView` then
-  `refreshAfterScroll()`, which defers the
-  refresh until scrolling actually settles (`scrollend` event, with a 700ms `setTimeout` fallback for
-  browsers without it) instead of firing on the same frame.
+- `a[data-cat]` clicks (nav dropdown, sub-links, footer) call `refreshAfterScroll()`, which defers
+  the refresh until scrolling actually settles (`scrollend` event, with a ~1000ms `setTimeout`
+  fallback for browsers without it) instead of firing on the same frame.
 
 Both helpers live next to `REVEAL_SEL`. Don't collapse them back into one immediate call — that's
 the exact regression this documents.
+
+**`a[data-cat]` clicks drive their own scroll in JS — `preventDefault()` plus a single, deferred
+`scrollIntoView()` — rather than trusting the browser's native hash jump.** This went through two
+broken designs first; both are worth knowing so neither comes back:
+1. A category-level link (`href="#products"`) used to *also* call
+   `products.scrollIntoView({behavior:"smooth"})` in the click handler, without `preventDefault()`
+   — so the un-prevented native jump fired too, both animating the same target. The native jump
+   restarting mid-flight fired a spurious `scrollend`, letting `refreshAfterScroll()`'s deferred
+   `ST.refresh()` land while the browser's own scroll was still moving and knock it off target: the
+   first click landed short, a second click (less contention in flight) landed correctly. Fixed by
+   deleting the manual `scrollIntoView()` call and letting the native jump alone handle it — matching
+   how sub-links ("two scrolls to different targets on one frame would fight, and native one wins")
+   already worked.
+2. That "native jump alone" version then turned out to be unreliable for **sub-links** specifically:
+   `activateCat()` swaps `.cat-panel` visibility (and its `translateY(8px)→0` entrance animation,
+   see `.cat-panel.is-active` below) synchronously, in the same tick the browser is about to measure
+   where to scroll — and a sub-link's target can be much farther from the current scroll position
+   than the top-level `#products` jump, so a long native smooth scroll had more opportunity to
+   still be in flight when `refreshAfterScroll()`'s fallback timer fired and `ST.refresh()` cut it
+   short. Intermittent by nature — it only bit when actual distance/settle time outran whichever of
+   `scrollend`/timeout resolved first.
+
+The fix that actually holds: `preventDefault()` so JS is the *only* scroll driver (nothing left to
+race), `history.pushState(null, "", href)` to keep the link bookmarkable without itself triggering a
+scroll, then `scrollIntoView({behavior:"smooth"})` on `document.querySelector(href)` inside a
+`requestAnimationFrame` — deferred one frame past `activateCat()` so layout has already settled
+before the target's position is measured. Applies uniformly to every `a[data-cat]` link, category
+or sub-level; there's no branching on `data-sub` any more.
 
 Two ambient infinite loops are **CSS keyframes**, not GSAP — that is the convention here:
 - the clients marquee (`#clients`, `@keyframes scrollTrack`), which intentionally does **not** pause
@@ -412,6 +586,39 @@ that class was originally SVG-only) sits above each table, showing the cropped c
 a caption restating the facts (hardness/compatible machines for Friction Disc) as real text — same
 principle as the rotor drawing's aria-hidden SVG plus its figcaption, just photo instead of SVG.
 
+**Ring Frame carries a third target on top of its two photo grids: `RIETER_STEEL_BELTS` →
+`renderSteelBeltTable()` → `<tbody id="steelBeltTable">`.** Same shape as `renderRotorCupTable()`,
+but nine columns: name, part number, then the six dimension letters `A`–`F` off the RSM.R100
+drawing above it, then a Coating column. The letters are **positions on that drawing, not
+attributes with names of their own** — `A` end offset, `B` pitch between hole rows, `C` length of
+the hole rows, `D` total length, `E` number of hole rows, `F` number of distances — so the
+`.panel-note` legend beside the figure is what makes the header row readable; don't rename the
+columns to guesses. The three `Lock` rows dimension the joint piece in the drawing's detail view
+instead and carry `a`/`b` only; `beltCell()` renders the empty strings as an em dash rather than
+leaving blank cells. `coated: true` renders "With emery coating" and puts `"with emery coating"`
+in the row's `data-search`, so the catalogue's own wording finds those 8 rows.
+
+**The catalogue's numbers are internally redundant, which is the check to run if these 29 rows are
+ever re-keyed:** on every one of the 26 strip rows, `C = B × F`, `E = F + 1`, `D = C + 2A + 20 mm`,
+and `A` is always exactly 14 or 16.5 mm (the page says so in a standalone ATTENTION line). A
+transcription slip breaks at least one of those. Decimal commas in the scan (`16,5mm`,
+`1941,5mm`) are points in `data.js`, per the English-only convention — the catalogue's own
+ATTENTION line already writes `16.5 mm`.
+
+Two CSS notes that go with those two belt sections:
+
+- **`.rotor-spec.spec-wide` (max-width 980px) exists because `.rotor-spec` is 420px.** That width
+  suits the square rotor SVG and the portrait product photos; the belt drawings are landscape
+  catalogue pages at roughly 3:2, and at 420px their dimension letters and `(number of hole rows)`
+  annotations are unreadable. It's a scoped override of `max-width` only — `.rotor-spec img`'s
+  `width:100%; height:auto; border-radius` still applies.
+- **`.ring-group-title`'s top margin is no longer keyed off DOM position.** It used to be
+  `.ring-group-title:nth-of-type(2), .parts-grid + .ring-group-title { margin-top: 34px; }`, which
+  worked only while the panel had exactly two headings, both right after a grid. There are four
+  now and they follow different things (a grid, a `.spec-foot` note, a figure), so the gap moved
+  onto the base rule with `.ring-group-title:first-of-type` pulling the first one back to 8px.
+  Don't reintroduce the positional form — it fails silently, as a missing gap.
+
 `#twinDiscParts` overrides the shared `.parts-grid` column rule with its own
 (`grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))`, right after the shared rule in
 style.css): Autoconer/Autocoro/Ring Frame render dozens of cards so the shared `auto-fill,
@@ -426,7 +633,8 @@ show/hide. `wireSearch()`/`updateCount()`/`filterContainer()` select generically
 (not `.part-card`) specifically so all three patterns share one implementation — adding a fourth
 needs no JS change, only the attribute. A single input can drive more than one container:
 `data-target` takes a comma-separated list of element IDs (Rotors uses
-`data-target="rotorCupTable,solidRotorTable"`, Ring Frame uses `"rieterParts,zinserParts"`) —
+`data-target="rotorCupTable,solidRotorTable"`, Ring Frame drives three with
+`"rieterParts,zinserParts,steelBeltTable"` — two photo grids and a table, mixed freely) —
 `wireSearch()` splits on the comma and re-runs the filter/count/empty-state logic per ID. Each
 target needs its own `.parts-count[data-count="<id>"]`; without one, `updateCount()` returns early
 and the count silently never appears. Matching also tries a
@@ -490,6 +698,29 @@ it needs a re-shoot/re-upload; there's no PDF to re-crop from for these.
   the type prefixes (`T 34 D`, `T 633 DD`, `T 636 DD`) are already public in the tables directly
   below the photos. Don't blur or re-crop them to "fix" a rule violation — there isn't one.
 
+- **`steel-belt-rieter.png`** / **`steel-belt-zinser.png`** — the Ring Frame panel's two
+  dimensioned belt drawings (`RSM.R100`, `RSM.Z000`), the only **PNGs** in `images/parts/`: black
+  line art on white, where JPEG ringing on the thin dimension lines shows. ~223 KB each at
+  1600px wide, hand-referenced from `index.html` like the `friction-disc.jpg` group.
+  **They are edited catalogue pages, not fresh artwork.** Pages 5 and 9 of
+  `RIETER Zinser Ringspinning Parts Euro Textile.pdf`, each: rotated 270°
+  (`RotateFlipType.Rotate270FlipNone` — the drawings are printed sideways in the PDF), the
+  German half of every bilingual label painted out in white and the English redrawn in Arial at
+  the measured size/baseline/colour (`46,46,46`), the sideways page header (`SPARE PARTS FOR …
+  RING`, which the rotation leaves running up the left edge) cropped off, then autocropped to
+  content. Re-cropping or fixing one means going back to the PDF and redoing that — there is no
+  layered source. **`lenght`/`Lenght` in the Zinser legend are typos in the catalogue itself**,
+  corrected to `length` while redrawing; don't "restore" them.
+- **`steel-belts-range.jpg`** — the five-plate product shot from the top of catalogue page 10,
+  in the same Zinser section. **JPEG, not PNG like the two drawings beside it** — this one is
+  photography with a smooth gradient backdrop, where PNG buys nothing and costs several times the
+  size (55 KB at q82, 1400×681). The crop starts **below the title printed into the photo**
+  (page-10 ink ends at y 238; the crop is y 248–1132, full page width): `index.html` renders that
+  same line as an `<h4 class="parts-group-title">` directly above the figure, so a re-crop that
+  includes the printed title shows the heading twice — and as pixels it stops being searchable or
+  screen-reader-readable. Page 10 also carries a second, unrelated photo lower down (blue/red
+  bobbin pegs) that belongs to no section here.
+
 If a future catalogue-derived category needs a photo pulled from a PDF with no per-SKU
 photography and no text layer: this environment has neither `pdftoppm`/poppler (so the Read tool
 can't rasterize a PDF page) nor a working headless-Chrome PDF viewer (blank output in headless
@@ -498,6 +729,15 @@ the PDF, extractable by scanning the PDF's raw bytes for the JPEG SOI (`FF D8 FF
 markers, then cropped with PowerShell + `System.Drawing` same as everything else here. Only falls
 back to page rasterization (which this environment can't do anyway) if the PDF doesn't embed the
 page as a single image.
+
+**`RIETER Zinser Ringspinning Parts Euro Textile.pdf` is a pure scan — every one of its 12 pages
+is a single full-page JPEG with no text layer**, so nothing in it can be copied as text; it all
+has to be read off the extracted images. The extraction that worked: index every `N 0 obj … endobj`
+in the raw bytes, walk `/Type /Pages` → `/Kids` for page order, then pull each page's
+`/XObject << /ImageN … >>` stream straight out (they are `DCTDecode`, i.e. already JPEG — no
+inflate needed). One page nests its image one level down inside a `/Subtype /Form` XObject, so a
+page whose `/XObject` entry isn't an image needs following through to that form's own
+`/Resources`. The `/Font` entries are decoys: the content streams are nothing but `/ImageN Do`.
 
 **Not all photos are square, and `.part-photo { min-height: 0 }` is load-bearing because of
 that.** (`.part-photo` is a `<button>` — see "Photo lightbox" — so its rule also carries the
@@ -521,7 +761,10 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
 ### Reference material vs. served assets
 - `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, CPU, etc.), **linked
   from the site** via a "Browse Catalogue ↗" button (`target="_blank"`, native browser PDF viewer —
-  no custom viewer built) on the Autoconer, Autocoro and Ring Frame panels only. Autoconer's
+  no custom viewer built) on the Autoconer, Autocoro and Ring Frame panels only. The Ring Frame
+  one is additionally the source of four pages now transcribed onto the page itself — the belt
+  size table and the two RSM.R100/RSM.Z000 drawings; see "Product photo pipeline" for how to get
+  images out of it and "Data-driven rendering" for the table. Autoconer's
   catalogue file is literally named `Autconer Catalogue Euro Textile.pdf` (typo in the file itself)
   — the href matches it exactly; don't "fix" the spelling without renaming the actual file to
   match. `BROELL_Navel catalogue.pdf` and `CPU Main Catalogue.pdf` are reference-only, like the
@@ -560,7 +803,10 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
   re-sourcing, expect the same wide-canvas issue and crop before using it, or it'll render with a
   large dead-space gap next to it in the marquee. `images/` root holds the company logo files (see
   "Header brand block & logo assets" above) plus `og-image.jpg`, the generated 1200×630 social
-  preview. For the raw source-photo folders — `images/Autocoro/`, `images/Autoconor/` (folder name
+  preview, and two supplied assets the site does **not** load:
+  `ETS Logo GIF.gif` (see "Hero brand lockup" for why) and
+  `Euro Textile Spares Pvt.Ltd Banner.png`, a 1600×400 navy banner (mark + wordmark + tagline +
+  partner logos) kept for provenance. For the raw source-photo folders — `images/Autocoro/`, `images/Autoconor/` (folder name
   is a typo in the folder itself; it holds the *Autoconer* category's photos), `images/Ringframe/`,
   `images/Rotors/`, `images/Twin Disc/` — see the `.gitignore` bullet above; the
   resized/compressed copies actually served live in `images/parts/`.
@@ -613,38 +859,137 @@ digits of a type code are the groove diameter, then `C250`/`C254`/`C248` put cup
 range. Both now read 30–46 mm, matching the info tag. Per the SVG's `aria-hidden` rule, the label
 and the caption always change together.)
 
-### About section stat-line
-The About section (`#about`) is a two-column intro plus a hand-authored inline **SVG infographic**
-(`.about-stats`): a curved `.stats-line` path whose cubic-segment anchors are the four `.stat-node`
-points (so the node dots sit exactly on the curve). Editing a node means keeping its `<circle>`,
-`.stat-drop` line, and `<text>` coordinates in sync with the path anchor.
+### Partner count — the hero is scoped to Europe on purpose
+There are **four** OEM partners: Phicomp (CH), Emil Broell (AT), Samatex (DE) and CPU (Taiwan). The
+top of the page deliberately talks about only the **three European** ones:
 
-**Each stat exists in three places, and all three must change together:**
-1. The `<g class="stat-node">` in the SVG — the `.stat-num` value and the two `.stat-label` tspans.
-2. The matching `.mini-stat` in `.about-stats-grid`, the 2×2 card fallback shown below `820px`
-   where `.stats-curve` goes `display: none`.
-3. **The `<svg aria-label>`**, which restates all four facts as one prose sentence — the same
-   pattern as the rotor drawing's `aria-hidden` + figcaption pair. It is the only copy a screen
-   reader gets, and nothing will flag it when it drifts.
+- The hero eyebrow reads `Germany · Austria · Switzerland → India`.
+- The first hero credential is `3` / "European OEM manufacturing partners — Germany, Austria &
+  Switzerland".
+- `.about-cluster` carries three flags (`flag-ch`, `flag-at`, `flag-de`) and "Direct from 3 elite
+  European OEM partners".
 
-Current order, left to right: `18+` years supplying India's spinning mills, `70+` spinning mills
-served pan-India, `Authorized` distributor, `Uniform` yarn CV across the lifecycle. These are
-company facts, not product specifications — two PhiComp component specs ("35,000+ hours of rotor
-service life", "110,000 rpm sustained bearing speed") used to lead the line originally and were
-removed: in the About section a rotor's rated life reads as a claim about the company. Keep new
-stats at that altitude, and out of the hero badge's territory (4 OEM partners / 100% genuine /
-6500+ parts / Pune).
+**This is not a stale count — do not "correct" it back to 4 or re-add `flag-tw` to `.about-flags`.**
+The owner asked for Taiwan off the hero and the About cluster while keeping it everywhere it is
+load-bearing: the Manufacturers section (intro sentence + the CPU card), the Twin Discs panel's
+`CPU · Taiwan` badge, and the `<head>` metadata — the meta/OG/Twitter descriptions and the JSON-LD,
+which must keep mirroring the manufacturers grid.
 
-**Reordering which fact appears where means moving text content between the existing `<g>` groups,
-not cutting and pasting the groups themselves.** The four `<g class="stat-node">` elements sit at
-fixed x-positions (150/470/770/1050) pinned to the curve's cubic anchors — moving a whole `<g>`
-would either break that alignment or leave the DOM order out of sync with the visual left-to-right
-order, which matters because `aboutCurve()` staggers `.stat-node` in DOM order
-(`gsap.utils.toArray(".stat-node")` in script.js). So a reorder always rewrites three groups' text
-at once — the moved stat's new slot, and every slot it displaces by one — and never touches a
-coordinate.
+The word **European** is what makes the `3` accurate rather than an understatement, so it has to
+survive any rewording of that credential. Note the About hub's Authorized Distributor card still
+says "4 OEM partners" (the true total); 3 European + 1 Taiwanese reconciles, and the Manufacturers
+grid immediately below shows all four.
 
-`.stat-num .accent` and `.mini-num b` style the blue trailing `+` — live on both `18+` and `70+`
-today. Changing the longest `.stat-num` value means re-checking `.mini-num`'s
-`clamp(22px, 6.5vw, 34px)`, which exists solely to stop that value overflowing its card in the
-2-column grid on narrow phones; the comment above it names whichever value currently drives it.
+### Stock & availability claims
+**Euro Textile Spares does not hold the whole catalogue in stock.** Only fast-moving parts are kept
+in Pune; everything else is imported to order. Two places on the page state this and must stay in
+agreement:
+
+1. The fourth hero credential (`.cred-item` with `.cred-num` "Ex-stock") — "Ready stock of
+   fast-moving parts, others imported to order". The value was "Pune" until the owner asked for
+   something that carried the idea rather than the place; "Ex-stock" is the trade term for supply
+   from existing stock and, unlike a place name, asserts no location or scale of its own — the
+   label does all the qualifying. `.cred-num` is 34px/800 (30px ≤640px) in a fixed-width panel, so
+   a replacement longer than ~8–9 characters wraps and stops matching `3` / `100%` / `6500+`.
+2. Capabilities card 02, "Pan-India Distribution" — "…fast-moving items from our Pune stock, the
+   rest imported to order."
+
+Both previously overclaimed ("Ready stock hub, pan India delivery"; "delivered … from our Pune
+inventory hub"), which read as immediate availability across all 6,500+ parts. Widening either line
+back into a blanket stock promise is a factual regression, not a copy improvement — the pan-India
+*delivery* claim is accurate, a pan-India *stock* claim is not.
+
+### About section hub
+The About section (`#about`) is a two-column intro plus `.about-hub`: the ETS mark on a circular
+plate (`.hub-core` + `.hub-mark`), four fact cards around it (two left, two right), each card led by
+a small icon badge, and a short connector running from each card's inner edge to a dot on the
+circle. It is modelled on a reference layout supplied by the owner, adapted at their request — the
+badges started at the hub's outer corners with elbow connectors reaching out to them, which is the
+arrangement the paragraphs below keep warning you not to rebuild.
+
+**Each fact now lives in exactly one place — plain DOM text in its `.hub-card`.** This replaced a
+hand-authored SVG stat-line (`.stats-curve`, four `<g class="stat-node">` on an ascending curve)
+that carried every fact **three** times: the `<g>`, a duplicate `.mini-stat` card in the
+`.about-stats-grid` fallback that swapped in below 820px, and an `<svg aria-label>` prose sentence
+restating all four (the only copy a screen reader got). All three had to be edited together and
+nothing flagged a drift. **Do not reintroduce a small-screen fallback grid** — the cards reflow on
+their own, so a second copy would only bring the sync problem back. Reordering a fact is now a
+plain markup move; there are no fixed coordinates to keep DOM order aligned with visual order.
+
+**The connectors are a geometry contract between two numbers**, both derived rather than chosen.
+The core is centred in the middle column, so `50%` *is* the circle centre on both axes:
+
+- **120px** — `.hub-core` is 340px square → radius 170 → a dot at 45° sits `170 × 0.707 ≈ 120px`
+  from the centre on both axes. That is every `calc(50% ± 120px)` in the file.
+- **230px** — the card's inner edge: `170` (core half-width) + `60` (the `column-gap`). Change the
+  gap and this must move with it.
+
+Each connector is one zero-height bordered box running from its card's inner edge to its dot, and
+**no further** — it spans only the column gap, so it overlaps nothing. It is deliberately not an
+SVG overlay: an overlay tracking a flexing container needs `preserveAspectRatio="none"`, and its
+endpoints could only be percentages while the circle's edge is a fixed radius. Borders land on both
+ends exactly — verified at 0.00px on all eight endpoints across the desktop range.
+
+They used to be **elbows** continuing past the card to an icon badge at the hub's outer corner,
+which meant running behind the card (and needing `z-index: -1` plus `isolation: isolate` to avoid
+striking through its text). The owner asked for the over-extension gone; the badges moved into the
+cards and all of that machinery went with them. Don't rebuild it.
+
+**Three CSS details that look like tidying and are not:**
+
+- **`grid-template-columns` uses `minmax(0, 1fr)`, not a px minimum.** With `minmax(210px, 1fr)` the
+  three tracks overflow the container on narrow desktops, which shoves the core off centre and
+  breaks every connector. Collapsing tracks keep the core centred at any width, so the contract
+  can't fail between breakpoints — only the cards get narrow.
+- **`.hub-badge` must stay in the card's normal flow.** It was once absolutely positioned at
+  `.about-hub`'s outer corners, and that broke the moment the page animated: `aboutHub()` tweens
+  `.hub-card` with `y`, GSAP leaves a `transform` on it, and **a transformed element becomes the
+  containing block for its absolutely-positioned descendants** — so all four badges jumped into
+  their own cards' corners, sitting on top of the titles. Giving a card `position: relative` does
+  the identical thing. Anything added inside a `.hub-card` must be laid out in the flow.
+- **`.hub-dot` is centred with negative margins, not `translate(-50%, -50%)`.** `aboutHub()` tweens
+  the dots' `scale`, and GSAP takes ownership of `transform` without preserving a percentage
+  translate — which leaves every dot 4.5px off its point and each connector visibly short of it.
+
+**That badge bug is also a lesson about the screenshot workflow.** It could not appear in any
+`--force-prefers-reduced-motion` capture, because `wireMotion()` bails before the tween runs — the
+exact flag the headless notes recommend for everything GSAP touches. Layout that depends on whether
+GSAP has written a transform needs either a real browser or a probe run *without* that flag.
+
+**Breakpoints.** The hub needs 880px of its own width to keep ~210px cards
+(`340 core + 60×2 gaps + 210×2 cards`), and `.wrap`'s 24px padding means it only ever gets
+`viewport - 48`, so side-by-side fits from a 928px viewport. It flattens at **1040px** as a comfort
+margin, which is why this is not the site's 900px layout breakpoint. Flattened, it is a 2-column
+card grid with the core centred above it and the connectors and dots `display: none` (they have
+nothing to join); the cards themselves are unchanged, the badge already being in the flow.
+**560px** drops the cards to one column. The `@media (max-width: 820px)` block still holds `.about-intro`'s own rules.
+
+Current order — reading left column top-to-bottom, then right: `18+ Years`, `100+ Mills`,
+`Authorized Distributor`, `6 Product Ranges`. `.hub-title b` styles the blue trailing `+`, so it
+wraps only the `+` and only on the two cards that have one — `6 Product Ranges` and `Authorized
+Distributor` are plain `--ink`, and there is no second highlight style to invent.
+
+Between them the four cover tenure, customer base, status and breadth. **They are company facts,
+not product specifications**, and that altitude is the whole reason this list is curated: two
+PhiComp component specs ("35,000+ hours of rotor service life", "110,000 rpm sustained bearing
+speed") used to lead the old stat-line and were cut, because in the About section a rotor's rated
+life reads as a claim about the company. "Uniform yarn CV across the lifecycle" went the same way
+(it is a coating specification, and still appears as one in the Complete Rotors panel copy). The
+fourth slot has since been Samples Provided and is now 6 Product Ranges, both at the owner's
+request — expect it to keep moving, and keep whatever lands there at company altitude and out of
+the hero badge's territory (3 European OEM partners / 100% genuine / 6500+ parts / Ex-stock).
+
+Note the fourth card's copy is also constrained by its neighbour: the Mills card already ends
+"…supported by pan-India distribution", so a delivery or reach fact here would restate it.
+
+The four badge icons are hand-authored 24×24 inline SVGs (calendar, factory, rosette, layers)
+sitting at the top of each card above its title, `aria-hidden` with the card text carrying the
+meaning, stroked with `currentColor` so `.hub-badge`'s `color` drives them — the path data carries
+no presentation attributes, since `.hub-badge svg` supplies `fill:none; stroke:currentColor`. No
+icon library — same convention as the rotor drawing.
+
+`aboutHub()` in `script.js` choreographs the entrance (core → dots → connectors → cards → badges)
+on one ScrollTrigger. Everything is `.from()`, so the natural state is the finished one and reduced
+motion needs no special case. `.hub-core, .hub-card` are also listed in `GUARD_EXTRA` and swept by
+`guardVisible()` — the old `.stat-node` was in no failsafe list at all, which is the gap that
+closes.

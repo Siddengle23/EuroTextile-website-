@@ -125,7 +125,11 @@ img { max-width: 100%; }
     transition: opacity .18s ease, visibility .18s ease; z-index: 130;
 }
 .has-sub:hover > .subdropdown, .has-sub:focus-within > .subdropdown { opacity: 1; visibility: visible; }
-.nav-toggle { display: none; background: none; border: none; cursor: pointer; width: 34px; height: 28px; flex-direction: column; justify-content: space-between; }
+/* 44x44 is the touch target; the padding keeps the CONTENT box at exactly 34x28 (44-2*5, 44-2*8)
+   under the global border-box, so the three bars and the .nav-toggle.open X below — whose
+   translateY(9px) values are tuned to that 28px height — are geometrically unchanged. Resize via
+   the padding, never the height, or the X stops meeting in the middle. */
+.nav-toggle { display: none; background: none; border: none; cursor: pointer; width: 44px; height: 44px; padding: 8px 5px; flex-direction: column; justify-content: space-between; }
 .nav-toggle span { display: block; height: 3px; border-radius: 2px; background: var(--ink); transition: .3s; }
 .nav-toggle.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
 .nav-toggle.open span:nth-child(2) { opacity: 0; }
@@ -142,6 +146,22 @@ img { max-width: 100%; }
 .hero h1 { font-size: 54px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 22px; }
 .h1-brand  { color: var(--primary); }
 .h1-suffix { color: var(--charcoal); font-size: .52em; font-weight: 700; letter-spacing: 0; }
+/* Brand lockup: animated mark left, company name right (heroIntro() drives the two beats).
+   The mark is sized in `em`, NOT px, on purpose — 1em is the h1's own font-size, which already
+   steps 54 -> 44 -> 34px at the 900px and 640px breakpoints, so the mark rescales with the
+   headline at every width without a single extra media query. */
+.hero-lockup { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+.lockup-mark { width: 1.55em; height: auto; flex: none; }
+/* The name is a deliberate two-line stack (company name, then suffix beneath), not free-flowing
+   text. Left to wrap on its own it breaks wherever the column happens to run out — at 500px that
+   split "Pvt." from "Ltd.". Blocking both spans pins the break, and the tight line-height keeps
+   the two lines reading as one lockup beside the mark rather than two stray lines. */
+.lockup-name { display: block; line-height: 1.04; }
+.lockup-name .h1-brand { display: block; }
+.lockup-name .h1-suffix { display: block; margin-top: 6px; }
+/* Deliberate override of the brand blue: the lockup reads blue mark + near-black wordmark, the
+   way the supplied logo animation does. Delete this one rule to get the blue headline back. */
+.hero-lockup .h1-brand { color: var(--ink); }
 .hero-lead { font-size: 18px; color: var(--charcoal); max-width: 620px; }
 .hero-lead strong { color: var(--ink); }
 .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
@@ -177,38 +197,96 @@ img { max-width: 100%; }
 .about-cta { margin-top: 26px; }
 .about-cta span { margin-left: 4px; font-weight: 700; }
 
-/* curved milestone stat-line */
-.about-stats { position: relative; margin-top: 4px; }
-.stats-curve { display: block; width: 100%; height: auto; overflow: visible; }
-.about-stats text { font-family: var(--ff); }
-.stats-line { fill: none; stroke: var(--primary); stroke-width: 2; stroke-linecap: round; opacity: .8; }
-.stat-drop { stroke: var(--primary); stroke-width: 1.5; opacity: .45; }
-.stat-ring { fill: #fff; stroke: var(--primary); stroke-width: 2.5; }
-.stat-core { fill: var(--primary); }
-.stat-num { fill: var(--ink); font-size: 46px; font-weight: 800; letter-spacing: -.01em; }
-.stat-num .accent { fill: var(--primary); }
-.stat-label { fill: var(--graphite); font-size: 15px; font-weight: 600; }
+/* brand hub with orbiting fact cards
+   ---------------------------------------------------------------------------
+   GEOMETRY CONTRACT — two numbers put each connector on its dot at one end and its card at
+   the other. Both are derived, not chosen; the core is centred in the middle column, so 50%
+   IS the circle centre on both axes:
+     120px = the 45deg dot position, radius 170 * 0.707
+     230px = the card's inner edge, 170 (core half-width) + 60 (the column-gap below)
+   The connectors are plain bordered boxes anchored with calc(50% +/- ...) rather than an SVG
+   overlay: an overlay tracking a flexing container needs preserveAspectRatio="none", and its
+   endpoints could only be percentages while the circle's edge is a fixed radius. Borders land
+   on both ends exactly, at every width in the desktop range.
 
-/* small-screen fallback grid */
-.about-stats-grid { display: none; grid-template-columns: 1fr 1fr; gap: 16px; }
-.mini-stat { background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card); box-shadow: var(--shadow-lift); padding: 22px 20px; text-align: center; }
-/* fluid: the longest value (Authorized) overflows a fixed 36px inside the 2-col grid on narrow phones */
-.mini-num { display: block; font-size: clamp(22px, 6.5vw, 34px); font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.01em; }
-.mini-num b { color: var(--primary); }
-.mini-label { display: block; margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--graphite); }
+   The side columns are minmax(0, 1fr), NOT a px minimum, and that is load-bearing: px minimums
+   make the three tracks overflow their container on narrow desktops, which shoves the core off
+   centre and makes every connector miss. Collapsing tracks keep the core centred at any width,
+   so the 1040px breakpoint below is a readability call about card width, not a geometry rescue. */
+.about-hub { position: relative; max-width: 1120px; margin: 0 auto; min-height: 420px;
+             display: grid; grid-template-columns: minmax(0, 1fr) 340px minmax(0, 1fr);
+             column-gap: 60px; row-gap: 26px; align-items: center; }
+
+/* centre plate */
+.hub-core { grid-column: 2; grid-row: 1 / span 2; justify-self: center; position: relative;
+            width: 340px; height: 340px; border-radius: 50%; display: grid; place-items: center;
+            background: radial-gradient(circle at 50% 42%, #fff 0%, var(--mist) 62%, var(--primary-soft) 100%);
+            box-shadow: 0 0 0 12px rgba(37,101,165,.05), 0 10px 26px rgba(14,42,69,.10); }
+.hub-mark { width: 52%; height: auto; }
+
+/* the four dots each connector terminates on, at 45deg around the circle */
+/* Centred on its coordinate with negative margins, NOT translate(-50%,-50%): aboutHub() tweens
+   .hub-dot's scale, and GSAP takes over the transform property without preserving the percentage
+   translate — which leaves every dot 4.5px off its point, and the connectors short of it. */
+.hub-dot { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%;
+           background: var(--primary); box-shadow: 0 0 0 3.5px #fff, 0 0 0 4.5px var(--fog); }
+.hub-dot-tl { left: calc(50% - 120px); top: calc(50% - 120px); }
+.hub-dot-bl { left: calc(50% - 120px); top: calc(50% + 120px); }
+.hub-dot-tr { left: calc(50% + 120px); top: calc(50% - 120px); }
+.hub-dot-br { left: calc(50% + 120px); top: calc(50% + 120px); }
+
+/* Connectors: one short horizontal run from the card's inner edge to the dot on the circle, and
+   no further. They used to be elbows continuing past the card to a badge at the hub's outer
+   corner, which meant passing behind the card — dropped along with the corner badges. Spanning
+   only the column gap, they overlap nothing, so they need no z-index handling. */
+.hub-link { position: absolute; height: 0; border-top: 1.5px solid rgba(37,101,165,.28);
+            pointer-events: none; }
+.hub-link-tl { left: calc(50% - 230px); right: calc(50% + 120px); top: calc(50% - 120px); }
+.hub-link-bl { left: calc(50% - 230px); right: calc(50% + 120px); top: calc(50% + 120px); }
+.hub-link-tr { right: calc(50% - 230px); left: calc(50% + 120px); top: calc(50% - 120px); }
+.hub-link-br { right: calc(50% - 230px); left: calc(50% + 120px); top: calc(50% + 120px); }
+
+/* fact cards */
+.hub-card { background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card);
+            box-shadow: var(--shadow-lift); padding: 20px 20px 22px; }
+.hub-card-tl { grid-column: 1; grid-row: 1; }
+.hub-card-bl { grid-column: 1; grid-row: 2; }
+.hub-card-tr { grid-column: 3; grid-row: 1; }
+.hub-card-br { grid-column: 3; grid-row: 2; }
+.hub-title { font-size: 19px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; }
+.hub-title b { color: var(--primary); }
+.hub-text { margin-top: 8px; font-size: 13.5px; font-weight: 600; line-height: 1.5; color: var(--graphite); }
+
+/* The badge sits in the card's normal flow, above the title, and MUST STAY THERE. It was
+   absolutely positioned at .about-hub's outer corners once, which broke the moment the page
+   animated: aboutHub() tweens .hub-card with y, GSAP leaves a transform on it, and a transformed
+   element becomes the containing block for its absolutely-positioned descendants — so all four
+   badges jumped into their own cards' corners, on top of the titles. Same trap as giving a card
+   position:relative. Anything added inside a .hub-card must be laid out in the flow. */
+.hub-badge { width: 44px; height: 44px; margin-bottom: 12px; border-radius: 50%; display: grid;
+             place-items: center; color: var(--primary); background: var(--primary-soft);
+             border: 1px solid #fff; box-shadow: var(--shadow-lift); }
+.hub-badge svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6;
+                 stroke-linecap: round; stroke-linejoin: round; }
+
+/* The hub needs 880px of its own width to keep ~210px cards (340 core + 60*2 gaps + 210*2
+   cards), and .wrap's 24px padding means it only ever gets viewport - 48 — so the side-by-side
+   layout fits from a 928px viewport. Flattening at 1040 is a comfort margin on top of that, and
+   is why this is not the site's 900px layout breakpoint. Stacked, the connectors and dots have
+   nothing to join, so they go; the cards are unchanged, the badge already being in the flow. */
+@media (max-width: 1040px) {
+    .about-hub { min-height: 0; grid-template-columns: 1fr 1fr; column-gap: 16px; row-gap: 16px; }
+    .about-hub > * { grid-column: auto; grid-row: auto; }
+    .hub-core { grid-column: 1 / -1; width: min(240px, 62vw); height: auto; aspect-ratio: 1; margin: 0 auto 12px;
+                box-shadow: 0 0 0 8px rgba(37,101,165,.06), var(--shadow-lift); }
+    .hub-link, .hub-dot { display: none; }
+}
 @media (max-width: 820px) {
     .about-intro { grid-template-columns: 1fr; gap: 26px; margin-bottom: 30px; }
     .about-intro-right h2 { font-size: 31px; }
-    .stats-curve { display: none; }
-    .about-stats-grid { display: grid; }
 }
-/* The 2-col grid can't hold a long word stat on a phone. A card's inner width is about
-   (100vw - 64px)/2 - 40px while .mini-num above tracks 6.5vw, so "Authorized" only fits
-   past roughly 476px of viewport — i.e. it spills out of its card on every portrait phone.
-   Going single-column keeps the type scale instead of shrinking every number to suit the
-   longest one. Re-check this threshold if a longer .mini-num value is ever added. */
-@media (max-width: 520px) {
-    .about-stats-grid { grid-template-columns: 1fr; }
+@media (max-width: 560px) {
+    .about-hub { grid-template-columns: 1fr; }
 }
 
 /* ---- Section scaffolding -------------------------------------------------- */
@@ -279,6 +357,11 @@ section { padding: var(--gap-section) 0; }
 .rotor-spec-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .rotor-spec-svg text { font-family: var(--ff); font-variant-numeric: tabular-nums; }
 .rotor-spec img { display: block; width: 100%; height: auto; border-radius: var(--r-card); }
+/* The two steel-belt drawings (Ring Frame panel) are landscape catalogue pages at roughly
+   3:2, not the square rotor SVG or a portrait product photo. At 420px their dimension
+   letters and the "(number of hole rows)" annotations are too small to read, so they get
+   their own width — .rotor-spec img's sizing above still applies unchanged. */
+.rotor-spec.spec-wide { max-width: 980px; }
 
 /* Two product photos side by side above a type list (rotor cup/bearing, SolidRotor).
    The fixed height + object-fit is load-bearing, not tidying: these four photos run from
@@ -360,7 +443,10 @@ section { padding: var(--gap-section) 0; }
 
 /* ---- Parts toolbar + grid ------------------------------------------------- */
 .parts-toolbar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: space-between; margin-bottom: 12px; }
-.parts-search { flex: 1 1 320px; min-width: 240px; font-family: var(--ff); font-size: 15px; padding: 12px 16px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; }
+/* 16px is a hard floor, not a style choice: iOS Safari auto-zooms the whole page when a focused
+   input is under 16px and never zooms back out. .contact-form input/textarea sets it for the same
+   reason. Don't shrink this to fit a layout. */
+.parts-search { flex: 1 1 320px; min-width: 240px; font-family: var(--ff); font-size: 16px; padding: 12px 16px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; }
 .parts-search:focus { outline: none; border-color: var(--primary); }
 .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .parts-count { font-size: 13px; color: var(--graphite); margin-bottom: 18px; }
@@ -397,8 +483,12 @@ section { padding: var(--gap-section) 0; }
 .parts-empty { grid-column: 1 / -1; color: var(--graphite); padding: 24px 0; font-size: 15px; }
 
 /* Ring frame groups */
-.ring-group-title { font-size: 18px; font-weight: 800; color: var(--ink); margin: 8px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); }
-.ring-group-title:nth-of-type(2), .parts-grid + .ring-group-title { margin-top: 34px; }
+.ring-group-title { font-size: 18px; font-weight: 800; color: var(--ink); margin: 34px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); }
+/* Gap goes on every heading, with the first one pulled back in — the panel now has four of
+   these and they follow different things (a parts grid, a .spec-foot note, a figure). The
+   earlier `:nth-of-type(2), .parts-grid + …` pair keyed off DOM position and silently
+   dropped the gap on any heading that wasn't the second h4 or directly after a grid. */
+.ring-group-title:first-of-type { margin-top: 8px; }
 /* With the .part-photo fix above, the only remaining height variation is name length —
    one line ("Spring") vs three ("Carrier Upper Part (Peg left · Gauge 70 mm)"). 1fr
    implicit rows all resolve to the tallest row in an auto-height grid, so this levels
@@ -462,6 +552,13 @@ section { padding: var(--gap-section) 0; }
 
 /* ---- Lightbox ------------------------------------------------------------- */
 /* Single-photo zoom, not a gallery — there is deliberately no prev/next control. */
+/* Set on <body> while the lightbox or the mobile menu is open. Without it, dragging over either
+   overlay scrolls the page behind it on touch, so closing the lightbox drops you somewhere else.
+   (This is the 90% fix; watertight iOS handling needs the position:fixed + scroll-restore dance,
+   which is not worth it here.) Safe against the sticky navbar: the page cannot scroll while it is
+   applied, and it is removed on close. */
+.no-scroll { overflow: hidden; }
+
 .lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(10,20,32,.92); display: none; align-items: center; justify-content: center; }
 .lightbox.open { display: flex; }
 .lb-img { max-width: 88vw; max-height: 86vh; border-radius: 6px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
@@ -507,8 +604,10 @@ section { padding: var(--gap-section) 0; }
         box-shadow: var(--shadow-lift); padding: 8px 0;
         max-height: 0; overflow: hidden; transition: max-height .3s ease;
     }
-    /* 85vh, not a pixel figure: the open menu is 6 categories + 11 sub-items + 5 top-level
-       links + the CTA, which runs past 1000px and silently clipped at the old 720px cap. */
+    /* 85vh, not a pixel figure: the open menu is 6 categories + 13 sub-items + 5 top-level
+       links + the CTA, which runs past 1000px and silently clipped at the old 720px cap.
+       Being a viewport fraction plus overflow-y:auto, it absorbs new sub-items on its own —
+       but re-check it here whenever the flyouts grow. */
     .nav-links.open { max-height: 85vh; overflow-y: auto; }
     .nav-links li { border-top: 1px solid var(--hairline); }
     .nav-links li:first-child { border-top: none; }
@@ -595,6 +694,34 @@ section { padding: var(--gap-section) 0; }
     .clients-heading { font-size: 34px; }
     .util-tagline { display: none; }
     .util-inner { justify-content: center; }
+    /* Touch targets. .btn-sm carries "Enquire about …" and "Browse Catalogue ↗" — the conversion
+       actions inside every product panel — and was ~34px tall; .cat-tab was ~40px. Both to 44px. */
+    .btn-sm { padding: 13px 20px; }
+    .cat-tab { padding: 12px 20px; }
+    /* Scroll affordance for the wide tables (the belt table is 9 columns). Classic scroll-shadow:
+       the `local` white covers move with the content, the `scroll` radial shadows are pinned to the
+       box — so a shadow is only visible on a side that still has content off-screen, and hides
+       itself at either end. Phone-only; on desktop the tables fit and this would be noise.
+       The shadow shows through tbody (those cells have no background of their own); the tinted
+       thead is opaque and covers it, which is fine — the cue is the row area. */
+    .table-scroll {
+        background:
+            linear-gradient(to right, #fff 40%, rgba(255,255,255,0)) left / 34px 100% no-repeat local,
+            linear-gradient(to left,  #fff 40%, rgba(255,255,255,0)) right / 34px 100% no-repeat local,
+            radial-gradient(farthest-side at 0 50%, rgba(14,42,69,.15), rgba(14,42,69,0)) left / 12px 100% no-repeat scroll,
+            radial-gradient(farthest-side at 100% 50%, rgba(14,42,69,.15), rgba(14,42,69,0)) right / 12px 100% no-repeat scroll;
+        background-color: #fff;
+    }
+}
+
+/* The brand block is the one thing that can overflow a small phone: .logo-word is nowrap, and at
+   320px the mark + gap + wordmark (~238px) plus the 44px hamburger leaves no margin inside .wrap's
+   24px padding — which would scroll the whole page sideways. Letting it wrap costs nothing: two
+   lines at line-height 1.1 is ~26px inside an 84px .nav-inner.
+   Do NOT reach for `body { overflow-x: hidden }` instead — .navbar is position:sticky, and
+   overflow on an ancestor re-parents a sticky element's scroll container and breaks it. */
+@media (max-width: 420px) {
+    .logo-word { white-space: normal; font-size: 12px; max-width: 150px; }
 }
 
 /* ============================================================================

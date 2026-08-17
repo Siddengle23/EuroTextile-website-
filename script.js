@@ -225,7 +225,7 @@
         empty.setAttribute("data-empty-for", id);
         host.insertAdjacentElement("afterend", empty);
       }
-      empty.textContent = "No results match “" + queryValue + "”. Try a different term or send us an inquiry.";
+      empty.textContent = "No results match “" + queryValue + "”. Try a different term or send us an enquiry.";
     } else if (empty) { empty.remove(); }
   }
   function wireSearch() {
@@ -488,11 +488,29 @@
         headers: { "Accept": "application/json" },
         body: new FormData(form)
       }).then(function (res) {
-        if (!res.ok) throw new Error("Bad response");
+        // res.ok is NOT the whole test. formsubmit.co's /ajax/ endpoint answers 200 with
+        // {"success": "false", "message": …} for a form it will not deliver — an unactivated
+        // address, or a post it scored as spam — so a status-only check reports success to the
+        // visitor while no mail is ever sent. That false-success trap is the one CLAUDE.md
+        // warns about under "Contact form"; this is what actually catches it.
+        if (!res.ok) throw new Error("formsubmit.co returned HTTP " + res.status);
+        // A non-JSON 200 keeps the old benefit-of-the-doubt behaviour rather than failing.
+        return res.json().catch(function () { return null; });
+      }).then(function (data) {
+        // `success` comes back as the STRING "true"/"false" — "false" is truthy, so it has to
+        // be compared. `if (!data.success)` would pass every declined submission through.
+        if (data && String(data.success) === "false") {
+          throw new Error("formsubmit.co declined it: " + (data.message || "no reason given"));
+        }
         form.reset();
-        status.textContent = "Thank you — your inquiry has been sent. Our team will be in touch shortly.";
+        status.textContent = "Thank you — your enquiry has been sent. Our team will be in touch shortly.";
         status.classList.add("show");
-      }).catch(function () {
+      }).catch(function (err) {
+        // Keep the reason. The two failure modes are indistinguishable to the visitor but not to
+        // us: a request blocked before it left the browser (privacy extension, firewall, offline)
+        // rejects with a TypeError, while an HTTP or declined-submission failure carries the text
+        // thrown above. Without this the console said nothing and every report was a guess.
+        if (window.console && console.warn) console.warn("Contact form submission failed:", err);
         status.textContent = "Sorry, something went wrong. Please email dengle@eurotextilespares.com directly.";
         status.classList.add("show");
       }).finally(function () {

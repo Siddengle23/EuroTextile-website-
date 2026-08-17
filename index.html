@@ -99,6 +99,7 @@
             </button>
             <ul class="nav-links">
                 <li><a href="#about">About</a></li>
+                <li><a href="#manufacturers">Manufacturers</a></li>
                 <li class="has-dropdown">
                     <a href="#products" class="dropdown-toggle">Products <span class="caret">▾</span></a>
                     <!-- Sub-links carry href="#<anchor>" and let the browser's own hash jump do the
@@ -143,7 +144,6 @@
                         </li>
                     </ul>
                 </li>
-                <li><a href="#manufacturers">Manufacturers</a></li>
                 <li><a href="#capabilities">Capabilities</a></li>
                 <li><a href="#contact">Contact</a></li>
                 <li><a href="#contact" class="btn-primary nav-cta">Request a Quote</a></li>
@@ -182,7 +182,16 @@
             <div class="hero-badge">
                 <div class="cred-item">
                     <span class="cred-num">3</span>
-                    <span class="cred-label">European OEM manufacturing partners — Germany, Austria &amp; Switzerland</span>
+                    <span class="cred-label">European OEM manufacturing partners</span>
+                    <!-- The countries were a run-on tail on .cred-label. They carry no title/aria
+                         label: each flag has its country name beside it as real text, so the flag
+                         is decoration. "European" stays in the label above — that word is what
+                         makes the 3 accurate rather than an understatement (see CLAUDE.md). -->
+                    <span class="cred-countries">
+                        <span class="cred-country"><span class="flag flag-de"></span>Germany</span>
+                        <span class="cred-country"><span class="flag flag-at"></span>Austria</span>
+                        <span class="cred-country"><span class="flag flag-ch"></span>Switzerland</span>
+                    </span>
                 </div>
                 <div class="cred-item">
                     <span class="cred-num">100%</span>
@@ -297,9 +306,21 @@
     <!-- ABOUT -->
     <section id="about" class="about">
         <div class="wrap">
+            <!-- Headline left, copy right. The left column used to hold only the eyebrow and the
+                 flag cluster against a much taller right column, which left most of the left half
+                 empty; moving the h2 across and the cluster down fills both. The "Meet our
+                 manufacturers" CTA was removed at the owner's request — Manufacturers now sits
+                 directly below this section, so the button pointed one screen down. -->
             <div class="about-intro">
                 <div class="about-intro-left">
                     <span class="about-eyebrow"><i>//</i> About us <i>//</i></span>
+                    <h2><span class="muted">Your direct line to</span> genuine spinning mill spares<span class="muted">, sourced straight from the makers.</span></h2>
+                </div>
+                <div class="about-intro-right">
+                    <p class="about-lead">
+                        Euro Textile Spares Pvt. Ltd. is a Pune based import and distribution hub, acting as
+                        the on the ground representative in India for elite overseas machinery manufacturers.
+                    </p>
                     <div class="about-cluster">
                         <div class="about-flags">
                             <span class="flag flag-ch" title="Switzerland"></span>
@@ -308,14 +329,6 @@
                         </div>
                         <span class="about-cluster-label">Direct from 3 elite European OEM partners<br>Germany · Austria · Switzerland</span>
                     </div>
-                </div>
-                <div class="about-intro-right">
-                    <h2><span class="muted">Your direct line to</span> genuine spinning mill spares<span class="muted">, sourced straight from the makers.</span></h2>
-                    <p class="about-lead">
-                        Euro Textile Spares Pvt. Ltd. is a Pune based import and distribution hub, acting as
-                        the on the ground representative in India for elite overseas machinery manufacturers.
-                    </p>
-                    <a href="#manufacturers" class="btn-primary about-cta">Meet our manufacturers <span aria-hidden="true">↗</span></a>
                 </div>
             </div>
 
@@ -373,6 +386,50 @@
                     <h3 class="hub-title">6 Product Ranges</h3>
                     <p class="hub-text">Complete Rotors, Navels, Twin Discs, Autocoro, Autoconer
                     &amp; Ring-Frame Autodoffing spares.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MANUFACTURERS -->
+    <section id="manufacturers" class="manufacturers">
+        <div class="wrap">
+            <div class="section-head">
+                <span class="eyebrow">Sourced from</span>
+                <h2>Our manufacturing partners</h2>
+                <p class="section-subtext">
+                    A dedicated pipeline of authentic components from Germany, Austria, Switzerland and
+                    Taiwan — no unverified secondary suppliers in between.
+                </p>
+            </div>
+            <div class="mfr-grid">
+                <div class="mfr-card">
+                    <img src="images/manufacturers/Phicomp AG.png" alt="Phicomp AG" class="mfr-logo">
+                    <h3>Phicomp AG</h3>
+                    <span class="mfr-country">Switzerland</span>
+                    <p>High-precision rotors, rotor cups &amp; bearings for Automatic and Semi-Automatic
+                    Rotor-spinning machines.</p>
+                </div>
+                <div class="mfr-card">
+                    <img src="images/manufacturers/Broell.png" alt="Emil Broell GmbH &amp; Co KG" class="mfr-logo">
+                    <h3>Emil Broell GmbH &amp; Co KG</h3>
+                    <span class="mfr-country">Austria</span>
+                    <p>Industry-standard Navels engineered for optimal yarn structural consistency in
+                    rotor spinning.</p>
+                </div>
+                <div class="mfr-card">
+                    <img src="images/manufacturers/Samatex GmbH.png" alt="Samatex GmbH" class="mfr-logo">
+                    <h3>Samatex GmbH</h3>
+                    <span class="mfr-country">Germany</span>
+                    <p>Heavy-duty, long-lifespan spares for Autocoro, Autoconer and Ring-Frame
+                    Auto-Doffing machinery.</p>
+                </div>
+                <div class="mfr-card">
+                    <img src="images/manufacturers/CPU.png" alt="CPU" class="mfr-logo">
+                    <h3>CPU</h3>
+                    <span class="mfr-country">Taiwan</span>
+                    <p>Wear-resistant Supporting Discs (N, Laser, Magnetic, &amp; Reflector type) for Open-End
+                    spinning machines.</p>
                 </div>
             </div>
         </div>
@@ -773,50 +830,6 @@
         </div>
     </section>
 
-    <!-- MANUFACTURERS -->
-    <section id="manufacturers" class="manufacturers">
-        <div class="wrap">
-            <div class="section-head">
-                <span class="eyebrow">Sourced from</span>
-                <h2>Our manufacturing partners</h2>
-                <p class="section-subtext">
-                    A dedicated pipeline of authentic components from Germany, Austria, Switzerland and
-                    Taiwan — no unverified secondary suppliers in between.
-                </p>
-            </div>
-            <div class="mfr-grid">
-                <div class="mfr-card">
-                    <img src="images/manufacturers/Phicomp AG.png" alt="Phicomp AG" class="mfr-logo">
-                    <h3>Phicomp AG</h3>
-                    <span class="mfr-country">Switzerland</span>
-                    <p>High-precision rotors, rotor cups &amp; bearings for Automatic and Semi-Automatic
-                    Rotor-spinning machines.</p>
-                </div>
-                <div class="mfr-card">
-                    <img src="images/manufacturers/Broell.png" alt="Emil Broell GmbH &amp; Co KG" class="mfr-logo">
-                    <h3>Emil Broell GmbH &amp; Co KG</h3>
-                    <span class="mfr-country">Austria</span>
-                    <p>Industry-standard Navels engineered for optimal yarn structural consistency in
-                    rotor spinning.</p>
-                </div>
-                <div class="mfr-card">
-                    <img src="images/manufacturers/Samatex GmbH.png" alt="Samatex GmbH" class="mfr-logo">
-                    <h3>Samatex GmbH</h3>
-                    <span class="mfr-country">Germany</span>
-                    <p>Heavy-duty, long-lifespan spares for Autocoro, Autoconer and Ring-Frame
-                    Auto-Doffing machinery.</p>
-                </div>
-                <div class="mfr-card">
-                    <img src="images/manufacturers/CPU.png" alt="CPU" class="mfr-logo">
-                    <h3>CPU</h3>
-                    <span class="mfr-country">Taiwan</span>
-                    <p>Wear-resistant Supporting Discs (N, Laser, Magnetic, &amp; Reflector type) for Open-End
-                    spinning machines.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- CAPABILITIES -->
     <section id="capabilities" class="capabilities">
         <div class="wrap">
@@ -878,11 +891,11 @@
                 <input type="email" name="email" placeholder="Business email *" required>
                 <input type="text" name="part" placeholder="Part name / number or machine model *" required>
                 <textarea name="message" placeholder="Tell us what you need…" rows="6"></textarea>
-                <input type="hidden" name="_subject" value="New website inquiry — Euro Textile Spares">
+                <input type="hidden" name="_subject" value="New website enquiry — Euro Textile Spares">
                 <input type="hidden" name="_template" value="table">
                 <input type="hidden" name="_captcha" value="false">
                 <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-                <button type="submit" class="btn-submit">Send Inquiry</button>
+                <button type="submit" class="btn-submit">Send Enquiry</button>
                 <p class="form-status" role="status" aria-live="polite"></p>
             </form>
         </div>

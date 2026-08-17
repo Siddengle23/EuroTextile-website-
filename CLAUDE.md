@@ -129,6 +129,25 @@ tooling, not shipped assets — never link them from the site.
 
 ## Architecture
 
+### Page section order
+`hero → clients → about → manufacturers → products → capabilities → contact`.
+
+**Manufacturers sits above Products deliberately** — the owner asked for the narrative to introduce
+the OEM partners before the parts they make. It used to sit between Products and Capabilities, so
+don't "restore" it there. Three things follow from the position and are easy to get wrong:
+
+- The nav order matches the page order (`About · Manufacturers · Products ▾ · Capabilities ·
+  Contact`). Moving a section means moving its nav item too; the footer's Company column already
+  lists Manufacturers first.
+- **`.mfr-card` is in `REVEAL_SEL` and is now *above* `#products`**, so category swaps no longer
+  invalidate its ScrollTrigger — which is why the refresh note under "Motion layer" now names
+  Capabilities alone (Contact has no `.section-head`, so it carries no reveal trigger at all).
+  Move Manufacturers back below the catalog and it needs that refresh again.
+- Section backgrounds alternate loosely rather than strictly: `.manufacturers` has no background
+  rule (so `--canvas`, white) while `.about` / `.products` / `.capabilities` share the same
+  `mist → cloud` gradient. One adjacent gradient pair (`products | capabilities`) is expected; it
+  was `about | products` before the move. Not worth "fixing" with a fourth background.
+
 ### Category tab/panel system
 The product catalog (`#products`) has 6 categories, in this display order: `rotors` (labelled
 "Complete Rotors"), `autocoro`, `autoconer`, `ringframe` (labelled "Ring Frame"), `navels`,
@@ -281,8 +300,28 @@ configuration fields, and `_honey` is its spam honeypot (kept `display:none` and
 
 **formsubmit.co requires a one-time email activation before it will deliver anything.** Until that
 is completed, the endpoint can still return OK and the visitor sees the success message while no
-mail arrives. If inquiries are reported missing, test with a real submission before debugging the
+mail arrives. If enquiries are reported missing, test with a real submission before debugging the
 JS — the front end is almost certainly fine.
+
+**The success check reads the response *body*, not just `res.ok` — that is the fix for the trap
+above, not ceremony.** formsubmit.co's `/ajax/` endpoint answers **200** with
+`{"success": "false", "message": …}` for a form it will not deliver (unactivated address, or a post
+it scored as spam), so a status-only check hands the visitor the thank-you line while nothing is
+sent. Two details that look wrong and aren't: `success` comes back as the **string** `"true"` /
+`"false"`, so it is compared (`String(data.success) === "false"`) rather than tested — `!data.success`
+passes every declined submission, because `"false"` is truthy. And a response that isn't JSON at all
+falls through to success on purpose, keeping the old benefit-of-the-doubt behaviour.
+
+**The `.catch()` logs the error via `console.warn` before showing the generic sentence.** It is
+deliberately the only place the real cause survives: the visitor-facing message is identical for
+every failure, but the two modes are not — a request blocked before it left the browser (a privacy
+extension or blocklist hitting `formsubmit.co`, a corporate firewall, offline) rejects with a
+`TypeError`, while an HTTP error or a declined submission carries the text thrown upstream. Without
+the log every "something went wrong" report is unfalsifiable. Don't quieten it.
+
+**User-facing copy uses the British spelling — "enquiry" / "Enquire", never "inquiry".** The catalog
+CTAs ("Enquire about complete rotors"), the submit button ("Send Enquiry"), the `_subject` value and
+the search-empty and success strings in `script.js` all follow it.
 
 ### Clients marquee — the logo list is hand-duplicated
 `#clients`' `.slider-track` contains **every client logo twice** ("Set 1" / "Set 2" in the markup).
@@ -498,7 +537,7 @@ editing:
 **`activateCat()` must trigger a `ScrollTrigger.refresh()` after every category swap, but the two
 call sites need different timing.** Panel heights differ by thousands of pixels (Complete Rotors
 runs past 7000px, Autocoro 40 cards, Autoconer 27, Twin Discs 4 cards plus two short tables), so
-every trigger below `#products` — Manufacturers, Capabilities — goes stale after a swap unless
+every trigger below `#products` — Capabilities, the only one left there — goes stale after a swap unless
 refreshed; without this, some swaps left Capabilities'
 cards permanently invisible (wrong cached trigger position). But `ScrollTrigger.refresh()` briefly
 snaps scroll position to remeasure, and if that happens on the same frame as an in-flight smooth
@@ -938,10 +977,15 @@ There are **four** OEM partners: Phicomp (CH), Emil Broell (AT), Samatex (DE) an
 top of the page deliberately talks about only the **three European** ones:
 
 - The hero eyebrow reads `Germany · Austria · Switzerland → India`.
-- The first hero credential is `3` / "European OEM manufacturing partners — Germany, Austria &
-  Switzerland".
+- The first hero credential is `3` / "European OEM manufacturing partners", with the three countries
+  on their own line below it as a `.cred-countries` row — one `.cred-country` chip per country,
+  each an existing `.flag` swatch plus the country name as real text. The names used to be a
+  run-on tail of `.cred-label`. The flags carry no `title`/`aria-label` on purpose: the name is
+  right beside each one, so the swatch is decoration. Order is Germany · Austria · Switzerland,
+  matching the eyebrow and the About cluster label.
 - `.about-cluster` carries three flags (`flag-ch`, `flag-at`, `flag-de`) and "Direct from 3 elite
-  European OEM partners".
+  European OEM partners". It sits under `.about-lead` in the intro's right column — see
+  "About section hub".
 
 **This is not a stale count — do not "correct" it back to 4 or re-add `flag-tw` to `.about-flags`.**
 The owner asked for Taiwan off the hero and the About cluster while keeping it everywhere it is
@@ -974,7 +1018,20 @@ back into a blanket stock promise is a factual regression, not a copy improvemen
 *delivery* claim is accurate, a pan-India *stock* claim is not.
 
 ### About section hub
-The About section (`#about`) is a two-column intro plus `.about-hub`: the ETS mark on a circular
+**The two-column intro above the hub is headline-left / copy-right, and that split is the fix for a
+reported problem.** `.about-intro-left` holds the `// About us //` eyebrow and the 40px `<h2>`;
+`.about-intro-right` holds `.about-lead` and, beneath it, the `.about-cluster` flag block. It used
+to be eyebrow + flag cluster on the left against h2 + lead + CTA on the right, which left most of
+the left half empty — so don't move the heading back. The `1.05fr 0.95fr` ratio and the retained
+`align-items: center` go together: at that ratio the two columns land within ~15px of each other, so
+centring reads as aligned. `.about-intro-left h2` is the heading selector (it was
+`.about-intro-right h2`), in the base rules **and** in the `@media (max-width: 820px)` block.
+
+**The "Meet our manufacturers" CTA (`.about-cta`) was removed at the owner's request** — Manufacturers
+now sits directly below this section (see "Page section order"), so the button pointed one screen
+down. Don't re-add it as a missing conversion path; its CSS rules are gone too.
+
+The rest of the section is `.about-hub`: the ETS mark on a circular
 plate (`.hub-core` + `.hub-mark`), four fact cards around it (two left, two right), each card led by
 a small icon badge, and a short connector running from each card's inner edge to a dot on the
 circle. It is modelled on a reference layout supplied by the owner, adapted at their request — the

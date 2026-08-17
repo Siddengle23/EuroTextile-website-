@@ -154,7 +154,7 @@ img { max-width: 100%; }
 .nav-toggle.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
 
 /* ---- Hero ----------------------------------------------------------------- */
-.hero { position: relative; overflow: hidden; padding: 90px 0 100px;
+.hero { position: relative; overflow: hidden; padding: 52px 0 100px;
     background:
         radial-gradient(1100px 520px at 85% -12%, var(--glow), transparent 60%),
         radial-gradient(760px 460px at -8% 108%, rgba(37,101,165,.06), transparent 62%),
@@ -192,6 +192,13 @@ img { max-width: 100%; }
 .cred-item:first-child { border-top: none; }
 .cred-num { display: block; font-size: 34px; font-weight: 800; color: var(--primary); line-height: 1.05; }
 .cred-label { display: block; margin-top: 5px; font-size: 13.5px; color: var(--charcoal); }
+/* The three partner countries, on their own line below the label rather than as a run-on tail of
+   it. The panel is the narrow 1fr of the hero's 1.5fr/1fr grid, so wrapping to two lines at
+   mid-widths is expected, not a break. Flags reuse the shared .flag classes further down. */
+.cred-countries { display: flex; flex-wrap: wrap; gap: 7px 14px; margin-top: 10px; }
+.cred-country { display: inline-flex; align-items: center; gap: 6px;
+                font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.cred-country .flag { width: 18px; height: 12px; }
 
 /* brand chevrons echoing the ETS mark */
 .chevron { position: absolute; top: 0; height: 100%; width: 220px; background: var(--primary); opacity: .10; z-index: 1; }
@@ -202,18 +209,19 @@ img { max-width: 100%; }
 .about { background: linear-gradient(180deg, var(--mist) 0%, var(--cloud) 34%); }
 
 /* two-column intro */
-.about-intro { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 48px; align-items: center; margin-bottom: 40px; }
+/* Headline left, lead + flag cluster right. The ratio favours the left because it now carries the
+   40px h2; at 1.05/0.95 the two columns land within ~15px of each other in height, which is why
+   align-items:center still reads as aligned rather than as a gap. */
+.about-intro { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; margin-bottom: 40px; }
 .about-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 24px; }
 .about-eyebrow i { font-style: normal; opacity: .5; }
-.about-cluster { display: flex; align-items: center; gap: 15px; }
+.about-cluster { display: flex; align-items: center; gap: 15px; margin-top: 24px; }
 .about-flags { display: flex; }
 .about-flags .flag { width: 34px; height: 23px; margin-right: -8px; border: 2px solid #fff; border-radius: 4px; box-shadow: var(--shadow-lift); }
 .about-cluster-label { font-size: 13.5px; font-weight: 600; color: var(--charcoal); line-height: 1.35; }
-.about-intro-right h2 { font-size: 40px; line-height: 1.14; letter-spacing: -.01em; }
-.about-intro-right h2 .muted { color: var(--graphite); font-weight: 800; }
-.about-lead { margin-top: 18px; color: var(--charcoal); font-size: 16.5px; max-width: 58ch; }
-.about-cta { margin-top: 26px; }
-.about-cta span { margin-left: 4px; font-weight: 700; }
+.about-intro-left h2 { font-size: 40px; line-height: 1.14; letter-spacing: -.01em; }
+.about-intro-left h2 .muted { color: var(--graphite); font-weight: 800; }
+.about-lead { color: var(--charcoal); font-size: 16.5px; max-width: 58ch; }
 
 /* brand hub with orbiting fact cards
    ---------------------------------------------------------------------------
@@ -301,7 +309,7 @@ img { max-width: 100%; }
 }
 @media (max-width: 820px) {
     .about-intro { grid-template-columns: 1fr; gap: 26px; margin-bottom: 30px; }
-    .about-intro-right h2 { font-size: 31px; }
+    .about-intro-left h2 { font-size: 31px; }
 }
 @media (max-width: 560px) {
     .about-hub { grid-template-columns: 1fr; }
@@ -712,7 +720,7 @@ section { padding: var(--gap-section) 0; }
 @media (max-width: 640px) {
     .logo-word { font-size: 12.5px; }
     .nav-logo-img { height: 40px; }
-    .hero { padding: 56px 0 64px; }
+    .hero { padding: 34px 0 64px; }
     .hero h1 { font-size: 34px; }
     .hero-lead { font-size: 16px; }
     .section-head h2, .contact-copy h2 { font-size: 30px; }

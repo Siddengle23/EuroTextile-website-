@@ -80,10 +80,6 @@
     <div class="utility-strip">
         <div class="wrap util-inner">
             <span class="util-tagline">Sole-selling agent &amp; distributor for elite European OEMs</span>
-            <span class="util-contacts">
-                <a href="tel:+919881470883">+91&nbsp;98814&nbsp;70883</a>
-                <a href="mailto:dengle@eurotextilespares.com">dengle@eurotextilespares.com</a>
-            </span>
         </div>
     </div>
 
@@ -306,11 +302,12 @@
     <!-- ABOUT -->
     <section id="about" class="about">
         <div class="wrap">
-            <!-- Headline left, copy right. The left column used to hold only the eyebrow and the
-                 flag cluster against a much taller right column, which left most of the left half
-                 empty; moving the h2 across and the cluster down fills both. The "Meet our
-                 manufacturers" CTA was removed at the owner's request — Manufacturers now sits
-                 directly below this section, so the button pointed one screen down. -->
+            <!-- Headline left, copy right. The left column used to hold only the eyebrow against a
+                 much taller right column, which left most of the left half empty; moving the h2
+                 across fills both. Two things that used to sit in the right column were removed at
+                 the owner's request and should not come back: the "Meet our manufacturers" CTA
+                 (Manufacturers now sits directly below this section, so the button pointed one
+                 screen down) and the flag cluster naming the three European OEM countries. -->
             <div class="about-intro">
                 <div class="about-intro-left">
                     <span class="about-eyebrow"><i>//</i> About us <i>//</i></span>
@@ -321,14 +318,11 @@
                         Euro Textile Spares Pvt. Ltd. is a Pune based import and distribution hub, acting as
                         the on the ground representative in India for elite overseas machinery manufacturers.
                     </p>
-                    <div class="about-cluster">
-                        <div class="about-flags">
-                            <span class="flag flag-ch" title="Switzerland"></span>
-                            <span class="flag flag-at" title="Austria"></span>
-                            <span class="flag flag-de" title="Germany"></span>
-                        </div>
-                        <span class="about-cluster-label">Direct from 3 elite European OEM partners<br>Germany · Austria · Switzerland</span>
-                    </div>
+                    <p class="about-lead">
+                        For a spinning mill that means one point of contact in Pune rather than a
+                        supplier several time zones away — one company to send the enquiry to, and
+                        one to follow it through until the part is on the floor.
+                    </p>
                 </div>
             </div>
 
@@ -557,10 +551,6 @@
                         </dl>
                     </div>
 
-                    <div class="parts-toolbar">
-                        <input type="search" class="parts-search" data-target="rotorCupTable,solidRotorTable" placeholder="Search rotor type…" aria-label="Search rotor type tables">
-                    </div>
-
                     <h4 class="parts-group-title" id="sub-rotor-cup">Rotor cup &amp; bearing — types &amp; service life</h4>
                     <p class="panel-note">Semi-automated OE machines (Schlafhorst/Oerlikon/Saurer BD-series,
                     Rieter BT9xx/R3x, Taitan, Rifa). Supplied as one balanced unit — rotor, cup and bearing.</p>
@@ -584,6 +574,16 @@
                     bearing is still serviceable, the cup alone can be replaced instead of the complete unit.</p>
                     <p class="panel-note">The photos show two examples. The full range of groove types,
                     diameters and coatings is listed below — other types on request.</p>
+
+                    <!-- Sits here, directly above the table it filters, rather than at the top of
+                         the panel — the two were separated by the heading, the photo pair and three
+                         notes, so a visitor reaching the table had already scrolled past the search.
+                         Position is cosmetic only: wireSearch() resolves both ids out of
+                         data-target, so this one box still drives the SolidRotor chip list further
+                         down as well (hence the plural aria-label). -->
+                    <div class="parts-toolbar">
+                        <input type="search" class="parts-search" data-target="rotorCupTable,solidRotorTable" placeholder="Search rotor type…" aria-label="Search rotor type tables">
+                    </div>
 
                     <p class="parts-count" data-count="rotorCupTable"></p>
                     <div class="table-scroll">
@@ -647,6 +647,9 @@
                         <a class="btn-primary btn-sm" href="catalogues/Autocoro Catalogue Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
+                <p class="panel-note">The parts below are a selection of the range — over 3,500
+                Autocoro parts are available in all. Browse the catalogue for the full listing, or
+                <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
                 <p class="parts-count" data-count="autocoroParts"></p>
                 <div class="parts-grid" id="autocoroParts"><!-- injected by script.js --></div>
             </div>
@@ -667,6 +670,9 @@
                         <a class="btn-primary btn-sm" href="catalogues/Autconer Catalogue Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
+                <p class="panel-note">The parts below are a selection of the range — over 3,000
+                Autoconer parts are available in all. Browse the catalogue for the full listing, or
+                <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
                 <p class="parts-count" data-count="autoconerParts"></p>
                 <div class="parts-grid" id="autoconerParts"><!-- injected by script.js --></div>
             </div>
@@ -693,6 +699,9 @@
                         <a class="btn-primary btn-sm" href="catalogues/RIETER Zinser Ringspinning Parts Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
+                <p class="panel-note">The parts below are a selection of the Rieter and Zinser
+                range. Browse the catalogue for the full listing, or
+                <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
 
                 <h4 class="ring-group-title" id="sub-rieter-ring">Rieter Ring</h4>
                 <p class="parts-count" data-count="rieterParts"></p>

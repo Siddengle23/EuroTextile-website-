@@ -64,8 +64,18 @@ For automated checking, headless Chrome works, with several Windows gotchas:
   list via `Start-Process` works. Pass `--no-sandbox`, and read the progress line ("N bytes written
   to file …") off `-RedirectStandardError`.
 - It **clamps the window to roughly 500px minimum width**, so screenshots of the ≤640px breakpoints
-  render wider than requested — 500px still exercises the ≤640px rules, but verify true phone widths
-  in a real browser.
+  render wider than requested. 500px still exercises the ≤640px rules — and **for true phone widths,
+  put the page in an iframe**: the clamp is on the window, not on nested browsing contexts, so
+  media queries inside `<iframe src="index.html" width="360" height="900">` evaluate at 360px.
+  Host that iframe from a throwaway `index.screenshot-mobile.html` **in the project root** (the
+  iframe `src` is relative), pass **`--allow-file-access-from-files`** so the host can reach
+  `iframe.contentDocument`, and drive everything from a script in the host: set
+  `d.documentElement.style.scrollBehavior = "auto"`, `scrollIntoView()`/`scrollTo()` to bring a
+  section into the 900px frame, `.click()` a `.cat-tab` to switch panels, and read geometry with
+  `getBoundingClientRect()`. Note `innerWidth` comes back ~13px under the iframe's `width`
+  attribute (the scrollbar), which is fine — 360 → 347 still lands inside both the ≤420px and
+  ≤640px blocks. This is how the 84px-navbar/56px-padding anchor bug and the
+  `section[id] { scroll-margin-top }` fix were both measured.
 - Rapid successive launches can fail to write the screenshot unless each gets its own
   `--user-data-dir`.
 - Give `--virtual-time-budget` ~15000 and an explicit tall `--window-size`. **`1280,9000` is not
@@ -223,7 +233,15 @@ inside a `requestAnimationFrame` — deferred one frame so the panel's freshly-t
 its `.cat-panel.is-active` entrance animation (see "Motion layer") have settled before the target's
 position is measured. It calls `refreshAfterScroll()` on every `a[data-cat]` click (see "Motion
 layer"). `.parts-group-title, .ring-group-title` carry `scroll-margin-top: 100px` to clear the
-sticky 84px navbar; a new anchor on some other element needs its own. `wireHashDeepLink()` handles
+sticky 84px navbar, and **`section[id]` carries the same 100px** for the six section-level nav
+targets — so a new anchor only needs its own if it is neither a section nor one of those headings.
+The section rule is a mobile fix: `.nav-inner` is `height: 84px` at *every* width (the `≤640px`
+block only shrinks `.nav-logo-img`), while `--gap-section` halves to 56px at `≤900px`, so
+`section { padding: var(--gap-section) 0 }` stopped clearing the bar and every section `<h2>` landed
+with its top ~28px underneath it. On desktop 80px against 84px was close enough to pass unnoticed,
+which is why it survived so long. `#home` is a `<header>`, deliberately unmatched — it is the top of
+the page, where a scroll margin clamps to 0 anyway. Keep the two values equal.
+`wireHashDeepLink()` handles
 the cold-load case (a copied/bookmarked sub-link), where the target's panel is `display:none` and a
 native jump would skip it entirely.
 
@@ -454,21 +472,35 @@ none of them shows up in a screenshot.
   Chrome's Auto Dark Theme force-darkens the page, characteristically lightening `var(--ink)` text
   while leaving `rgba()` white backgrounds alone (i.e. white on white). The two declarations are a
   pair — change both or neither.
-- **The utility strip shows the tagline on phone portrait, not the phone number and email.** The
-  `≤640px` block hides `.util-contacts` and shows `.util-tagline`; the contacts are already in the
-  Contact section and the footer, and the positioning line is the more useful thing to lead with.
+- **The utility strip carries the tagline and nothing else.** It used to pair `.util-tagline` at the
+  left with a `.util-contacts` phone/email block at the right; the owner had those removed, since
+  both are already in the Contact section and the footer, so `.util-inner` is now
+  `justify-content: flex-start` with a single child. Don't re-add contacts here. The `≤640px` block
+  still centres the tagline and relaxes `.util-inner`'s fixed `height: 38px` to `min-height`,
+  because the tagline wraps to two lines below ~400px and a fixed height would clip the second.
   Width alone is the test — phone landscape is wider than 640px — so **don't add an
-  `orientation: portrait` query**; a second breakpoint axis would compete with the width one. The
-  block also relaxes `.util-inner`'s fixed `height: 38px` to `min-height`, because the tagline wraps
-  to two lines below ~400px and a fixed height would clip the second.
+  `orientation: portrait` query**; a second breakpoint axis would compete with the width one.
+
+- **`.panel-note a` is underlined, and that is the one place the sitewide `a` convention is
+  overridden.** `a { text-decoration: none }` is right where position already signals linkness — nav,
+  footer, buttons — but the three subset notes on Autocoro/Autoconer/Ring Frame hold the site's only
+  **mid-sentence** links ("send us an enquiry"), where brand blue at 14.5px on a phone is the sole
+  cue and nothing else marks the word as a link (WCAG 1.4.1). Don't "tidy" the rule away for
+  consistency with the global one, and don't relax the global one to match. The link's ~20px tap
+  target is deliberately left alone: WCAG 2.5.8 exempts links inline in a sentence, and padding one
+  to 44px would wreck the paragraph's leading.
 
 `.table-scroll` also carries a scroll-shadow background at ≤640px so a table that continues
 off-screen says so. It is self-hiding — the `local` white covers move with the content, the
 `scroll` radial shadows are pinned to the box — so a table that fits shows nothing at all.
 
-**Headless Chrome cannot verify any of the widths that matter here.** It clamps `innerWidth` to
-500px even when asked for 360 (confirmed, not folklore), so 320–390px behaviour — the 420px block
-above especially — has to be checked in a real browser's responsive mode or on a device.
+**Headless Chrome clamps `innerWidth` to 500px even when asked for 360** (confirmed, not folklore) —
+but that clamp applies to the *window*, not to a nested browsing context, so **an `<iframe>` defeats
+it**: media queries inside `<iframe src="index.html" width="360">` evaluate against the iframe's own
+width, and 320–390px behaviour is verifiable headlessly after all. See the iframe bullet in the
+headless notes at the top of this file for the recipe. A real browser's responsive mode or a device
+is still the final word on anything touch- or Safari-specific (the `.nav-toggle` bugs above are the
+standing example — neither reproduces in Chrome at any width).
 
 ### Hero brand lockup (the `<h1>`)
 The hero headline is a **brand lockup**, not plain text: `<h1 class="hero-lockup">` contains an
@@ -606,6 +638,15 @@ alone produces zero visible space; 14px matches `.panel-note`'s own bottom margi
 inert on the other five panels, which still have exactly one `<p>` — a panel that grows a second
 paragraph gets the spacing for free, no new class needed.
 
+**Autocoro, Autoconer and Ring Frame each carry a subset caveat as a `.panel-note` directly under
+the `.parts-toolbar`**, above the `.parts-count` badge — the grids only hold the parts that have
+real photography (40 / 27 / 29 rows), so without it "40 parts shown" reads as the whole range. Each
+points at the `Browse Catalogue ↗` button in the toolbar immediately above it and links
+`#contact` for an enquiry. **Autocoro's and Autoconer's totals ("over 3,500" / "over 3,000") are
+copied from that panel's own `.panel-intro` sentence** — change one and the other has to move with
+it. Ring Frame's intro quotes no total, so its note names the two ranges instead. Per "Stock &
+availability claims" below, they say "a selection of the range", never "what we stock".
+
 Complete Rotors, Navels, and Twin Discs sell components fitted *inside* open-end/rotor-spinning
 machines (Rieter R-series, Schlafhorst/Saurer SE/BD/Autocoro, Suessen SC-series, Taitan, Rifa) —
 none of them is a standalone machine the way Autoconer/Autocoro/Ring Frame are. Their photos
@@ -626,9 +667,15 @@ machine housing — that's a deliberate choice, not an accident of cropping.
 
 Complete Rotors is the landing panel and carries the most, in this order inside its `.rotor-tables`
 wrapper below the `.panel-feature` block: a hand-authored rotor drawing (`.rotor-spec`, see its own section
-below), a `.coating-key` block decoding the D/DD/N/DN/DDN suffix, one search box, then the two
+below), a `.coating-key` block decoding the D/DD/N/DN/DDN suffix, then the two
 searchable type lists — a `.spec-table` of rotor cup/bearing types and a chip list of SolidRotor
-types — each preceded by a `.rotor-photo-pair` of two real product photos. Neither PhiComp range has
+types — each preceded by a `.rotor-photo-pair` of two real product photos. **The panel's one search
+box sits inside that first group, immediately above the rotor cup/bearing table** rather than at
+the top of the panel, where the heading, the photo pair and three notes separated it from the table
+it filters. Position is cosmetic: `wireSearch()` resolves both ids out of `data-target`, so the box
+still drives the SolidRotor chip list further down — which is what the plural
+`aria-label="Search rotor type tables"` is for, and why moving the box is not a reason to
+singularise it. Neither PhiComp range has
 *per-SKU* photography (four photos against 37 + 16 types), so the lists themselves still render as
 `<tr>`s and `<li>`s rather than photo `.part-card`s; the pairs are illustrative examples, which is
 why each is followed by a `.panel-note` saying so and pointing at the full list below. See
@@ -982,13 +1029,19 @@ top of the page deliberately talks about only the **three European** ones:
   each an existing `.flag` swatch plus the country name as real text. The names used to be a
   run-on tail of `.cred-label`. The flags carry no `title`/`aria-label` on purpose: the name is
   right beside each one, so the swatch is decoration. Order is Germany · Austria · Switzerland,
-  matching the eyebrow and the About cluster label.
-- `.about-cluster` carries three flags (`flag-ch`, `flag-at`, `flag-de`) and "Direct from 3 elite
-  European OEM partners". It sits under `.about-lead` in the intro's right column — see
-  "About section hub".
+  matching the eyebrow.
 
-**This is not a stale count — do not "correct" it back to 4 or re-add `flag-tw` to `.about-flags`.**
-The owner asked for Taiwan off the hero and the About cluster while keeping it everywhere it is
+The About section used to restate this a third time: an `.about-cluster` block of three flags
+(`flag-ch`, `flag-at`, `flag-de`) plus "Direct from 3 elite European OEM partners / Germany ·
+Austria · Switzerland", sitting under `.about-lead` in the intro's right column. **The owner had it
+removed** — see "About section hub". Its four CSS rules (`.about-cluster`, `.about-flags`,
+`.about-flags .flag`, `.about-cluster-label`) went with it; the `.flag` base rule and the country
+variants stay, because the hero credential chips and every panel's `.mfr-badge` still use them.
+
+**This is not a stale count — do not "correct" it back to 4, and don't reintroduce a flag row in
+the About intro.**
+The owner asked for Taiwan off the hero (and, at the time, off the since-removed About cluster)
+while keeping it everywhere it is
 load-bearing: the Manufacturers section (intro sentence + the CPU card), the Twin Discs panel's
 `CPU · Taiwan` badge, and the `<head>` metadata — the meta/OG/Twitter descriptions and the JSON-LD,
 which must keep mirroring the manufacturers grid.
@@ -1020,12 +1073,21 @@ back into a blanket stock promise is a factual regression, not a copy improvemen
 ### About section hub
 **The two-column intro above the hub is headline-left / copy-right, and that split is the fix for a
 reported problem.** `.about-intro-left` holds the `// About us //` eyebrow and the 40px `<h2>`;
-`.about-intro-right` holds `.about-lead` and, beneath it, the `.about-cluster` flag block. It used
+`.about-intro-right` holds **two `.about-lead` paragraphs** — the company description, then a short
+positioning line. It used
 to be eyebrow + flag cluster on the left against h2 + lead + CTA on the right, which left most of
 the left half empty — so don't move the heading back. The `1.05fr 0.95fr` ratio and the retained
 `align-items: center` go together: at that ratio the two columns land within ~15px of each other, so
 centring reads as aligned. `.about-intro-left h2` is the heading selector (it was
 `.about-intro-right h2`), in the base rules **and** in the `@media (max-width: 820px)` block.
+
+**The second paragraph replaced the `.about-cluster` flag block**, also at the owner's request. It
+is deliberately positioning copy carrying no number, stock promise or specification, so there is
+nothing in it that can drift out of sync with the hero credentials, the hub cards or Capabilities —
+keep any rewrite at that altitude. `.about-lead + .about-lead { margin-top: 14px }` is what
+separates the two paragraphs; the global `* { margin: 0 }` reset means deleting that rule makes them
+butt together with no gap, and 14px is the same figure `.panel-intro p + p` uses for the same
+reason.
 
 **The "Meet our manufacturers" CTA (`.about-cta`) was removed at the owner's request** — Manufacturers
 now sits directly below this section (see "Page section order"), so the button pointed one screen

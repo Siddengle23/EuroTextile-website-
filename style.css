@@ -82,11 +82,10 @@ img { max-width: 100%; }
     background: var(--navy); color: rgba(255,255,255,.85);
     font-size: 13px;
 }
-.util-inner { display: flex; justify-content: space-between; align-items: center; height: 38px; gap: 20px; }
+/* The strip carries the tagline alone — the phone/email that used to sit at the right were
+   removed at the owner's request, since both are already in the Contact section and the footer. */
+.util-inner { display: flex; justify-content: flex-start; align-items: center; height: 38px; gap: 20px; }
 .util-tagline { letter-spacing: .02em; }
-.util-contacts { display: flex; gap: 22px; }
-.util-contacts a { color: rgba(255,255,255,.85); }
-.util-contacts a:hover { color: #fff; }
 
 /* ---- Navbar --------------------------------------------------------------- */
 /* Deliberately NO backdrop-filter here. It used to carry saturate(140%) blur(6px) over a
@@ -209,19 +208,18 @@ img { max-width: 100%; }
 .about { background: linear-gradient(180deg, var(--mist) 0%, var(--cloud) 34%); }
 
 /* two-column intro */
-/* Headline left, lead + flag cluster right. The ratio favours the left because it now carries the
+/* Headline left, lead copy right. The ratio favours the left because it now carries the
    40px h2; at 1.05/0.95 the two columns land within ~15px of each other in height, which is why
    align-items:center still reads as aligned rather than as a gap. */
 .about-intro { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; margin-bottom: 40px; }
 .about-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 24px; }
 .about-eyebrow i { font-style: normal; opacity: .5; }
-.about-cluster { display: flex; align-items: center; gap: 15px; margin-top: 24px; }
-.about-flags { display: flex; }
-.about-flags .flag { width: 34px; height: 23px; margin-right: -8px; border: 2px solid #fff; border-radius: 4px; box-shadow: var(--shadow-lift); }
-.about-cluster-label { font-size: 13.5px; font-weight: 600; color: var(--charcoal); line-height: 1.35; }
 .about-intro-left h2 { font-size: 40px; line-height: 1.14; letter-spacing: -.01em; }
 .about-intro-left h2 .muted { color: var(--graphite); font-weight: 800; }
 .about-lead { color: var(--charcoal); font-size: 16.5px; max-width: 58ch; }
+/* The right column is two paragraphs. Under the global * { margin: 0 } reset they would butt
+   together with no gap at all; 14px matches .panel-intro p + p, which solves the same thing. */
+.about-lead + .about-lead { margin-top: 14px; }
 
 /* brand hub with orbiting fact cards
    ---------------------------------------------------------------------------
@@ -369,6 +367,11 @@ section { padding: var(--gap-section) 0; }
 .rotor-tables .parts-group-title { margin-top: 32px; }
 .rotor-tables .parts-group-title:first-child { margin-top: 0; }
 .panel-note { color: var(--charcoal); font-size: 14.5px; max-width: 680px; margin: 0 0 14px; }
+/* The site's only mid-sentence links ("send us an enquiry", in the three subset notes). Sitewide
+   `a` has no underline, which is right for nav/footer/button links where position already signals
+   linkness and wrong inside a paragraph — at 14.5px on a phone, brand blue alone is the only cue,
+   i.e. WCAG 1.4.1. Scoped here on purpose; don't relax the global `a` rule to match. */
+.panel-note a { text-decoration: underline; text-underline-offset: 2px; }
 .table-scroll { overflow-x: auto; border: 1px solid var(--hairline); border-radius: var(--r-card); background: #fff; margin-bottom: 8px; }
 .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
 .spec-table th, .spec-table td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--hairline); }
@@ -506,6 +509,12 @@ section { padding: var(--gap-section) 0; }
 /* These headings are the Products dropdown's sub-category anchor targets. The navbar is
    position:sticky at 84px, so without this a hash jump lands with the heading under it. */
 .parts-group-title, .ring-group-title { scroll-margin-top: 100px; }
+/* Same reason, for the six section-level nav targets. section{padding:var(--gap-section)} was the
+   only thing holding a heading clear of the sticky bar, and --gap-section halves to 56px at 900px
+   while .nav-inner stays 84px at every width — so on a phone the top ~28px of every section <h2>
+   landed underneath the navbar. #home is a <header> and deliberately not matched: it is the top of
+   the page, where a scroll margin clamps to 0 anyway. Keep this equal to the 100px above. */
+section[id] { scroll-margin-top: 100px; }
 .parts-group-title:first-child { margin-top: 0; }
 .parts-empty { grid-column: 1 / -1; color: var(--graphite); padding: 24px 0; font-size: 15px; }
 
@@ -757,14 +766,12 @@ section { padding: var(--gap-section) 0; }
     .vardhman-tagline { font-size: 9px; }
     .client-logo-name { font-size: 17px; }
     .clients-heading { font-size: 34px; }
-    /* Phone portrait shows the positioning line, not the contact details — the number and email are
-       already in the Contact section and the footer, and the tagline is the thing worth saying to a
-       first-time visitor. Width alone is the right test: phone landscape is wider than 640px, so
-       this block already means "phone portrait" without introducing an orientation media query.
-       The 38px fixed row has to relax to a min-height too — the tagline wraps to two lines below
-       ~400px, and a fixed height would clip the second one. */
+    /* The strip carries the tagline at every width now, but phone portrait centres it rather than
+       leaving it hard against the left edge. Width alone is the right test: phone landscape is
+       wider than 640px, so this block already means "phone portrait" without introducing an
+       orientation media query. The 38px fixed row has to relax to a min-height too — the tagline
+       wraps to two lines below ~400px, and a fixed height would clip the second one. */
     .utility-strip { font-size: 11.5px; }
-    .util-contacts { display: none; }
     .util-tagline { display: block; text-align: center; line-height: 1.35; }
     .util-inner { justify-content: center; height: auto; min-height: 38px; padding: 7px 0; }
     /* Touch targets. .btn-sm carries "Enquire about …" and "Browse Catalogue ↗" — the conversion

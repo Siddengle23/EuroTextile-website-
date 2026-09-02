@@ -22,7 +22,7 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
   Loaded via `<script>` tag *before* `script.js`, so these are consumed as globals, not imports.
 - `robots.txt` / `sitemap.xml` / `images/og-image.jpg` — SEO and social-preview assets. The
   absolute URLs in the `<head>` meta block, in `robots.txt` and in `sitemap.xml` all assume the
-  site is served from `https://www.eurotextilespares.in/` — **confirmed by the owner at launch.**
+  site is served from `https://eurotextilespares.in/` — **confirmed by the owner at launch.**
   Note the `.in`: the host was previously guessed as `.com` from the contact email domain, and that
   guess was wrong. The contact email *does* stay `dengle@eurotextilespares.com`, so the two domains
   deliberately differ — do not "align" them, and in particular never bulk-replace the domain, since
@@ -31,6 +31,19 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
   `og:url`/`og:image` must stay absolute — relative paths are ignored
   by WhatsApp/LinkedIn/Facebook. `og-image.jpg` is 1200×630, generated with PowerShell +
   `System.Drawing` from `images/Logo_black.png`; the generator is not committed.
+  **The `www.` question is CLOSED (2026-09-02) — the host is the bare apex, and `CNAME` is
+  correct as it stands.** This was open for a long time; it is settled now, so don't re-raise it.
+  The owner's GitHub Pages settings show Custom domain `eurotextilespares.in` and *"Your site is
+  live at https://eurotextilespares.in/"*, which is exactly what the repo's `CNAME` holds. The nine
+  URLs that used to carry `www.` — the canonical link, `og:url`, `og:image`, `twitter:image`, the
+  three JSON-LD URLs (`url`/`logo`/`image`), `sitemap.xml`'s `<loc>` and `robots.txt`'s `Sitemap:`
+  line — were stripped to match. **Never add `www.` back to any of them, and never add it to
+  `CNAME`.** `www.eurotextilespares.in` does resolve (a DNS CNAME alias to `siddengle23.github.io`),
+  but only as a 301 to the apex, so a `www.` URL here would point every canonical and social
+  reference at a redirect — which is what this fixed. The image URLs are the practical reason it
+  mattered: WhatsApp and older LinkedIn scrapers are unreliable about following redirects for
+  `og:image`. Note the standing rule above still applies — this was a `.in`-host question only, and
+  nothing about it touches the `.com` contact address or the formsubmit.co endpoint.
 - `.gitignore` — keeps the raw source-photo folders out of the repo. See "Reference material vs.
   served assets".
 - `script.js` — vanilla JS in a single IIFE, wired up on `DOMContentLoaded`. No modules, no npm
@@ -41,11 +54,18 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
 - `README.md` — the GitHub landing page. **It is a front door, not a second copy of this file**:
   what the site is, the stack, how to run it, a file map, and a pre-deploy checklist, then it points
   here for anything deeper. Keep it that way — depth added there is depth that will drift out of
-  sync with this file. Three things in it *are* duplicated from here and must be updated together:
-  the `https://www.eurotextilespares.in/` host, the formsubmit.co activation caveat, and
-  the note that the raw photo folders still sit in git history. It also quotes two measured figures
+  sync with this file. **Four** things in it *are* duplicated from here and must be updated together:
+  the `https://eurotextilespares.in/` host (apex, plus its don't-add-`www.` warning), the
+  formsubmit.co activation caveat, the note that the raw photo folders still sit in git history, and
+  the `sitemap.xml` `<lastmod>` reminder. It also quotes two measured figures
   (~24 MB working tree against a ~311 MB `git clone`) — re-measure rather than trusting them if the
-  history is ever rewritten. There is deliberately **no LICENSE file**: the repo carries the
+  history is ever rewritten. **Both were re-measured on 2026-09-02 and are correct**: 24 MB across
+  501 tracked files, 312 MB of `.git`. Note the *checked-out* folder here is ~305 MB, because the
+  gitignored raw photo folders are still on disk — the 24 MB figure is what a fresh clone gets, which
+  is what the README means, so don't "correct" it against a local `du`.
+  The README also carries a one-line pointer saying the copy follows a documented voice with
+  load-bearing product facts; that is deliberately a pointer, not a copy of the "Copy voice" rules.
+  There is deliberately **no LICENSE file**: the repo carries the
   manufacturer catalogue PDFs, the manufacturer marks and the client logos, none of which are the
   company's to license, so an open-source licence would over-grant. The README says so explicitly;
   don't "fix" the omission by adding MIT.
@@ -53,6 +73,30 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
 There is no `package.json`, no linter, no test suite, and no build tooling — this is intentional,
 not an oversight. To preview changes, open `index.html` directly in a browser or serve the folder
 with any static file server; there is no compile/bundle step to run first.
+
+**`node` is on PATH (v24) even though the project doesn't use it, and for anything data-shaped it
+beats a screenshot by a mile.** `data.js` is plain global `const`s, so it loads without any parsing
+work — read the file, append an export line, run it in a `vm` context (a bare `eval` won't do:
+`const` stays scoped to the eval and the names come back undefined):
+
+```js
+const fs=require('fs'), vm=require('vm'); const c={}; vm.createContext(c);
+vm.runInContext(fs.readFileSync('data.js','utf8')+';this.O={ROTOR_CUP_BEARING,RIETER_STEEL_BELTS};',c);
+```
+
+That is how the steel-belt arithmetic below (`C = B×F`, `E = F+1`, `D = C+2A+20`) is actually
+checked, and it also covers: every `img` path in `data.js` + every `src=` in `index.html` existing
+on disk, duplicate part images / rotor types / belt codes, the `NAVEL_SERIES` keys matching the
+`series` strings, each `data-target` having a `.parts-count[data-count]`, and the clients marquee's
+two halves being identical. None of those are visible in a screenshot; all are a few seconds in node.
+Use headless Chrome for what is genuinely visual or computed-style, not for data.
+
+Note what is **not** there, since two of them look present: `python`/`python3` resolve to the Windows
+Store stubs (they print an install advert and exit, they do not run), and `convert` is
+`C:\Windows\System32\convert.exe`, the FAT→NTFS disk tool — **not ImageMagick**, which is genuinely
+absent along with `magick` and `jq`. So image work still goes through PowerShell + `System.Drawing`,
+exactly as the photo pipeline section says. `npm` exists but installing anything would create the
+`package.json` this project deliberately doesn't have — don't.
 
 For automated checking, headless Chrome works, with several Windows gotchas:
 
@@ -63,6 +107,12 @@ For automated checking, headless Chrome works, with several Windows gotchas:
   sandbox Chrome produces no output at all and writes no file, again with no error; the same argument
   list via `Start-Process` works. Pass `--no-sandbox`, and read the progress line ("N bytes written
   to file …") off `-RedirectStandardError`.
+- **Every path handed to `-ArgumentList` must be quoted, because the project path contains spaces.**
+  `Start-Process` splits the argument list on whitespace, so a bare
+  `--screenshot=D:\Euro Textile Spares\…` or an unquoted `file:///…` URL reaches Chrome as several
+  arguments and it dies with `Multiple targets are not supported in headless mode` — a real error
+  on stderr, but nothing is written and the message names neither the flag nor the path. Wrap each
+  one: `"--screenshot=`"$out`""`, `"`"$url`""`, and the same for `--user-data-dir`.
 - It **clamps the window to roughly 500px minimum width**, so screenshots of the ≤640px breakpoints
   render wider than requested. 500px still exercises the ≤640px rules — and **for true phone widths,
   put the page in an iframe**: the clamp is on the window, not on nested browsing contexts, so
@@ -136,6 +186,13 @@ For automated checking, headless Chrome works, with several Windows gotchas:
 (`gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-utils`, `gsap-performance`,
 `gsap-plugins`), plus `design-taste-frontend` and `ui-ux-pro-max` design skills. These are editor
 tooling, not shipped assets — never link them from the site.
+
+Two further skills are installed **user-level** at `~/.claude/skills/`, deliberately outside this
+repo so third-party MIT code stays out of a client repo that carries no LICENSE: `humanizer` (used
+for the copy pass — see "Copy voice" below) and `llm-council`. Being global, they are not visible in
+`git status` here and a fresh clone will not have them. Note `llm-council` spawns **11 subagents**
+per invocation and ships with soft auto-triggers ("should I X or Y", "which option") left intact by
+choice, so it can fire itself on an ordinary question.
 
 ## Architecture
 
@@ -307,6 +364,37 @@ dropping focus to the top of the document strands keyboard users), and pins Tab 
 button while open. **It zooms one photo; it is deliberately not a gallery** — there is no
 prev/next control, and `.lb-counter` is reused to show the part label rather than "3 / 40".
 
+### Contact details list (`.contact-details`)
+The left column of `#contact` — Registered Office, Email, Phone, GSTIN, LinkedIn. Each `<li>` is a
+`<span>` label (uppercase, `--primary-soft`, `display: block`) followed by the value. Pure markup,
+no JS.
+
+**`.contact-details li span` styles *every* span in the list, including ones added as wrappers
+rather than labels.** That selector is `(0,1,2)`, so a new single-class rule loses to it and the
+element silently inherits label styling — 12px uppercase, pale blue, `display: block`,
+`margin-bottom: 3px`. This bit the LinkedIn icon wrapper: `.li-icon` at `(0,1,0)` rendered the glyph
+`--primary-soft` instead of white and the inherited bottom margin pushed it 1.45px off the text
+centre. Both icon rules are therefore written as `.contact-details .li-icon` to outweigh it, and
+they re-state `color: inherit` and `margin-bottom: 0` explicitly. **Anything new inside one of
+these rows wants a non-`<span>` element or a `.contact-details`-qualified selector.**
+
+**The LinkedIn glyph is the site's one filled inline SVG.** Every other hand-authored icon
+(`.hub-badge`, the rotor drawing) is line art under `fill:none; stroke:currentColor`; a solid brand
+mark needs the opposite, so `.contact-details .li-icon svg` sets `fill: currentColor` and no
+stroke. Folding the two into one shared icon rule renders it as nothing — `fill:none` on a shape
+that has no stroke draws literally zero pixels, with no console error. It follows every other
+convention: hand-authored inline SVG, no presentation attributes on the path, no icon library, and
+`aria-hidden="true"` on the wrapping `<span>` rather than the `<svg>` (the `.hub-badge` pattern)
+because the row's own `LinkedIn` label and the anchor text already name the link twice.
+
+`.contact-li` carries the `inline-flex` that centres glyph against text. It is scoped to that one
+anchor and **not** added to `.contact-details a`, because the Phone row holds two anchors separated
+by a literal `·` and blockifying them would disturb that spacing. No 44px touch target here: a link
+inline in a row of running text is the WCAG 2.5.8 exemption, same reasoning as `.panel-note a`.
+
+Three separate places carry the LinkedIn URL — this row, the footer's Contact column, and the
+JSON-LD `sameAs` array in the `<head>`. Changing the company page means changing all three.
+
 ### Contact form (`script.js` `wireForm()`)
 Posts to **formsubmit.co** (`https://formsubmit.co/ajax/dengle@eurotextilespares.com`) via
 `fetch`, not a native form POST — `wireForm()` calls `preventDefault()`, checks
@@ -340,6 +428,15 @@ the log every "something went wrong" report is unfalsifiable. Don't quieten it.
 **User-facing copy uses the British spelling — "enquiry" / "Enquire", never "inquiry".** The catalog
 CTAs ("Enquire about complete rotors"), the submit button ("Send Enquiry"), the `_subject` value and
 the search-empty and success strings in `script.js` all follow it.
+
+**The same rule covers "Catalogue", never "Catalog".** The hero CTA and the products eyebrow were
+American until 2026-09-01, while the three panel buttons ("Browse Catalogue ↗") were already
+British; all visible copy now agrees. Two things the rule does *not* reach, so **never bulk-replace
+this word**: the `catalogues/` folder path inside those buttons' `href`s, and `catalog` inside HTML
+comments. One linked file is genuinely named `Autconer Catalogue Euro Textile.pdf` (the typo is in
+the file itself) and its `href` must keep matching it. Note the hero CTA deliberately keeps the verb
+**Explore**, not "Browse": the three `Browse Catalogue ↗` buttons open PDFs while the hero button
+scrolls to `#products` on the page, so the different verb separates the two actions.
 
 ### Clients marquee — the logo list is hand-duplicated
 `#clients`' `.slider-track` contains **every client logo twice** ("Set 1" / "Set 2" in the markup).
@@ -644,8 +741,12 @@ real photography (40 / 27 / 29 rows), so without it "40 parts shown" reads as th
 points at the `Browse Catalogue ↗` button in the toolbar immediately above it and links
 `#contact` for an enquiry. **Autocoro's and Autoconer's totals ("over 3,500" / "over 3,000") are
 copied from that panel's own `.panel-intro` sentence** — change one and the other has to move with
-it. Ring Frame's intro quotes no total, so its note names the two ranges instead. Per "Stock &
-availability claims" below, they say "a selection of the range", never "what we stock".
+it. Ring Frame quotes no total at all — its intro names what the panel covers (the Rieter and
+Zinser ranges plus the steel strips and belts) and its note repeats the two OEM names a few
+elements below. **That overlap is deliberate and the two sentences do different jobs**: the intro
+says what the panel contains, the note says the grids show only a selection of it. Don't collapse
+them into one. Per "Stock & availability claims" below, all three notes say "a selection of the
+range", never "what we stock".
 
 Complete Rotors, Navels, and Twin Discs sell components fitted *inside* open-end/rotor-spinning
 machines (Rieter R-series, Schlafhorst/Saurer SE/BD/Autocoro, Suessen SC-series, Taitan, Rifa) —
@@ -797,7 +898,18 @@ needs no JS change, only the attribute. A single input can drive more than one c
 `"rieterParts,zinserParts,steelBeltTable"` — two photo grids and a table, mixed freely) —
 `wireSearch()` splits on the comma and re-runs the filter/count/empty-state logic per ID. Each
 target needs its own `.parts-count[data-count="<id>"]`; without one, `updateCount()` returns early
-and the count silently never appears. Matching also tries a
+and the count silently never appears.
+
+**A `.parts-search` with no `data-target` at all takes the whole page down — this is the one
+unguarded spot in `script.js`.** `wireSearch()` opens with
+`input.getAttribute("data-target").split(",")`, and `getAttribute` returns `null` when the
+attribute is absent, so the `.split()` throws. It throws *inside* the `DOMContentLoaded` handler
+and `wireSearch()` is near the front of that list, so the exception takes `wireTabs()`,
+`wireHashDeepLink()`, `wireLightbox()`, `wireNav()`, `wireForm()` and `wireMotion()` with it:
+dead tabs, dead hamburger, dead contact form, no animation, one console error naming only the
+search. Every renderer around it guards (`if (!el || !parts) return`) — this one doesn't. All four
+current inputs carry the attribute, so it is latent rather than live; the trap is adding a fifth
+search box and forgetting it. Matching also tries a
 punctuation-stripped comparison (`normalizeSearch()`, strips everything but `a-z0-9` from both the
 query and the stored string) alongside the raw substring match, so a query typed without spaces or
 slashes (e.g. `"T34DD"`) still matches a stored value like `"t 34 dd"`. The "no results" message
@@ -999,29 +1111,133 @@ Only `.rotor-index` rotates, via `transform-box: fill-box; transform-origin: cen
 circles are concentric, so the group's fill-box centre *is* the rotor centre and no coordinates are
 duplicated in the CSS.
 
-### Known open item — groove-type tags vs. the data
-The Complete Rotors `.info-tags` summary in `index.html` does **not** match what's actually in
-`data.js`, and this is unresolved (owner is checking the PhiComp leaflet — do not "fix" it by
-guessing):
+### Groove-type tags vs. the data — resolved, they are meant to differ
+The Complete Rotors `.info-tags` summary in `index.html` does not match `ROTOR_CUP_BEARING` /
+`SOLID_ROTOR` letter-for-letter, and **that is correct — do not "fix" either side to agree.**
+Confirmed by the owner: the tag lists the groove types **available**, while the two tables are a
+**subset**. Not every rotor PhiComp makes has a row; the panel's own copy says so ("other types on
+request"), and the Ø ranges work the same way — the rotor drawing's figcaption already reads
+"larger diameters on request".
 
-- The SolidRotor tag lists `Ts`, but `SOLID_ROTOR` has **`Tx`** (`Tx 633 DD`) and no `Ts` at all.
-- The cup/bearing tag lists `T · V · Z · R · Tc · U · Tr`, while `ROTOR_CUP_BEARING` also carries
-  `Ts` (`Ts 36 D`), `Vs` (`Vs 34 DN`) and an `S` groove (`C248/S-D`).
+So both directions of mismatch are expected, and neither is drift:
 
-Two possibilities, both plausible: the tag is a deliberate marketing simplification, or it is a
-typo. **Separately, the stated groove Ø ranges may be narrower than the data.** If the trailing
-digits of a type code are the groove diameter, then `C250`/`C254`/`C248` put cup/bearing at up to
-54 mm and `S 652` puts SolidRotor at 52 mm — against the published "30–46 mm (cup/bearing) ·
-28–46 mm (SolidRotor)". That reading is unconfirmed. Resolve against the leaflet, not the codes.
+- A letter in the tag with **no row** in the table — the SolidRotor tag lists `Ts` while
+  `SOLID_ROTOR` carries `Tx` (`Tx 633 DD`) and no `Ts`. Available, just not tabulated.
+- A type in the table **not named** in the tag — `ROTOR_CUP_BEARING` carries `Ts` (`Ts 36 D`),
+  `Vs` (`Vs 34 DN`) and an `S` groove (`C248/S-D`) against a tag reading
+  `T · V · Z · R · Tc · U · Tr`.
+
+The same reasoning disposes of the old suspicion that the published Ø ranges ("30–46 mm
+(cup/bearing) · 28–46 mm (SolidRotor)") were narrower than the data because `C250`/`C254`/`C248`
+and `S 652` read as larger diameters. Those ranges are the standard offering, not a bound on what
+exists. **This was logged as an open item for a long time; it is closed. Re-raising it is churn.**
 
 (The related inconsistency that *was* fixed: the rotor drawing's `dim-label` and figcaption said
 "Ø 28–46 mm" while sitting under a heading reading "Rotor cup & bearing" — 28–46 is the SolidRotor
 range. Both now read 30–46 mm, matching the info tag. Per the SVG's `aria-hidden` rule, the label
 and the caption always change together.)
 
+### Copy voice — the humanizer pass now covers the whole page
+The `humanizer` skill (a third-party skill installed at `~/.claude/skills/humanizer/`, **not** in
+this repo) was run over the site's copy in two sittings, both on 2026-09-01/02: first the hero,
+About and Manufacturers, then everything else. **The page is now one voice throughout** — there is
+no "unedited half" left to bring into line, so a report that some section still reads as sales copy
+is a finding about that section, not a leftover from a partial pass.
+
+Words removed across the two passes: `premium` (mills, meta, footer), `elite` (manufacturers,
+utility strip, capabilities), `superior` (yarn quality), `optimal` (Broell card, navels),
+`dedicated`, `authentic` (→ `genuine`, the word the rest of the site already uses),
+`high-quality`, `High-End`, `excellent`, `seamlessly`, `leading`, `significantly`, and
+`protect your bottom line`. Verbless noun piles were given a subject rather than reworded — the
+Manufacturers and Products `.section-subtext`, the Mills `.hub-card`, and Capabilities cards 01–04,
+which now all open `We …`. Shallow `-ing` phrases (`ensuring stable rotor speeds`,
+`Navigating Indian customs`, `delivering genuine parts`) became plain verbs.
+
+**One unbacked claim was replaced rather than reworded, and the replacement is the pattern to copy.**
+Ring Frame's `.panel-intro` read `engineered for reliable, repeatable performance and minimum
+downtime` — a performance promise with no number behind it. It now reads `covering both the Rieter
+and Zinser ranges plus steel strips and conveyor belts`, which asserts nothing the panel doesn't
+already show below it (the two `ring-grid`s and the two belt sections, matching the four sub-links
+in the nav's Ring Frame flyout). So the sentence is shorter than the original but longer than the
+bare version it briefly passed through — **that is a finished state, not drift caught mid-edit.**
+When a section loses puffery and looks thin afterwards, restate the panel's own structure like this
+rather than inventing a spec or putting the sales line back.
+
+**Three claims are load-bearing and were preserved word for word while the sentences around them
+changed** — check these before rewording any of the three:
+- Capabilities card 02's `fast-moving items from our Pune stock, the rest imported to order` (see
+  "Stock & availability claims"; widening it is a factual regression, not a copy improvement).
+- The Mills `.hub-card` tail `supported by pan-India distribution`, which the About-hub section
+  quotes when explaining what the fourth card may not say.
+- Autocoro's and Autoconer's `over 3,500` / `over 3,000`, which each mirror their own panel's
+  `.panel-intro` sentence.
+
+One deliberate survivor: **Capabilities card 04 keeps the title `Premium Quality, Better Value`, by
+the owner's decision.** It is the only `premium` left in visible copy. The card's *body* was
+rewritten (the price claim stays, `leading` / `significantly` /
+`without compromising on performance` are gone); the title was explicitly not. Don't strip it as a
+missed word.
+
+The pass deliberately did **not** touch two things documented elsewhere in this file: the declined
+hyphenation ("Pune based", "on the ground" — see the next section) and the CPU card's bare `N` disc
+designation. Both survived two passes byte-identical while the sentences around them were rewritten
+twice; keep doing that.
+
+**The dash rule, which is not the humanizer's default §14 blanket ban.** Three cases:
+- **En dash ranges stay.** `Ø 30–46 mm`, `Autocoro 8–11`, `BD3xx–BD8`, `types A–C` are correct
+  typography on product facts. So is `Pune – 411 038` in the postal address.
+- **An em dash after a bold term in a heading or figcaption stays** — it is a label separator, not a
+  prose connector. Nine of these are left, on `Rotor cup & bearing`, `SolidRotor`, `Coating`,
+  `Ring Frame spares`, `RSM.R100`, `RSM.Z000` and `Twin Discs`.
+- **Every prose-connector em dash is gone**, replaced by a colon, semicolon, comma or a sentence
+  break. Don't reintroduce one mid-sentence.
+
+Two em dashes outside visible copy are untouched and fine: HTML comments (several quote this file),
+and the formsubmit `_subject` value on line ~909, which is an email subject line.
+
+The `<title>`, `og:title` and `twitter:title` use a **pipe** separator (`Euro Textile Spares Pvt.
+Ltd. | Genuine European Spinning-Mill Spares`); `og:image:alt` uses a colon, because alt text is
+read aloud. All three meta descriptions now say `India's spinning mills`, which is what the JSON-LD
+`description` already said — the two finally agree, closing what this file used to list as the
+loose end to pull first.
+
+### Audited and declined — don't re-raise these
+A full audit (2026-08-31) surfaced the items below and **the owner chose to leave every one of
+them**. They are all real, all cosmetic, and all still present on purpose. Re-reporting them as
+findings costs the owner a second decision on a question they already answered — so note them only
+if you are editing that line for another reason anyway. Both hyphenation items below survived **both**
+humanizer passes on purpose: the sentences around them were rewritten twice and the phrases
+themselves left byte-identical each time. Capabilities card 03 in particular now reads "We are the
+on the ground sales and support agent…" — the phrase is deliberately unchanged inside a sentence
+that was otherwise rebuilt.
+
+- **"on the ground" is unhyphenated in three places** — the `.about-lead` intro, the Authorized
+  Distributor `.hub-card`, and Capabilities card 03. It is a compound adjective before a noun, so
+  "on-the-ground" would be the standard form.
+- **"Pune based" in the `.about-lead`**, against "Pune-based" in the meta description,
+  `og:description` and the JSON-LD. Note this is the one case that also touches the
+  "JSON-LD must mirror visible content" rule — the sync that matters there is the *claim*, not the
+  hyphen, so the structured data is not actually asserting anything the page doesn't show.
+- **Four client logos announce their name twice to a screen reader** — Nahar, Sri Bhagirath and
+  Suryalakshmi each carry `alt="<company>"` alongside a visible `.client-logo-name` span with the
+  same words, and Vardhman pairs `alt="Vardhman"` with the visible "Vardhmān". The site's own
+  convention elsewhere (nav logo, hero lockup, `.hub-mark`) is `alt=""` when adjacent real text
+  already names the thing, so these are the exception rather than the rule.
+
+Two things that *are* worth acting on if you happen to be in the file: `sitemap.xml`'s `<lastmod>`
+goes stale on any material content change (its own comment says so), and the `CNAME` / `www.`
+question in the SEO bullet near the top of this file is genuinely open, pending the owner's DNS
+check.
+
 ### Partner count — the hero is scoped to Europe on purpose
 There are **four** OEM partners: Phicomp (CH), Emil Broell (AT), Samatex (DE) and CPU (Taiwan). The
-top of the page deliberately talks about only the **three European** ones:
+top of the page deliberately talks about only the **three European** ones.
+
+**The CPU card's "Wear-resistant Supporting Discs (N, Laser, Magnetic, & Reflector type)" is
+correct — the bare `N` is a real disc designation, not a stray character or a truncated word.**
+Confirmed by the owner after it was queried once; don't "tidy" it away.
+
+The Europe scoping:
 
 - The hero eyebrow reads `Germany · Austria · Switzerland → India`.
 - The first hero credential is `3` / "European OEM manufacturing partners", with the three countries
@@ -1179,7 +1395,8 @@ The four badge icons are hand-authored 24×24 inline SVGs (calendar, factory, ro
 sitting at the top of each card above its title, `aria-hidden` with the card text carrying the
 meaning, stroked with `currentColor` so `.hub-badge`'s `color` drives them — the path data carries
 no presentation attributes, since `.hub-badge svg` supplies `fill:none; stroke:currentColor`. No
-icon library — same convention as the rotor drawing.
+icon library — same convention as the rotor drawing. The site's one **filled** inline icon is the
+Contact section's LinkedIn glyph — see "Contact details list" for why the two must not be unified.
 
 `aboutHub()` in `script.js` choreographs the entrance (core → dots → connectors → cards → badges)
 on one ScrollTrigger. Everything is `.from()`, so the natural state is the finished one and reduced

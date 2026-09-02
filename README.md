@@ -6,10 +6,10 @@ Marketing and catalogue site for **Euro Textile Spares Pvt. Ltd.**, a Pune-based
 distributor of genuine European and Taiwanese textile-machinery spare parts for India's spinning
 mills.
 
-It is a single page: hero, about, a product catalogue split into six categories (Complete Rotors,
-Autocoro, Autoconer, Ring Frame, Navels, Twin Discs), a manufacturers grid, a clients marquee and a
-contact form. The catalogue grids, spec tables and their live search are rendered from `data.js` at
-page load.
+It is a single page. In order: hero, a clients marquee, about, a manufacturers grid, a product
+catalogue split into six categories (Complete Rotors, Autocoro, Autoconer, Ring Frame, Navels, Twin
+Discs), capabilities, and a contact form. The catalogue grids, spec tables and their live search are
+rendered from `data.js` at page load.
 
 ## Stack
 
@@ -57,6 +57,10 @@ git clone --depth 1 https://github.com/Siddengle23/EuroTextile-website-.git
 - Catalogue entries live in `data.js` as plain global `const` arrays; product photos go in
   `images/parts/`.
 - Everything else — copy, sections, navigation — is in `index.html`.
+- **The visible copy follows a documented voice**, and the product facts in it (rotor types,
+  coatings, Ø ranges, speeds, machine compatibility) are load-bearing. Reword with care and check
+  `CLAUDE.md` first; the spellings, the punctuation rules and the claims that must not widen are all
+  written down there.
 - **Read `CLAUDE.md` before editing.** It documents constraints that are not visible in the code,
   and several of them fail silently rather than throwing an error: category links must stay in sync
   across four places, every client logo appears twice in the markup, and a handful of CSS rules that
@@ -65,10 +69,15 @@ git clone --depth 1 https://github.com/Siddengle23/EuroTextile-website-.git
 ## Before deploying
 
 - The absolute URLs in the `<head>` (canonical, Open Graph, Twitter), in `robots.txt` and in
-  `sitemap.xml` point at `https://www.eurotextilespares.in/`. Update them if the host ever changes —
-  `og:url` and `og:image` must stay absolute or link previews break. Note the contact email stays on
-  the `.com` domain, so the two differ by design; never bulk-replace the domain, as the contact
-  form's endpoint is built from that email address.
+  `sitemap.xml` point at `https://eurotextilespares.in/` — the bare apex, matching `CNAME` and the
+  Custom domain set in the repo's GitHub Pages settings. **Don't add `www.`**: that host resolves
+  only as a redirect to the apex, so a `www.` canonical or `og:image` points at a 301. Update them
+  if the host ever changes — `og:url` and `og:image` must stay absolute or link previews break. Note
+  the contact email stays on the `.com` domain, so the two differ by design; never bulk-replace the
+  domain, as the contact form's endpoint is built from that email address.
+- `sitemap.xml`'s `<lastmod>` goes stale on any material content change; bump it before deploying.
+- After a deploy that changes `og:image`, re-scrape the preview in LinkedIn's Post Inspector and
+  Facebook's Sharing Debugger — both cache the card per URL.
 - The contact form posts to **formsubmit.co**, which requires a one-time email activation. Until
   that is completed the endpoint can still return OK, so the visitor sees a success message while no
   mail arrives. Send a real test submission after the first deploy.

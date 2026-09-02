@@ -9,4 +9,4 @@ Disallow: /images/Ringframe/
 Disallow: /images/Rotors/
 Disallow: /images/Twin Disc/
 
-Sitemap: https://www.eurotextilespares.in/sitemap.xml
+Sitemap: https://eurotextilespares.in/sitemap.xml

@@ -561,6 +561,19 @@ section[id] { scroll-margin-top: 100px; }
 .contact-details li span { display: block; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--primary-soft); margin-bottom: 3px; }
 .contact-details a { color: #fff; }
 .contact-details address { font-style: normal; line-height: 1.5; }
+/* The site's other inline icons (.hub-badge svg) are line art — fill:none; stroke:currentColor.
+   The LinkedIn mark is a solid glyph, so it needs the opposite. Scoped to .li-icon so a future
+   "unify the icon CSS" pass can't blank it.
+   inline-flex is on .contact-li, NOT .contact-details a — the Phone row holds two anchors split by
+   a "·" and restyling every anchor in the list would disturb that spacing.
+   flex:0 0 auto for the .nav-toggle reason: a near-empty flex item can otherwise be shrunk away.
+   Both icon selectors are qualified with .contact-details so they outweigh the row-LABEL rule
+   `.contact-details li span` (0,1,2) above — that one also matches this <span> wrapper, and a bare
+   .li-icon (0,1,0) lost to it: the glyph came out --primary-soft pale blue instead of white and
+   the label's margin-bottom:3px pushed it 1.45px above the text centre. Measured, not theoretical. */
+.contact-li { display: inline-flex; align-items: center; gap: 8px; }
+.contact-details .li-icon { flex: 0 0 auto; width: 16px; height: 16px; color: inherit; margin-bottom: 0; }
+.contact-details .li-icon svg { width: 100%; height: 100%; fill: currentColor; }
 .contact-form { background: #fff; border-radius: var(--r-card); padding: 38px; display: flex; flex-direction: column; gap: 16px; box-shadow: var(--shadow-float); }
 .contact-form input, .contact-form textarea { width: 100%; font-family: var(--ff); font-size: 16px; padding: 15px 17px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; color: var(--ink); }
 .contact-form input:focus, .contact-form textarea:focus { outline: none; border-color: var(--primary); }

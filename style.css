@@ -17,7 +17,7 @@
     --graphite: #636363;
     --navy: #0e2a45;           /* deep-navy slabs / footer */
     --canvas: #ffffff;
-    --cloud: #eef3f9;          /* cool blue-tinted section neutral */
+    --cloud: #e0ecf5;          /* cool blue-tinted section neutral */
     --mist: #f5f8fc;           /* lighter tint for gradient tops / hero */
     --glow: rgba(37,101,165,.10); /* faint brand-blue hero radial accent */
     --fog: #e2e9f2;
@@ -76,6 +76,32 @@ img { max-width: 100%; }
 .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
 .btn-outline:hover { background: var(--primary); color: #fff; }
 .btn-sm { padding: 9px 18px; font-size: 12.5px; }
+/* The "Request a Quote" CTA (nav + hero — the only two plain .btn-primary instances) gets its own
+   modifier rather than a change to the shared base rule, so the "Browse Catalogue ↗" buttons
+   (.btn-primary.btn-sm) are unaffected. Qualified as .btn-primary.btn-quote, not bare .btn-quote,
+   so it outranks .btn-primary:hover's own background/transform regardless of source order. */
+.btn-primary.btn-quote {
+    display: inline-flex; align-items: center; gap: 8px;
+    border-radius: var(--r-pill);
+    text-transform: none; letter-spacing: normal; font-weight: 700;
+    padding: 14px 28px;
+    box-shadow: 0 8px 20px rgba(37,101,165,.28);
+}
+.btn-primary.btn-quote:hover {
+    background: var(--primary-deep);
+    box-shadow: 0 12px 26px rgba(37,101,165,.38);
+    transform: translateY(-2px);
+}
+.btn-arrow { display: inline-block; font-size: 20px; transition: transform .2s ease; }
+.btn-primary.btn-quote:hover .btn-arrow { transform: translateX(4px); }
+/* Hero-only pairing for "Explore the Catalogue" next to .btn-quote — matches its pill shape,
+   case and padding while keeping .btn-outline's own transparent fill/border/hover untouched.
+   Doesn't touch the "Enquire about…" .btn-outline.btn-sm instances elsewhere. */
+.btn-outline.btn-pill {
+    border-radius: var(--r-pill);
+    text-transform: none; letter-spacing: normal; font-weight: 700;
+    padding: 14px 28px;
+}
 
 /* ---- Utility strip -------------------------------------------------------- */
 .utility-strip {
@@ -157,7 +183,9 @@ img { max-width: 100%; }
     background:
         radial-gradient(1100px 520px at 85% -12%, var(--glow), transparent 60%),
         radial-gradient(760px 460px at -8% 108%, rgba(37,101,165,.06), transparent 62%),
-        linear-gradient(180deg, var(--mist) 0%, var(--cloud) 100%);
+        linear-gradient(180deg, var(--cloud) 0%, var(--primary-soft) 45%, var(--cloud) 100%);
+    background-size: auto, auto, 100% 220%;
+    animation: bgDriftHero 30s ease-in-out infinite;
 }
 .hero-inner { display: grid; grid-template-columns: 1.5fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 2; }
 .hero h1 { font-size: 54px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 22px; }
@@ -181,7 +209,11 @@ img { max-width: 100%; }
 .hero-lockup .h1-brand { color: var(--ink); }
 .hero-lead { font-size: 18px; color: var(--charcoal); max-width: 620px; }
 .hero-lead strong { color: var(--ink); }
-.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
+/* align-items: center overrides flex's default stretch — without it, .btn-pill (a plain
+   inline-block, unlike .btn-quote's own inline-flex/align-items:center) got stretched to match
+   .btn-quote's taller box (inflated by its 20px arrow) and its text stayed top-aligned inside the
+   extra height, reading as off-centre. This makes each button size to its own content instead. */
+.hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 32px; }
 /* hero credentials panel */
 .hero-badge {
     background: #fff; border-radius: var(--r-card); box-shadow: var(--shadow-lift);
@@ -191,6 +223,11 @@ img { max-width: 100%; }
 .cred-item:first-child { border-top: none; }
 .cred-num { display: block; font-size: 34px; font-weight: 800; color: var(--primary); line-height: 1.05; }
 .cred-label { display: block; margin-top: 5px; font-size: 13.5px; color: var(--charcoal); }
+/* The first credential dropped its "3" numeral (redundant next to the 3-flag row below it), so its
+   label stands in as the row's headline instead of a plain caption — bolder/bigger than the other
+   labels, short of the 34px numeral size, which would wrap this 36-character phrase. margin-top: 0
+   overrides the base rule's 5px, which existed only to clear the numeral above it. */
+.cred-label.cred-label-lead { margin-top: 0; font-size: 16px; font-weight: 800; color: var(--primary); }
 /* The three partner countries, on their own line below the label rather than as a run-on tail of
    it. The panel is the narrow 1fr of the hero's 1.5fr/1fr grid, so wrapping to two lines at
    mid-widths is expected, not a break. Flags reuse the shared .flag classes further down. */
@@ -205,7 +242,11 @@ img { max-width: 100%; }
 .chevron-right { right: -70px; clip-path: polygon(45% 0, 100% 0, 55% 100%, 0 100%); background: var(--primary-bright); }
 
 /* ---- About ---------------------------------------------------------------- */
-.about { background: linear-gradient(180deg, var(--mist) 0%, var(--cloud) 34%); }
+.about {
+    background-image: linear-gradient(180deg, var(--cloud) 0%, var(--primary-soft) 50%, var(--cloud) 100%);
+    background-size: 100% 220%;
+    animation: bgDrift 30s ease-in-out infinite;
+}
 
 /* two-column intro */
 /* Headline left, lead copy right. The ratio favours the left because it now carries the
@@ -319,7 +360,11 @@ section { padding: var(--gap-section) 0; }
 .section-head h2 { font-size: 38px; font-weight: 800; letter-spacing: -.01em; }
 .section-subtext { margin-top: 14px; color: var(--charcoal); font-size: 17px; }
 
-.products { background: linear-gradient(180deg, var(--mist) 0%, var(--cloud) 34%); }
+.products {
+    background-image: linear-gradient(180deg, var(--cloud) 0%, var(--primary-soft) 50%, var(--cloud) 100%);
+    background-size: 100% 220%;
+    animation: bgDrift 30s ease-in-out infinite;
+}
 
 /* ---- Category tabs -------------------------------------------------------- */
 .cat-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
@@ -337,7 +382,11 @@ section { padding: var(--gap-section) 0; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 .info-tags { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
-.info-tags li { font-size: 13px; font-weight: 600; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-badge); padding: 6px 12px; }
+.info-tags li {
+    font-size: 13px; font-weight: 600; color: var(--primary-deep);
+    background: #fff; border: 1px solid var(--hairline);
+    border-radius: var(--r-badge); padding: 6px 12px;
+}
 
 /* manufacturer badge + flags */
 .mfr-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--graphite); text-transform: uppercase; letter-spacing: .06em; }
@@ -357,7 +406,7 @@ section { padding: var(--gap-section) 0; }
 .panel-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--cloud); border-radius: var(--r-card); display: block; }
 .panel-intro { margin-bottom: 0; }
 .panel-intro h3 { font-size: 26px; margin: 10px 0 10px; }
-.panel-intro p { color: var(--charcoal); max-width: 680px; }
+.panel-intro p { color: var(--ink); max-width: 680px; }
 /* Only Rotors currently has more than one <p> here (Rotor cup & bearing, then SolidRotor) —
    inert everywhere else. 14px matches .panel-note's bottom margin below. */
 .panel-intro p + p { margin-top: 14px; }
@@ -366,12 +415,34 @@ section { padding: var(--gap-section) 0; }
 .rotor-tables { margin-top: 28px; }
 .rotor-tables .parts-group-title { margin-top: 32px; }
 .rotor-tables .parts-group-title:first-child { margin-top: 0; }
-.panel-note { color: var(--charcoal); font-size: 14.5px; max-width: 680px; margin: 0 0 14px; }
+.panel-note { color: var(--ink); font-size: 14.5px; max-width: 680px; margin: 0 0 14px; }
 /* The site's only mid-sentence links ("send us an enquiry", in the three subset notes). Sitewide
    `a` has no underline, which is right for nav/footer/button links where position already signals
    linkness and wrong inside a paragraph — at 14.5px on a phone, brand blue alone is the only cue,
    i.e. WCAG 1.4.1. Scoped here on purpose; don't relax the global `a` rule to match. */
 .panel-note a { text-decoration: underline; text-underline-offset: 2px; }
+/* Callout-style notes (multi-sentence explanatory blocks, not short inline asides) get the
+   same white-card-on-the-gradient treatment as .hero-badge, so they stay legible against the
+   animated section background instead of blending into it. .spec-foot and .coating-key
+   already have their own class to hang this on; .panel-callout is the explicit marker for
+   the handful of plain .panel-note paragraphs that need it too. */
+.panel-note.panel-callout,
+.panel-note.spec-foot,
+.coating-key {
+    background: #fff;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-lift);
+    padding: 18px 22px;
+}
+/* A .panel-callout can hold more than a single paragraph (e.g. the steel-belt fitment list) —
+   the global `* { margin: 0 }` reset means its child <p>/<ul> butt together without this. */
+.panel-callout > * + * { margin-top: 10px; }
+/* Point-form list inside a callout, same dot-bullet convention as .machines-note li below. */
+.callout-list { list-style: none; }
+.callout-list li { position: relative; padding-left: 16px; }
+.callout-list li::before { content: ""; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+.callout-list li + li { margin-top: 6px; }
 .table-scroll { overflow-x: auto; border: 1px solid var(--hairline); border-radius: var(--r-card); background: #fff; margin-bottom: 8px; }
 .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; white-space: nowrap; }
 .spec-table th, .spec-table td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--hairline); }
@@ -407,6 +478,19 @@ section { padding: var(--gap-section) 0; }
 
 /* index ring — the only animated element; one turn per 90s, ambient */
 @keyframes rotorIndex { to { transform: rotate(360deg); } }
+
+/* Ambient section-background drift, same "CSS keyframes, not GSAP" convention as
+   rotorIndex/scrollTrack. Two variants because the hero's background has 3 comma-separated
+   layers (two radial glows + the linear gradient) while .about/.products/.capabilities have
+   just 1 — background-position keyframe values must match each rule's own layer count. */
+@keyframes bgDrift {
+    0%, 100% { background-position: 0% 0%; }
+    50%      { background-position: 0% 100%; }
+}
+@keyframes bgDriftHero {
+    0%, 100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+    50%      { background-position: 0% 0%, 0% 0%, 0% 100%; }
+}
 .rotor-index {
     /* both circles are concentric, so the group's fill-box centre is exactly the
        rotor centre — no need to hardcode 300/210 here */
@@ -436,7 +520,7 @@ section { padding: var(--gap-section) 0; }
 .spec-leader { fill: none; stroke: var(--graphite); stroke-width: .9; opacity: .45; }
 .spec-note { fill: var(--graphite); font-size: 13px; font-weight: 700; letter-spacing: .08em; }
 
-.rotor-spec-cap { font-size: 13px; line-height: 1.6; color: var(--graphite); max-width: 62ch; margin: 14px auto 0; }
+.rotor-spec-cap { font-size: 13px; line-height: 1.6; color: var(--ink); max-width: 62ch; margin: 14px auto 0; }
 
 /* ---- Coating key (decodes the D/N suffix used in both rotor tables) -------- */
 .coating-key { margin-bottom: 30px; }
@@ -446,7 +530,7 @@ section { padding: var(--gap-section) 0; }
 .coating-list dt { flex: none; min-width: 46px; text-align: center; font-size: 13px; font-weight: 700; color: var(--primary-deep); background: var(--primary-soft); border-radius: var(--r-badge); padding: 5px 10px; }
 .coating-list dd { color: var(--charcoal); font-size: 14.5px; }
 /* footnote carrying the values that are identical on every row of a table */
-.spec-foot { font-size: 13px; margin: 10px 0 0; }
+.spec-foot { font-size: 13px; margin: 10px 0 20px; }
 /* SolidRotor types — chips reusing .info-tags, since the type is the only varying value */
 .rotor-type-list { margin: 0 0 4px; }
 .rotor-type-list li { font-size: 14px; font-variant-numeric: tabular-nums; }
@@ -479,7 +563,7 @@ section { padding: var(--gap-section) 0; }
 .parts-search { flex: 1 1 320px; min-width: 240px; font-family: var(--ff); font-size: 16px; padding: 12px 16px; border: 1.5px solid var(--steel); border-radius: var(--r-btn); background: #fff; }
 .parts-search:focus { outline: none; border-color: var(--primary); }
 .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.parts-count { font-size: 13px; color: var(--graphite); margin-bottom: 18px; }
+.parts-count { font-size: 13px; color: var(--ink); margin-bottom: 18px; }
 
 .parts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 14px; }
 /* Twin Discs has only 4 cards, not the dozens Autoconer/Autocoro/Ring Frame render — auto-fill
@@ -505,7 +589,7 @@ section { padding: var(--gap-section) 0; }
 .part-text .en { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.25; }
 
 /* grouped (Autocoro) */
-.parts-group-title { grid-column: 1 / -1; font-size: 14px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--primary-deep); margin: 22px 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); }
+.parts-group-title { grid-column: 1 / -1; font-size: 14px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--primary-deep); margin: 22px 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); }
 /* These headings are the Products dropdown's sub-category anchor targets. The navbar is
    position:sticky at 84px, so without this a hash jump lands with the heading under it. */
 .parts-group-title, .ring-group-title { scroll-margin-top: 100px; }
@@ -519,7 +603,7 @@ section[id] { scroll-margin-top: 100px; }
 .parts-empty { grid-column: 1 / -1; color: var(--graphite); padding: 24px 0; font-size: 15px; }
 
 /* Ring frame groups */
-.ring-group-title { font-size: 18px; font-weight: 800; color: var(--ink); margin: 34px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-soft); }
+.ring-group-title { font-size: 18px; font-weight: 800; color: var(--ink); margin: 34px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--primary); }
 /* Gap goes on every heading, with the first one pulled back in — the panel now has four of
    these and they follow different things (a parts grid, a .spec-foot note, a figure). The
    earlier `:nth-of-type(2), .parts-grid + …` pair keyed off DOM position and silently
@@ -544,7 +628,11 @@ section[id] { scroll-margin-top: 100px; }
 .mfr-logo { height: 48px; width: auto; max-width: 100%; object-fit: contain; display: block; }
 
 /* ---- Capabilities --------------------------------------------------------- */
-.capabilities { background: linear-gradient(180deg, var(--mist) 0%, var(--cloud) 34%); }
+.capabilities {
+    background-image: linear-gradient(180deg, var(--cloud) 0%, var(--primary-soft) 50%, var(--cloud) 100%);
+    background-size: 100% 220%;
+    animation: bgDrift 30s ease-in-out infinite;
+}
 .cap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .cap-card { background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card); box-shadow: var(--shadow-lift); padding: 34px 30px; }
 .cap-num { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: .1em; }
@@ -849,6 +937,9 @@ button:focus-visible,
     }
     .slider-track { animation: none !important; transform: none !important; }
     .rotor-index { animation: none !important; transform: none !important; }
+    .hero, .about, .products, .capabilities {
+        animation: none !important; background-position: 0% 0%, 0% 0%, 0% 0%;
+    }
     .cat-panel.is-active { animation: none !important; }
     .reveal-hidden { opacity: 1; transform: none; }
 }

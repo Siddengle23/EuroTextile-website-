@@ -143,7 +143,7 @@
                 </li>
                 <li><a href="#capabilities">Capabilities</a></li>
                 <li><a href="#contact">Contact</a></li>
-                <li><a href="#contact" class="btn-primary nav-cta">Request a Quote</a></li>
+                <li><a href="#contact" class="btn-primary btn-quote nav-cta">Request a Quote<span class="btn-arrow" aria-hidden="true">→</span></a></li>
             </ul>
         </div>
     </nav>
@@ -173,18 +173,16 @@
                     mill floor.
                 </p>
                 <div class="hero-actions">
-                    <a href="#contact" class="btn-primary">Request a Quote</a>
-                    <a href="#products" class="btn-outline">Explore the Catalogue</a>
+                    <a href="#contact" class="btn-primary btn-quote">Request a Quote<span class="btn-arrow" aria-hidden="true">→</span></a>
+                    <a href="#products" class="btn-outline btn-pill">Explore the Catalogue</a>
                 </div>
             </div>
             <div class="hero-badge">
                 <div class="cred-item">
-                    <span class="cred-num">3</span>
-                    <span class="cred-label">European OEM manufacturing partners</span>
+                    <span class="cred-label cred-label-lead">European OEM manufacturing partners</span>
                     <!-- The countries were a run-on tail on .cred-label. They carry no title/aria
                          label: each flag has its country name beside it as real text, so the flag
-                         is decoration. "European" stays in the label above — that word is what
-                         makes the 3 accurate rather than an understatement (see CLAUDE.md). -->
+                         is decoration. -->
                     <span class="cred-countries">
                         <span class="cred-country"><span class="flag flag-de"></span>Germany</span>
                         <span class="cred-country"><span class="flag flag-at"></span>Austria</span>
@@ -586,6 +584,9 @@
                          down as well (hence the plural aria-label). -->
                     <div class="parts-toolbar">
                         <input type="search" class="parts-search" data-target="rotorCupTable,solidRotorTable" placeholder="Search rotor type…" aria-label="Search rotor type tables">
+                        <div class="toolbar-actions">
+                            <a class="btn-primary btn-sm" href="catalogues/PhiComp 2026-08-Product Portfolio.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
+                        </div>
                     </div>
 
                     <p class="parts-count" data-count="rotorCupTable"></p>
@@ -650,7 +651,7 @@
                         <a class="btn-primary btn-sm" href="catalogues/Autocoro Catalogue Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
-                <p class="panel-note">The parts below are a selection of the range; over 3,500
+                <p class="panel-note panel-callout">The parts below are a selection of the range; over 3,500
                 Autocoro parts are available in all. Browse the catalogue for the full listing, or
                 <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
                 <p class="parts-count" data-count="autocoroParts"></p>
@@ -674,7 +675,7 @@
                         <a class="btn-primary btn-sm" href="catalogues/Autconer Catalogue Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
-                <p class="panel-note">The parts below are a selection of the range; over 3,000
+                <p class="panel-note panel-callout">The parts below are a selection of the range; over 3,000
                 Autoconer parts are available in all. Browse the catalogue for the full listing, or
                 <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
                 <p class="parts-count" data-count="autoconerParts"></p>
@@ -704,7 +705,7 @@
                         <a class="btn-primary btn-sm" href="catalogues/RIETER Zinser Ringspinning Parts Euro Textile.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
                     </div>
                 </div>
-                <p class="panel-note">The parts below are a selection of the Rieter and Zinser
+                <p class="panel-note panel-callout">The parts below are a selection of the Rieter and Zinser
                 range. Browse the catalogue for the full listing, or
                 <a href="#contact">send us an enquiry</a> for anything not shown here.</p>
 
@@ -765,11 +766,16 @@
                     <figcaption class="rotor-spec-cap">Plain and pre-assembled belts, punched to
                     the length and hole pattern the machine needs.</figcaption>
                 </figure>
-                <p class="panel-note">We supply customized plain and pre-assembled steel conveyor
-                belts for ringspinning machines and models such as Rieter G5/1, G5/2, G30, G32,
-                G33, G35, G36, G312, K40, K42, K44, K45, K46, Zinser 319, 320, 321, 350, 351, 421,
-                450, 451, 71, 72 and Marzoli NSF, NSF2, NSF3, NSF4. Steel belt rolls with holes
-                punched end to end are also available.</p>
+                <div class="panel-note panel-callout">
+                    <p>We supply customized plain and pre-assembled steel conveyor belts for
+                    ringspinning machines and models including:</p>
+                    <ul class="callout-list">
+                        <li><strong>Rieter</strong> — G5/1, G5/2, G30, G32, G33, G35, G36, G312, K40, K42, K44, K45, K46</li>
+                        <li><strong>Zinser</strong> — 319, 320, 321, 350, 351, 421, 450, 451, 71, 72</li>
+                        <li><strong>Marzoli</strong> — NSF, NSF2, NSF3, NSF4</li>
+                    </ul>
+                    <p>Steel belt rolls with holes punched end to end are also available.</p>
+                </div>
             </div>
 
             <!-- NAVELS (rendered from data.js) -->

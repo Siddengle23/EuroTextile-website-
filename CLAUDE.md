@@ -14,8 +14,11 @@ European and Taiwanese textile-machinery spare parts). No framework, no build st
 - `style.css` — all styling. Custom-property design system defined in `:root` at the top
   (`--primary`, `--navy`, `--r-card`, `--shadow-lift`, etc.) — reuse these tokens rather than
   hardcoding colors/spacing. Neutrals are deliberately cool/blue-tinted to harmonize with the brand
-  blue: `--cloud` (section tint), `--mist` (lighter gradient top), `--glow` (faint hero accent) —
-  do not revert these to plain greys.
+  blue: `--cloud` (section tint, `#e0ecf5` — deepened from an earlier `#eef3f9`, at the owner's
+  request that it read as an intentional blue rather than a washed-out pastel), `--mist` (lighter
+  tint, still used by the About hub's core radial gradient), `--glow` (faint hero accent) — do not
+  revert these to plain greys. See "Motion layer" for the ambient background drift that now
+  animates `--cloud` in the hero/About/Products/Capabilities sections.
 - `data.js` — catalog data as plain global `const` arrays (`NAVELS`, `NAVEL_MACHINES`,
   `AUTOCONER_PARTS`, `AUTOCORO_PARTS`, `RIETER_PARTS`, `ZINSER_PARTS`, `RIETER_STEEL_BELTS`,
   `ROTOR_CUP_BEARING`, `SOLID_ROTOR`, `TWIN_DISCS`, `FRICTION_DISC`, `PU_FRICTION_WHEEL`).
@@ -212,8 +215,10 @@ don't "restore" it there. Three things follow from the position and are easy to 
   Move Manufacturers back below the catalog and it needs that refresh again.
 - Section backgrounds alternate loosely rather than strictly: `.manufacturers` has no background
   rule (so `--canvas`, white) while `.about` / `.products` / `.capabilities` share the same
-  `mist → cloud` gradient. One adjacent gradient pair (`products | capabilities`) is expected; it
-  was `about | products` before the move. Not worth "fixing" with a fourth background.
+  animated `cloud → primary-soft → cloud` gradient (see "Motion layer" — this used to be a static
+  `mist → cloud` gradient before the ambient drift was added). One adjacent gradient pair
+  (`products | capabilities`) is expected; it was `about | products` before the move. Not worth
+  "fixing" with a fourth background.
 
 ### Category tab/panel system
 The product catalog (`#products`) has 6 categories, in this display order: `rotors` (labelled
@@ -430,13 +435,15 @@ CTAs ("Enquire about complete rotors"), the submit button ("Send Enquiry"), the 
 the search-empty and success strings in `script.js` all follow it.
 
 **The same rule covers "Catalogue", never "Catalog".** The hero CTA and the products eyebrow were
-American until 2026-09-01, while the three panel buttons ("Browse Catalogue ↗") were already
-British; all visible copy now agrees. Two things the rule does *not* reach, so **never bulk-replace
-this word**: the `catalogues/` folder path inside those buttons' `href`s, and `catalog` inside HTML
-comments. One linked file is genuinely named `Autconer Catalogue Euro Textile.pdf` (the typo is in
-the file itself) and its `href` must keep matching it. Note the hero CTA deliberately keeps the verb
-**Explore**, not "Browse": the three `Browse Catalogue ↗` buttons open PDFs while the hero button
-scrolls to `#products` on the page, so the different verb separates the two actions.
+American until 2026-09-01, while the panel buttons ("Browse Catalogue ↗", four of them now — see
+"Reference material vs. served assets") were already British; all visible copy now agrees. Two
+things the rule does *not* reach, so **never bulk-replace this word**: the `catalogues/` folder path
+inside those buttons' `href`s, and `catalog` inside HTML comments. One linked file is genuinely
+named `Autconer Catalogue Euro Textile.pdf` (the typo is in the file itself) and its `href` must
+keep matching it. Note the hero CTA deliberately keeps the verb **Explore**, not "Browse": the
+`Browse Catalogue ↗` buttons open PDFs while the hero button scrolls to `#products` on the page, so
+the different verb separates the two actions. The "Request a Quote" pill CTA is different again —
+see "CTA buttons" below.
 
 ### Clients marquee — the logo list is hand-duplicated
 `#clients`' `.slider-track` contains **every client logo twice** ("Set 1" / "Set 2" in the markup).
@@ -636,6 +643,51 @@ The lockup rebuilds that idea as mark-left/name-right instead, which the GIF can
 text stacks underneath and it can't be cropped to a mark-only clip without re-encoding. It is on
 disk for provenance; don't wire it in assuming it was forgotten.
 
+### CTA buttons: `.btn-quote` vs. the shared button base
+`style.css`'s base rule (`.btn-primary, .btn-outline, .btn-submit`) is a flat, sharp-cornered
+(`--r-btn: 4px`), all-caps, shadowless button shared by every CTA on the site: the three (now four
+— see "Reference material vs. served assets") `Browse Catalogue ↗` buttons, "Enquire about…" ×2,
+and the contact form's "Send Enquiry". **"Request a Quote" — the only two plain `.btn-primary`
+instances with no `.btn-sm`, the nav-bar CTA (`.nav-cta`) and the hero's primary button — carries an
+additional `.btn-quote` modifier** that overrides it to a fully rounded pill (`--r-pill`),
+sentence-case text (drops the shared uppercase/`letter-spacing`), 700 weight, and a soft blue-tinted
+floating shadow (`rgba(37,101,165,…)`, the same hue family as the `--glow` token, not the neutral
+navy `--shadow-float` used elsewhere) that deepens on hover alongside a `translateY(-2px)` lift.
+Added 2026-09-23 at the owner's request ("looks generic, need something modern"); the other CTAs
+were deliberately left on the plain base rule.
+
+**The modifier lives on a new class, not a change to the shared base rule, so it doesn't leak
+into the other four button families.** Both selectors are qualified `.btn-primary.btn-quote` (not
+bare `.btn-quote`), which outranks `.btn-primary:hover`'s own `background`/`transform` regardless of
+source order — the same specificity-guard reasoning already used for the nav dropdown's
+`:hover`/`:focus-within` rules above.
+
+**The → arrow is a real `<span class="btn-arrow" aria-hidden="true">`, not CSS `::after` content**
+— same reasoning as every other decorative glyph on the site (the hub badges, the LinkedIn icon):
+generated content's screen-reader exposure is inconsistent across browsers, so a hand-written
+`aria-hidden` span next to real text is the house convention. It slides `translateX(4px)` on hover.
+Its `font-size` is set explicitly to `20px` — it started with no explicit size, inheriting the
+button's own 14px, which read as too small next to the bold pill text; bumped 2026-09-24.
+
+**The hero's "Explore the Catalogue" (`.btn-outline`, `index.html:177`) got a matching `.btn-pill`
+modifier for the same reason** — sitting right beside the new pill it still looked like the old
+sharp-cornered, all-caps button, which read as two unrelated button systems side by side. `.btn-pill`
+gives it the same corner radius, case, weight and padding as `.btn-primary.btn-quote` while leaving
+`.btn-outline`'s own transparent fill / border / hover fill untouched, and — unlike `.btn-quote` —
+adds no arrow: that's specific to the primary CTA's forward action, so the pair reads as filled pill
++ outline pill, not two identical buttons. `.btn-outline.btn-sm` (the "Enquire about…" buttons) is
+untouched; `.btn-pill` was added only to the hero instance, not to the shared `.btn-outline` base.
+
+**`.hero-actions` needs `align-items: center` — without it the pill text goes off-centre, not
+because of the pill shape itself.** Flexbox's default `align-items: stretch` was making
+`.btn-pill` (a plain `inline-block`, unlike `.btn-quote`'s own `inline-flex`/`align-items: center`)
+stretch to match `.btn-quote`'s taller box — taller because its 20px arrow inflates the line height
+beyond plain 14px text — and a stretched block element's text stays top-aligned inside the extra
+height rather than re-centering, so "Explore the Catalogue" sat visibly above centre in its own
+pill. `align-items: center` on the flex row stops the stretch entirely, letting each button size to
+its own content. Any future flex row mixing an `inline-flex`/centred child with a plain
+`inline-block` child needs the same treatment, or the same bug recurs.
+
 ### Motion layer (script.js `wireMotion()`)
 GSAP drives the site's animation: a hero-entrance timeline, `ScrollTrigger.batch` scroll-reveals
 over `REVEAL_SEL` (`.section-head, .about-intro, .mfr-card, .cap-card` — batched
@@ -708,16 +760,33 @@ scroll, then `scrollIntoView({behavior:"smooth"})` on `document.querySelector(hr
 before the target's position is measured. Applies uniformly to every `a[data-cat]` link, category
 or sub-level; there's no branching on `data-sub` any more.
 
-Two ambient infinite loops are **CSS keyframes**, not GSAP — that is the convention here:
+Three ambient infinite loops are **CSS keyframes**, not GSAP — that is the convention here:
 - the clients marquee (`#clients`, `@keyframes scrollTrack`), which intentionally does **not** pause
   on hover;
-- the rotor drawing's index ring (`.rotor-index`, `@keyframes rotorIndex`, one turn per 90s).
+- the rotor drawing's index ring (`.rotor-index`, `@keyframes rotorIndex`, one turn per 90s);
+- the section-background drift (`.hero`/`.about`/`.products`/`.capabilities`, `@keyframes bgDrift`/
+  `bgDriftHero`, 30s) — see below.
 
-Both are stopped explicitly in the `@media (prefers-reduced-motion: reduce)` block rather than
+All three are stopped explicitly in the `@media (prefers-reduced-motion: reduce)` block rather than
 relying on the blanket `animation-duration: .001ms` rule there. Note there is deliberately **no**
 ScrollTrigger on the rotor figure: five of the six `.cat-panel`s are `display: none` at init, so a
 trigger inside one resolves against a hidden element, and which panel carries `is-active` is a
 markup decision that can move again.
+
+**The background drift animates `background-position` on an oversized gradient layer, not the
+gradient's own colors** (CSS can't tween color stops directly without `@property`, which this
+project's no-build-step/no-polyfill posture doesn't lean on). `.hero`/`.about`/`.products`/
+`.capabilities` each get a `linear-gradient(180deg, var(--cloud) 0%, var(--primary-soft) 45-50%,
+var(--cloud) 100%)` sized to `220%` of the container's height on that one layer, then `bgDrift`
+(single-layer sections) or `bgDriftHero` (the hero, whose `background` has 3 comma-separated
+layers — two radial glows plus this linear gradient) pans `background-position` between `0% 0%`
+and `0% 100%` and back. Two separate `@keyframes` exist because a `background-position` keyframe's
+value list must match its own rule's layer count to interpolate — the hero's other two layers keep
+a fixed `0% 0%` so only the gradient layer visibly moves. **`--mist` was deliberately dropped from
+this gradient** (it used to be the `0%` stop, before the drift existed) — at the owner's request,
+to keep the drift inside a "blue enough" band (`--cloud` ↔ `--primary-soft`) rather than dipping
+toward near-white. `--mist` itself is not dead, just no longer part of these four backgrounds — see
+the `style.css` bullet at the top of this file.
 
 ### One content pattern inside category panels: `.panel-feature`
 All 6 categories now share the same header: `.panel-feature`, a two-column photo-left/copy-right
@@ -747,6 +816,65 @@ elements below. **That overlap is deliberate and the two sentences do different 
 says what the panel contains, the note says the grids show only a selection of it. Don't collapse
 them into one. Per "Stock & availability claims" below, all three notes say "a selection of the
 range", never "what we stock".
+
+**Rotors' `Browse Catalogue ↗` button (added 2026-09-24, linking the PhiComp leaflet) deliberately
+has no matching subset-caveat note.** The pattern above exists because Autocoro/Autoconer/Ring
+Frame's grids show a fraction of thousands of parts; Rotors' two type lists (rotor cup & bearing,
+SolidRotor) are already the **complete** published range — see "Groove-type tags vs. the data" and
+"PhiComp's order numbers are deliberately not published" below — so there is no hidden remainder for
+a note to point at. The button exists so a visitor can read the source leaflet itself, not to imply
+more parts exist off-page. Don't add a "selection of the range" note here to match the other three;
+it would be false.
+
+**Callout-style notes get a white rounded card, so they stay legible against the animated
+section background instead of blending into it.** Once the gradient behind them was no longer a
+flat, near-white color (see the background-drift note above), plain text and light-blue pills
+sitting directly on it lost contrast — noticeably so whenever the drift happened to land near
+`--primary-soft`, since that's also the tint several UI elements used for their own background.
+The fix, all in `style.css` near `.panel-note`:
+- `.panel-note.panel-callout` — an explicit marker class added to the handful of plain
+  `.panel-note` paragraphs that read as their own standalone info block (the three subset-caveat
+  notes above, plus the steel-belts-range fitment note — see "Product photo pipeline"), rather
+  than a structural selector like `.parts-toolbar + .panel-note`: explicit hooks don't silently
+  stop matching if the markup order ever moves, the same reasoning as the `sub-*` id convention
+  elsewhere in this file. Short inline asides (e.g. "Cups can also be supplied separately") stay
+  plain text on purpose — boxing every single note would stack up several cards in a row in the
+  Rotors panel.
+- `.panel-note.spec-foot` and `.coating-key` get the identical white-card treatment (`background:
+  #fff`, `border: 1px solid var(--hairline)`, `border-radius: var(--r-card)`,
+  `box-shadow: var(--shadow-lift)`, `padding: 18px 22px`) — reusing `.hero-badge`'s existing
+  formula for "white box on the blue gradient" rather than inventing a new one.
+- `.info-tags li` (the groove-type/rule-of-thumb/SolidRotor-type/Twin-Discs chips) switched its
+  pill background from `var(--primary-soft)` to `#fff` with a `var(--hairline)` border, for the
+  same reason — every `.info-tags` use in the site sits directly on the gradient, none is already
+  on a white background, so this was safe to change sitewide rather than scoping it.
+  `.coating-list dt` (the D/DD/N pills *inside* `.coating-key`) was deliberately left on
+  `--primary-soft`, since it now sits on a white card parent where that combination still has
+  good contrast.
+- `.spec-foot`'s margin was `10px 0 0` (top only) — harmless before the note above it always had
+  its own generous top margin (a `.parts-group-title`/`.ring-group-title` heading), but it left
+  zero gap after the SolidRotor spec-foot box, which sits directly above a plain
+  `.panel-note` ("Rule of thumb…") with no top margin of its own. Fixed to `10px 0 20px`; sibling
+  margins collapse to the larger value, so this is a no-op everywhere else.
+- `.panel-callout > * + * { margin-top: 10px; }` gives a callout room to hold more than one
+  child — the steel-belts-range note is a `<div class="panel-note panel-callout">` with an intro
+  `<p>`, a `<ul class="callout-list">`, and a closing `<p>`, not a single `<p>` like the others.
+  Without this the site's global `* { margin: 0 }` reset butts them together. `.callout-list` is a
+  small dot-bullet list (`::before`, same 7px/`var(--primary)` dot as `.machines-note li`) for
+  exactly this one case — grouping the Rieter/Zinser/Marzoli machine-model fitment list by
+  manufacturer instead of one dense run-on sentence. It's a generic hook (any future
+  `.panel-callout` that needs a bulleted point list gets the same treatment for free), not a
+  one-off class, even though only one callout currently uses it.
+
+**Body copy that sits directly on the section gradient (not inside a white card) uses `--ink`, not
+`--charcoal`/`--graphite`.** `.panel-note`, `.panel-intro p`, `.rotor-spec-cap` and `.parts-count`
+were all `--charcoal`/`--graphite` (greys tuned for near-white backgrounds) and read as low-contrast
+once the background became a deeper, animated blue. This is a scoped change, not a sitewide one:
+those four classes are only ever used floating directly on the `.products` gradient — text that's
+already inside a white box (`.navel-card`, `.part-card`, `.machines-note`, and now the callout
+cards above) was already fine and wasn't touched, and neither was `--charcoal`/`--graphite` usage
+elsewhere on the site (hero, About, manufacturer/capability cards, footer), which sit on white,
+near-white or navy and were never part of this problem.
 
 Complete Rotors, Navels, and Twin Discs sell components fitted *inside* open-end/rotor-spinning
 machines (Rieter R-series, Schlafhorst/Saurer SE/BD/Autocoro, Suessen SC-series, Taitan, Rifa) —
@@ -991,7 +1119,10 @@ it needs a re-shoot/re-upload; there's no PDF to re-crop from for these.
   same line as an `<h4 class="parts-group-title">` directly above the figure, so a re-crop that
   includes the printed title shows the heading twice — and as pixels it stops being searchable or
   screen-reader-readable. Page 10 also carries a second, unrelated photo lower down (blue/red
-  bobbin pegs) that belongs to no section here.
+  bobbin pegs) that belongs to no section here. The `.panel-note.panel-callout` directly below this
+  figure (the machine-model fitment list, grouped by Rieter/Zinser/Marzoli in a `.callout-list`) is
+  hand-written copy, not sourced from this crop — see "One content pattern inside category panels"
+  above for that markup.
 
 If a future catalogue-derived category needs a photo pulled from a PDF with no per-SKU
 photography and no text layer: this environment has neither `pdftoppm`/poppler (so the Read tool
@@ -1031,15 +1162,20 @@ catalogues are bilingual (German/English). When adding new catalogue-derived ent
 or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"`.
 
 ### Reference material vs. served assets
-- `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, CPU, etc.), **linked
+- `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, CPU, Phicomp), **linked
   from the site** via a "Browse Catalogue ↗" button (`target="_blank"`, native browser PDF viewer —
-  no custom viewer built) on the Autoconer, Autocoro and Ring Frame panels only. The Ring Frame
+  no custom viewer built) on the Autoconer, Autocoro, Ring Frame and Complete Rotors panels — these
+  four are the only ones with a `.parts-toolbar` at all (Navels and Twin Discs have none — see
+  "Data-driven rendering"), and now every one of the four has a button (Rotors' was added
+  2026-09-24, linking `PhiComp 2026-08-Product Portfolio.pdf`; unlike the other four files its name
+  carries the leaflet's own edition date, not a typo or a catalogue-brand pairing — don't
+  "normalize" it to match the others' naming). The Ring Frame
   one is additionally the source of four pages now transcribed onto the page itself — the belt
   size table and the two RSM.R100/RSM.Z000 drawings; see "Product photo pipeline" for how to get
   images out of it and "Data-driven rendering" for the table. Autoconer's
   catalogue file is literally named `Autconer Catalogue Euro Textile.pdf` (typo in the file itself)
   — the href matches it exactly; don't "fix" the spelling without renaming the actual file to
-  match. `BROELL_Navel catalogue.pdf` and `CPU Main Catalogue.pdf` are reference-only, like the
+  match. `BROELL_Navel catalogue.pdf` and `CPU Main Catalogue.pdf` are still reference-only, like the
   source photos below — on disk for provenance/future cropping, not linked from the Navels or Twin
   Discs panels.
   There is no `docs/` folder. It held one PDF (`Autocoro338_Parts_list_revised.pdf`) behind a
@@ -1240,12 +1376,22 @@ Confirmed by the owner after it was queried once; don't "tidy" it away.
 The Europe scoping:
 
 - The hero eyebrow reads `Germany · Austria · Switzerland → India`.
-- The first hero credential is `3` / "European OEM manufacturing partners", with the three countries
+- The first hero credential is "European OEM manufacturing partners", with the three countries
   on their own line below it as a `.cred-countries` row — one `.cred-country` chip per country,
   each an existing `.flag` swatch plus the country name as real text. The names used to be a
   run-on tail of `.cred-label`. The flags carry no `title`/`aria-label` on purpose: the name is
   right beside each one, so the swatch is decoration. Order is Germany · Austria · Switzerland,
   matching the eyebrow.
+
+**This credential dropped its `3` numeral on 2026-09-24** — the owner's call, since the
+three-flag row directly below it already shows the count, making the digit redundant. Unlike the
+other three `.cred-item`s, it now has no `.cred-num` at all: the `.cred-label` span carries an
+added `.cred-label-lead` modifier (`style.css`, near `.cred-label`) — 16px/800/`--primary` instead
+of the plain label's 13.5px/`--charcoal` — so it reads as the row's headline in place of the
+numeral, rather than a plain caption sitting alone at a fraction of its siblings' visual weight.
+`margin-top: 0` on that modifier overrides the base label's `5px` top margin, which existed only to
+clear the numeral that's no longer there. `countUp()` (`script.js`) needs no change: it just
+iterates whatever `.cred-num` elements exist, so it now animates three instead of four.
 
 The About section used to restate this a third time: an `.about-cluster` block of three flags
 (`flag-ch`, `flag-at`, `flag-de`) plus "Direct from 3 elite European OEM partners / Germany ·
@@ -1262,10 +1408,11 @@ load-bearing: the Manufacturers section (intro sentence + the CPU card), the Twi
 `CPU · Taiwan` badge, and the `<head>` metadata — the meta/OG/Twitter descriptions and the JSON-LD,
 which must keep mirroring the manufacturers grid.
 
-The word **European** is what makes the `3` accurate rather than an understatement, so it has to
-survive any rewording of that credential. Note the About hub's Authorized Distributor card still
-says "4 OEM partners" (the true total); 3 European + 1 Taiwanese reconciles, and the Manufacturers
-grid immediately below shows all four.
+The word **European** is what makes the three-flag row accurate rather than an understatement, so
+it has to survive any rewording of that credential — without it, "manufacturing partners" plus
+three flags reads as the whole partner count, not a scoped subset. Note the About hub's Authorized
+Distributor card still says "4 OEM partners" (the true total); 3 European + 1 Taiwanese reconciles,
+and the Manufacturers grid immediately below shows all four.
 
 ### Stock & availability claims
 **Euro Textile Spares does not hold the whole catalogue in stock.** Only fast-moving parts are kept
@@ -1277,7 +1424,8 @@ agreement:
    something that carried the idea rather than the place; "Ex-stock" is the trade term for supply
    from existing stock and, unlike a place name, asserts no location or scale of its own — the
    label does all the qualifying. `.cred-num` is 34px/800 (30px ≤640px) in a fixed-width panel, so
-   a replacement longer than ~8–9 characters wraps and stops matching `3` / `100%` / `6500+`.
+   a replacement longer than ~8–9 characters wraps and stops matching `100%` / `6500+`. (The first
+   credential no longer has a `.cred-num` at all — see "Partner count" above.)
 2. Capabilities card 02, "Pan-India Distribution" — "…fast-moving items from our Pune stock, the
    rest imported to order."
 

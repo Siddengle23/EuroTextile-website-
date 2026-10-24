@@ -475,6 +475,16 @@ section { padding: var(--gap-section) 0; }
 .rotor-photo-pair .rotor-spec { max-width: none; margin: 0; }
 .rotor-photo-pair .rotor-spec img { height: 260px; object-fit: contain; background: #fff; }
 .rotor-photo-pair .rotor-spec-cap { margin-top: 10px; }
+/* The PhiComp "Applications and technical data" page: two tall tables (~550x1464) whose text is
+   pixels. The fixed 260px/170px height above would shrink them past reading, so this pair lets
+   them run at natural height, wider, with the column label above each table rather than below.
+   Qualified with both classes so it outranks .rotor-photo-pair .rotor-spec img at every width. */
+.rotor-photo-pair.tech-pair { max-width: 980px; align-items: start; }
+/* The tables' ruled borders run to the very edge of each image, so the white padding keeps
+   .rotor-spec img's 16px rounded corners from clipping them. */
+.rotor-photo-pair.tech-pair .rotor-spec img { height: auto; padding: 12px; border: 1px solid var(--hairline);
+                                              box-shadow: var(--shadow-lift); }
+.rotor-photo-pair.tech-pair .rotor-spec-cap { margin: 0 auto 10px; }
 
 /* index ring — the only animated element; one turn per 90s, ambient */
 @keyframes rotorIndex { to { transform: rotate(360deg); } }
@@ -709,10 +719,28 @@ section[id] { scroll-margin-top: 100px; }
 .reveal-hidden { opacity: 0; transform: translateY(38px); transition: opacity .7s cubic-bezier(.5,0,0,1), transform .7s cubic-bezier(.5,0,0,1); }
 .reveal-visible { opacity: 1; transform: translateY(0); }
 
-/* ---- Clients slider -------------------------------------------------------- */
-.clients { padding: 72px 0 56px; background: #fff; overflow: hidden; }
-.clients-eyebrow { display: block; text-align: center; }
-.clients-heading { text-align: center; font-size: 44px; font-weight: 800; color: var(--ink); margin-bottom: 46px; letter-spacing: -.01em; }
+/* ---- Clients: two-row tile marquee ----------------------------------------- */
+/* A centred header (eyebrow, heading with a short blue rule, one plain line), then the logos as
+   white tiles on a light-blue band. Centred because the band below is full-width and symmetric; a
+   heading-left / line-right split left an empty middle that read as two unrelated pieces.
+   Row 2 (and row 1's second half) are clones built by wireClients() in script.js; .is-marquee
+   is only added once they exist, so the animation can never run over a half-built track. */
+/* No bottom padding: the band sits flush on the About section, whose own gradient takes over. */
+.clients { padding: 72px 0 0; background: #fff; overflow: hidden; }
+.clients-head { text-align: center; margin-bottom: 40px; }
+/* balance: at 320px the eyebrow wraps, and unbalanced it strands "MILLS" alone on line two. */
+.clients-head .eyebrow { display: block; text-wrap: balance; }
+.clients-heading { font-size: 44px; font-weight: 800; color: var(--ink); letter-spacing: -.01em; }
+/* Decorative rule only: empty content, so nothing for a screen reader to announce. */
+.clients-heading::after { content: ""; display: block; width: 56px; height: 3px; margin: 18px auto 0;
+                          background: var(--primary); border-radius: 2px; }
+/* One line on desktop; where it does wrap (phones), text-wrap: balance stops a two-word orphan.
+   Browsers without it simply wrap normally. */
+.clients-sub { max-width: 62ch; margin: 16px auto 0; font-size: 17px; color: var(--charcoal); text-wrap: balance; }
+/* A static gradient on purpose — not one of the bgDrift sections. */
+.clients-band { display: grid; row-gap: 18px; padding: 28px 0;
+                background: linear-gradient(180deg, var(--mist), var(--cloud));
+                border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
 /* The edge fade is a FIXED 24px ramp, deliberately not a percentage, and there is deliberately no
    per-breakpoint override. A percentage scales the fade up with the screen, which is backwards:
    10% was a soft ~120px ramp on desktop but ~82px on an iPad and ~39px on a phone — i.e. on the
@@ -722,21 +750,45 @@ section[id] { scroll-margin-top: 100px; }
 .slider-container { position: relative; width: 100%; overflow: hidden;
     -webkit-mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%); }
-.slider-track { display: flex; width: max-content; animation: scrollTrack 35s linear infinite; }
+.slider-track { display: flex; width: max-content; }
+.clients.is-marquee .slider-track { animation: scrollTrack 50s linear infinite; }
+.clients.is-marquee .slider-reverse .slider-track { animation-direction: reverse; }
+/* No JS, or reduced motion (wireClients() bails, so no clones and no .is-marquee): the one
+   canonical list wraps into a centred static wall, so every client is visible rather than the
+   row running off the right edge. */
+.clients:not(.is-marquee) .slider-track { width: auto; flex-wrap: wrap; justify-content: center;
+                                          row-gap: 18px; padding: 0 24px; }
+/* Split the marquee's margin-right across both sides so the wrapped rows stay centred. */
+.clients:not(.is-marquee) .client-logo { margin: 0 9px; }
 /* flex:0 0 auto keeps a slide at its natural width. The track is `width: max-content`, which
    SHOULD mean no item is ever compressed — but WebKit resolves max-content unreliably on a flex
    container inside an overflow:hidden ancestor, and the default flex-shrink:1 then squeezes the
    slides until logos collapse or clip. Pinning the basis makes the loop geometry independent of
    how the engine resolves the track width; it also keeps the two hand-duplicated halves exactly
-   equal, which is what makes translateX(-50%) seamless. */
-.client-logo { flex: 0 0 auto; padding: 0 60px; display: flex; align-items: center; justify-content: center; gap: 14px; white-space: nowrap; cursor: default; }
-.client-logo-img { height: 52px; width: auto; object-fit: contain; }
-.gimatex-logo { height: 70px; }
-.client-logo-name { font-size: 22px; font-weight: 700; color: var(--ink); }
-.vardhman-divider { width: 3px; align-self: stretch; background: #f0b323; border-radius: 2px; }
+   equal, which is what makes translateX(-50%) seamless.
+   The spacing between tiles is margin-right, NOT a flex gap, for the same reason: with a gap the
+   track is 2n tiles + (2n-1) gaps, so -50% lands half a gap short and the loop jumps once a cycle.
+   A per-tile margin makes the two halves exactly equal. */
+.client-logo { flex: 0 0 auto; height: 96px; padding: 0 36px; margin-right: 18px;
+               display: flex; align-items: center; justify-content: center; gap: 14px;
+               white-space: nowrap; cursor: default;
+               background: #fff; border: 1px solid var(--hairline); border-radius: var(--r-card);
+               box-shadow: var(--shadow-lift);
+               transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.client-logo:hover { transform: translateY(-3px); box-shadow: var(--shadow-float); border-color: var(--primary-soft); }
+.client-logo-img { height: 44px; width: auto; object-fit: contain; }
+.gimatex-logo { height: 60px; }
+/* Logos whose name is set small inside the mark (a lockup or an emblem) need more height than the
+   shared 44px to stay legible. Same per-client pattern as .gimatex-logo; the ≤640px block scales
+   each one down by the same ~0.73 ratio as the shared 44px → 32px. */
+.pdm-logo { height: 60px; }
+.surya-logo { height: 54px; }
+.patiala-logo { height: 70px; }
+.client-logo-name { font-size: 20px; font-weight: 700; color: var(--ink); }
+.vardhman-divider { width: 3px; align-self: center; height: 44px; background: #f0b323; border-radius: 2px; }
 .vardhman-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.vardhman-name { font-size: 21px; font-weight: 800; color: var(--ink); line-height: 1.15; }
-.vardhman-tagline { font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--ink); }
+.vardhman-name { font-size: 19px; font-weight: 800; color: var(--ink); line-height: 1.15; }
+.vardhman-tagline { font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: var(--ink); }
 @keyframes scrollTrack { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 /* ============================================================================
@@ -825,6 +877,13 @@ section[id] { scroll-margin-top: 100px; }
     .chevron { display: none; }
     .panel-feature { grid-template-columns: 1fr; gap: 18px; }
     .coating-list { grid-template-columns: 1fr; }
+    /* The two PhiComp applications tables stack from here down, not from 640px: side by side
+       between 641 and 900px each column is only 288-417px wide, which shrinks the table's small
+       print below phone size (an iPad in portrait got 351px). Stacked, each is capped at 584px =
+       the images' native 558px + 12px padding each side + the 1px border, so a tablet shows them
+       at 1:1 and a phone simply fills its width. They are two separate tables, not a comparison,
+       so stacking loses nothing. */
+    .rotor-photo-pair.tech-pair { grid-template-columns: 1fr; gap: 22px; max-width: 584px; }
 }
 
 @media (max-width: 640px) {
@@ -855,18 +914,31 @@ section[id] { scroll-margin-top: 100px; }
     /* Stay two-up rather than stacking — the pair is a comparison, and stacking breaks it. */
     .rotor-photo-pair { gap: 12px; }
     .rotor-photo-pair .rotor-spec img { height: 170px; }
+    /* ...except the applications tables, which already stack from 900px (see that block). */
+    .rotor-photo-pair.tech-pair .rotor-spec img { height: auto; }
     /* No .slider-container mask override here on purpose — the base rule's fixed 24px ramp already
        behaves the same at every width. Adding a percentage back is the bug this replaced.
-       22px (was 36px) narrows every slide by ~28px, which is what brings a second logo onto a
-       390px screen. A continuous marquee always clips at the viewport edge, so the lever for "the
-       logos are always half cut off" on a phone is slide width, not the mask. */
-    .client-logo { padding: 0 22px; gap: 10px; }
-    .client-logo-img { height: 40px; }
-    .gimatex-logo { height: 52px; }
-    .vardhman-name { font-size: 16px; }
-    .vardhman-tagline { font-size: 9px; }
-    .client-logo-name { font-size: 17px; }
+       A continuous marquee always clips at the viewport edge, so the lever for "the logos are
+       always half cut off" on a phone is tile width, not the mask — hence the tighter padding,
+       margin and logo height here. The tile border also makes a partly visible tile read as
+       deliberate rather than as a logo sliced in half. */
+    .clients-band { padding: 20px 0; row-gap: 12px; }
+    .client-logo { height: 72px; padding: 0 20px; margin-right: 12px; gap: 10px; }
+    .client-logo-img { height: 32px; }
+    .gimatex-logo { height: 42px; }
+    .pdm-logo { height: 44px; }
+    .surya-logo { height: 40px; }
+    .patiala-logo { height: 50px; }
+    .vardhman-divider { height: 32px; }
+    .vardhman-name { font-size: 15px; }
+    .vardhman-tagline { font-size: 8.5px; }
+    .client-logo-name { font-size: 15px; }
     .clients-heading { font-size: 34px; }
+    .clients-sub { font-size: 15px; margin-top: 12px; }
+    .clients-heading::after { margin-top: 14px; }
+    .clients-head { margin-bottom: 28px; }
+    .clients:not(.is-marquee) .slider-track { row-gap: 12px; padding: 0 16px; }
+    .clients:not(.is-marquee) .client-logo { margin: 0 6px; }
     /* The strip carries the tagline at every width now, but phone portrait centres it rather than
        leaving it hard against the left edge. Width alone is the right test: phone landscape is
        wider than 640px, so this block already means "phone portrait" without introducing an

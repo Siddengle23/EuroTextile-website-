@@ -63,8 +63,8 @@ git clone --depth 1 https://github.com/Siddengle23/EuroTextile-website-.git
   written down there.
 - **Read `CLAUDE.md` before editing.** It documents constraints that are not visible in the code,
   and several of them fail silently rather than throwing an error: category links must stay in sync
-  across four places, every client logo appears twice in the markup, and a handful of CSS rules that
-  look like dead weight are load-bearing.
+  across four places, the client logos are listed once and cloned by `script.js` (never paste a
+  second copy), and a handful of CSS rules that look like dead weight are load-bearing.
 
 ## Before deploying
 

@@ -90,8 +90,8 @@ vm.runInContext(fs.readFileSync('data.js','utf8')+';this.O={ROTOR_CUP_BEARING,RI
 That is how the steel-belt arithmetic below (`C = B×F`, `E = F+1`, `D = C+2A+20`) is actually
 checked, and it also covers: every `img` path in `data.js` + every `src=` in `index.html` existing
 on disk, duplicate part images / rotor types / belt codes, the `NAVEL_SERIES` keys matching the
-`series` strings, each `data-target` having a `.parts-count[data-count]`, and the clients marquee's
-two halves being identical. None of those are visible in a screenshot; all are a few seconds in node.
+`series` strings, each `data-target` having a `.parts-count[data-count]`, and the clients section
+holding each logo exactly once (the second half and row 2 are cloned by `wireClients()`). None of those are visible in a screenshot; all are a few seconds in node.
 Use headless Chrome for what is genuinely visual or computed-style, not for data.
 
 Note what is **not** there, since two of them look present: `python`/`python3` resolve to the Windows
@@ -223,7 +223,7 @@ don't "restore" it there. Three things follow from the position and are easy to 
 ### Category tab/panel system
 The product catalog (`#products`) has 6 categories, in this display order: `rotors` (labelled
 "Complete Rotors"), `autocoro`, `autoconer`, `ringframe` (labelled "Ring Frame"), `navels`,
-`twindiscs`.
+`twindiscs` (labelled "Supporting Discs" — see below).
 Each category is wired through **three places that must stay in sync** when adding, renaming or
 reordering a category:
 1. The nav "Products" dropdown links (`<a data-cat="...">` in the nav).
@@ -267,24 +267,29 @@ attributes pointing at them — a cut that clips a `</div>` breaks that category
 silently, with no console error.
 
 **Sub-categories are a fourth sync point.** Four of the six categories carry a `.subdropdown`
-flyout in the nav (`<li class="has-sub">`): Complete Rotors → rotor cup & bearing / SolidRotor,
+flyout in the nav (`<li class="has-sub">`): Complete Rotors → rotor cup & bearing / SolidRotor / applications & technical data,
 Ring Frame → Rieter Ring / Rieter Steel Belts / Zinser Ring / Zinser Steel Belts, Navels → the
-four Broell series, Twin Discs → supporting discs / friction disc / friction wheel. Autocoro and
+four Broell series, Supporting Discs → twin discs / friction disc / friction wheel. Autocoro and
 Autoconer have none. Each sub-link is
 `<a href="#<id>" data-cat="<category>" data-sub="<id>">`, and `<id>` must match an `id=` on a
-heading **inside that category's panel** — `sub-rotor-cup`, `sub-solid-rotor`, `sub-rieter-ring`,
+heading **inside that category's panel** — `sub-rotor-cup`, `sub-solid-rotor`,
+`sub-rotor-applications`, `sub-rieter-ring`,
 `sub-rieter-belts`, `sub-zinser-ring`, `sub-zinser-belts`, `sub-twin-discs`, `sub-friction-disc`,
 `sub-friction-wheel` sit on hand-written
 headings in the markup; the four `sub-navel-*` ids are **generated** by `renderNavels()` from the
 `NAVEL_SERIES` map in `script.js` (see "Data-driven rendering"). A typo'd id fails silently — the
 panel still switches, the page just doesn't scroll.
 
-**A sub-link's visible label and its `<id>` are independent, and one pair deliberately disagrees.**
-Twin Discs' first sub-link reads "Supporting Discs" while its `href`, `data-sub` and target heading
-id all stay `sub-twin-discs`. The label was changed so the flyout stops repeating its own parent
-("Twin Discs → Twin Discs"); the id was left alone because renaming it means renaming the heading
-id in the panel to match, which is exactly the silent-failure case above. Don't "fix" the id to
-agree with the label.
+**A sub-link's visible label and its `<id>` are independent — and the category key is too.**
+The sixth category is *labelled* "Supporting Discs" (nav parent, `.cat-tab`, footer link, panel
+`<h3>`, its CTA, the About "6 Product Ranges" card, the Products subtext and the JSON-LD
+`knowsAbout`), while its key stays `twindiscs` in `data-cat`/`data-panel`. Its first sub-link
+reads "Twin Discs" and points at `sub-twin-discs` (the "Twin Discs (Supporting Discs for Open End
+Rotor Spinning)" heading). Swapped at the owner's request on 2026-10-24; until then the parent read
+"Twin Discs" and the sub-link "Supporting Discs". Only labels moved — renaming `twindiscs` or
+`sub-twin-discs` means renaming every attribute that matches it, which is exactly the silent-failure
+case above, so don't "tidy" the keys to match the new label. `TWIN_DISCS` in `data.js` and the
+"Twin Disc N Type" part names belong to the Twin Discs sub-section and stay as they are.
 
 **The scroll is driven entirely by JS, not the browser's native hash jump.** Every `a[data-cat]`
 click handler (category-level or sub-link — same code, no branching on `data-sub`) calls
@@ -330,10 +335,13 @@ JS-driven `scrollIntoView()` is what actually removes the race: one deterministi
 measured only after layout has settled.
 
 Adding nav items also means re-checking `.nav-links.open`'s `max-height` in the 1100px block — the
-flyouts flatten into a static indented list below that width, and the 13 sub-items already pushed
+flyouts flatten into a static indented list below that width, and the sub-items (13 at the time,
+14 since Complete Rotors gained "Applications & Technical Data") already pushed
 the open menu past the old 720px cap (now `85vh`, with the `overflow-y: auto` that was already
 there). Being a viewport fraction rather than a pixel figure, it absorbs new sub-items on its own
-— the open menu simply scrolls — but confirm that rather than assuming it.
+— the open menu simply scrolls — but confirm that rather than assuming it. (Confirmed 2026-10-24
+for the 14th item: the open menu's content is 1248px tall, so it scrolls at every phone and tablet
+size, and on a landscape phone (844×390) the menu box is only ~332px.)
 
 **The 1100px flatten rules deliberately repeat their `:hover` / `:focus-within` selectors — that
 is a specificity guard, not redundancy.** `.has-dropdown:hover .dropdown` is `(0,3,0)` because a
@@ -445,13 +453,39 @@ keep matching it. Note the hero CTA deliberately keeps the verb **Explore**, not
 the different verb separates the two actions. The "Request a Quote" pill CTA is different again —
 see "CTA buttons" below.
 
-### Clients marquee — the logo list is hand-duplicated
-`#clients`' `.slider-track` contains **every client logo twice** ("Set 1" / "Set 2" in the markup).
-That is what makes `@keyframes scrollTrack`'s `translateX(-50%)` loop seamlessly: at -50% the
-track has scrolled exactly the first copy's width, so it lands back on an identical frame.
-**Adding, removing or reordering a client means editing both copies identically.** Editing only
-one desynchronises the halves and the loop visibly jumps once per cycle — and because the seam
-passes by only every 35s, it is easy to miss in a quick check.
+### Clients section — one logo list, cloned into a two-row tile marquee
+Redesigned 2026-10-24 (the owner found the old single row of bare logos on white bland). Layout:
+`.clients-head` — a **centred stack**: eyebrow, `<h2>` with a 56px brand-blue rule drawn by an
+empty-content `::after` (decoration only, nothing for a screen reader), then one plain
+`.clients-sub` line (`max-width: 62ch`, so one line on desktop; `text-wrap: balance` stops a
+two-word orphan where it wraps on phones). The eyebrow carries `text-wrap: balance` too, for the
+same reason: at 320px "TRUSTED BY INDIA'S LARGEST MILLS" wraps, and unbalanced it left "MILLS"
+alone on line two. Browsers without `text-wrap` just wrap normally, so neither needs a fallback. It was briefly heading-left / line-right, which left an
+empty middle the owner disliked; centred mirrors the full-width, symmetric band. Then `.clients-band` — a static `mist → cloud` gradient strip, deliberately *not* one of the
+`bgDrift` sections — holding two rows of logos as white rounded tiles scrolling in opposite
+directions. `.clients` has no bottom padding: the band sits flush on the About section.
+
+**`index.html` holds every client logo exactly once, and `wireClients()` (script.js) builds the
+rest.** It appends an `aria-hidden` clone of each tile to row 1's track (two identical halves are
+what make `@keyframes scrollTrack`'s `translateX(-50%)` loop seamlessly), then builds row 2 as a
+second `.slider-container.slider-reverse` (itself `aria-hidden`), starting halfway through the list
+so the same logo never sits directly above itself, twice over. Clones get `alt=""`, so a screen
+reader hears each client once. Only then does it add `.is-marquee` to `#clients`, and **the
+animation exists only under that class** — so it can never run over a half-built track. **Adding,
+removing or reordering a client is now a single markup edit**; this replaced a hand-duplicated
+"Set 1" / "Set 2" whose halves had to be kept identical by hand (it would have been four copies
+with two rows).
+
+**Without JS, or under `prefers-reduced-motion: reduce`, no clones are made** (`wireClients()`
+bails before cloning) and `.clients:not(.is-marquee) .slider-track` wraps the single list into a
+centred static wall, so every client is visible instead of the row running off the right edge. The
+`margin-right` becomes `margin: 0 9px` there purely to keep the wrapped rows centred.
+
+**Tile spacing is `margin-right` on `.client-logo`, never a flex `gap` on the track.** With a gap
+the track is 2n tiles + (2n−1) gaps, so -50% lands half a gap short and the loop jumps once a cycle.
+Measured with 16 clients: track 9038.06px, exactly twice its first half. Each half is ~4,500px,
+far wider than any normal viewport; removing several clients could make a half narrower than a wide
+screen and open a visible gap at the seam — re-check if the list shrinks a lot.
 
 **`.client-logo` carries `flex: 0 0 auto`, and `.slider-container`'s edge mask is narrowed on
 phones.** Both fix the same reported symptom — "some logos just disappear as they move left":
@@ -459,7 +493,7 @@ phones.** Both fix the same reported symptom — "some logos just disappear as t
   resolves `max-content` unreliably on a flex container inside an `overflow: hidden` ancestor, and
   the default `flex-shrink: 1` then squeezes slides until logos collapse or clip. Pinning the basis
   makes the loop geometry independent of how the engine resolves the track width, and keeps the two
-  hand-duplicated halves exactly equal — which is what makes `translateX(-50%)` seamless.
+  halves exactly equal — which is what makes `translateX(-50%)` seamless.
 - The mask is a **fixed 24px ramp**, and **there is deliberately no per-breakpoint override.** It
   used to be a percentage (`10%`, briefly `4%` on phones), which is the wrong unit: a percentage
   scales the fade *up* with the container, so it was a soft ~120px ramp on desktop but ~82px on an
@@ -470,12 +504,11 @@ phones.** Both fix the same reported symptom — "some logos just disappear as t
 
 **A continuous marquee clips at the viewport edge by definition — the mask is not the lever for
 that.** When the complaint is "the logos are always half cut off" on a phone rather than "they fade
-out early", the cause is slide width: at ≤640px each slide is the logo plus `.client-logo`'s
-horizontal padding, and with the widest marks near 300px only about one and a half fit a 390px
-screen, so something is always straddling an edge. The `≤640px` padding is `22px` (down from 36px)
-for exactly that reason. The next lever after padding is `.client-logo-img`'s 40px height, not more
-padding. Making a logo *never* partially visible is not achievable here at all — that needs a
-stepped/paged carousel rather than a continuous scroll.
+out early", the cause is tile width. The `≤640px` block therefore shrinks the tile (72px tall,
+`20px` padding, `12px` margin, 32px logos) rather than touching the mask, and the tile border makes a
+partly visible tile read as deliberate rather than as a logo sliced in half. Making a logo *never*
+partially visible is not achievable here at all — that needs a stepped/paged carousel rather than a
+continuous scroll.
 
 ### Header brand block & logo assets
 The navbar brand (`a.logo`) is the ETS monogram **plus a live text wordmark** (`.logo-word`,
@@ -898,7 +931,10 @@ Complete Rotors is the landing panel and carries the most, in this order inside 
 wrapper below the `.panel-feature` block: a hand-authored rotor drawing (`.rotor-spec`, see its own section
 below), a `.coating-key` block decoding the D/DD/N/DN/DDN suffix, then the two
 searchable type lists — a `.spec-table` of rotor cup/bearing types and a chip list of SolidRotor
-types — each preceded by a `.rotor-photo-pair` of two real product photos. **The panel's one search
+types — each preceded by a `.rotor-photo-pair` of two real product photos — then the "Rule of thumb"
+chips, and last the PhiComp **"Applications and technical data"** page (`#sub-rotor-applications`,
+see "Product photo pipeline"). That last block is static, has no `data-search`, and is the third
+sub-link in the nav's Complete Rotors flyout. **The panel's one search
 box sits inside that first group, immediately above the rotor cup/bearing table** rather than at
 the top of the panel, where the heading, the photo pair and three notes separated it from the table
 it filters. Position is cosmetic: `wireSearch()` resolves both ids out of `data-target`, so the box
@@ -1123,6 +1159,40 @@ it needs a re-shoot/re-upload; there's no PDF to re-crop from for these.
   figure (the machine-model fitment list, grouped by Rieter/Zinser/Marzoli in a `.callout-list`) is
   hand-written copy, not sourced from this crop — see "One content pattern inside category panels"
   above for that markup.
+- **`rotor-applications-fully-automated.png`** / **`rotor-applications-semi-automated.jpg`** — the
+  last page (page 8 of 8) of `catalogues/PhiComp 2026-08-Product Portfolio.pdf`, added 2026-10-24 at
+  the end of the Complete Rotors panel: two tables of rotor groove shapes (G/T/Ts/Tc/U for
+  fully-automated, C/R/Tr/U/Tc/Z for semi-automated) with the yarn counts and characteristics each
+  suits. **Images only, by the owner's choice** — the table text is pixels in the PDF and was not
+  transcribed; the heading and the two column labels, which *are* real text in the PDF, are real
+  text in the markup. **Unlike the Rieter scan, this PDF is vector with a text layer**, so its pages
+  are not single JPEGs: page 8 is page object 83 (`/Kids` order under the root `/Pages`, obj 2), its
+  left table is `/Im23` (obj 86, **FlateDecode raw 8-bit RGB**, 550×1464 — inflated with node's
+  `zlib` and written out as a PNG by hand: IHDR, filter-0 scanlines, IDAT, IEND, CRC32) and its right
+  table is `/Im24` (obj 87, **DCTDecode**, 558×1462 — already a JPEG, so its stream bytes were saved
+  unchanged; re-encoding only loses quality). Hence the mixed formats.
+  **The PNG was then re-padded to the JPEG's exact geometry, and that is what keeps the two tables
+  the same height.** Both tables have the same ink height (1454px) but the left one's ink is 544px
+  wide against 554px, so on the raw 550×1464 canvas it scaled up more in an equal-width column and
+  ended ~19px lower than its neighbour. It was redrawn 1:1 (no resampling) onto a white 558×1462
+  canvas at offset (+5, −2): ink rows now 6–1459 in both files, ink x 7–550 vs 2–555. Both render
+  at identical size at every width (measured 481×1218.13 desktop, 312×775.33 at 360px). A
+  re-extraction must repeat this step, and the `<img>`'s `width`/`height` attributes are 558/1462
+  to match. The page's footer (PhiComp
+  address, the ETS enquiry line with phone numbers, version line) and the PhiComp logo (`/Im6`) are
+  separate objects and were deliberately **not** extracted — the site's Contact section stays the
+  only contact block. Neither table carries a PhiComp order number (only groove letters and
+  `Cxxx/R`), so the "order numbers are not published" rule is not engaged.
+  They sit in a `.rotor-photo-pair.tech-pair`: the base pair's fixed `height: 260px` (170px on
+  phones) would shrink a 0.38-aspect table past reading, so `.tech-pair` restores `height: auto`,
+  widens the pair to 980px, puts each column label *above* its table, and pads the image 12px so
+  `.rotor-spec img`'s 16px rounded corners don't clip the tables' edge-to-edge ruling. **At ≤900px
+  it stacks to one column, capped at 584px** (558 native + 2×12 padding + 2×1 border), so tablets
+  show the tables at 1:1. It used to stack only at ≤640px, which left 641–900px two-up at 288–417px
+  per column — smaller print than a phone gets (an iPad in portrait measured 351px). The base
+  `.rotor-photo-pair` stays two-up at every width on purpose (those are comparisons); these are two
+  separate tables, so stacking loses nothing. Responsive sweep 2026-10-24 (21 viewports, 320×568 to
+  2560×1080, portrait and landscape): equal heights and 0.00px bottom difference everywhere two-up.
 
 If a future catalogue-derived category needs a photo pulled from a PDF with no per-SKU
 photography and no text layer: this environment has neither `pdftoppm`/poppler (so the Read tool
@@ -1209,7 +1279,21 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
   image that had the real logo content only in its left ~200px (the rest opaque white, not
   transparent — a plain crop, not a `min-height:0`-style aspect-ratio bug); if it ever needs
   re-sourcing, expect the same wide-canvas issue and crop before using it, or it'll render with a
-  large dead-space gap next to it in the marquee. `images/` root holds the company logo files (see
+  large dead-space gap next to it in the marquee.
+  **Five more were added on 2026-10-24** — `kanish.png`, `pdm-spinning.png`, `surya-spinners.png`,
+  `manomay.png`, `patiala-gold-yarn.png` — each taken from that company's own website header logo
+  (Surya's is the PNG embedded as base64 inside its `logo.svg`; PDM's is the header `<img>` URL
+  inside its Vite JS bundle, the HTML itself carries no image). **None of the five publishes a real
+  vector logo** (Surya's `.svg` is only a raster wrapper) and there is no tracing tool here, so they
+  are transparent PNGs: trimmed to the opaque bounding box + 4% margin with `System.Drawing`,
+  the large ones downscaled (Kanish from 4650px wide to 1108×160, PDM to 543×200, Surya to 607×160),
+  Manomay (268×76) and Patiala (277×140) kept native — no larger version exists on either site, so
+  Manomay renders at only ~1.7× on desktop and is the softest of the set on a retina screen.
+  Kanish's source is named `logo-light.png`; its near-white pixels are the "KSM" lettering *inside*
+  the blue box, so it reads correctly on a white tile and was **not** recoloured. Three of them carry
+  their name set small inside a lockup or emblem and get per-client heights in the `.gimatex-logo`
+  pattern: `.pdm-logo` 60px, `.surya-logo` 54px, `.patiala-logo` 70px (44/40/50px at ≤640px).
+  `images/` root holds the company logo files (see
   "Header brand block & logo assets" above) plus `og-image.jpg`, the generated 1200×630 social
   preview, and two supplied assets the site does **not** load:
   `ETS Logo GIF.gif` (see "Hero brand lockup" for why) and
@@ -1324,7 +1408,8 @@ twice; keep doing that.
   typography on product facts. So is `Pune – 411 038` in the postal address.
 - **An em dash after a bold term in a heading or figcaption stays** — it is a label separator, not a
   prose connector. Nine of these are left, on `Rotor cup & bearing`, `SolidRotor`, `Coating`,
-  `Ring Frame spares`, `RSM.R100`, `RSM.Z000` and `Twin Discs`.
+  `Ring Frame spares`, `RSM.R100`, `RSM.Z000` and `Supporting Discs` (the panel `<h3>`, renamed from
+  `Twin Discs` on 2026-10-24).
 - **Every prose-connector em dash is gone**, replaced by a colon, semicolon, comma or a sentence
   break. Don't reintroduce one mid-sentence.
 
@@ -1347,8 +1432,9 @@ themselves left byte-identical each time. Capabilities card 03 in particular now
 on the ground sales and support agent…" — the phrase is deliberately unchanged inside a sentence
 that was otherwise rebuilt.
 
-- **"on the ground" is unhyphenated in three places** — the `.about-lead` intro, the Authorized
-  Distributor `.hub-card`, and Capabilities card 03. It is a compound adjective before a noun, so
+- **"on the ground" is unhyphenated in two places** — the `.about-lead` intro and Capabilities
+  card 03. (It was three: the About hub's third card lost the phrase on 2026-10-24 when it became
+  "Sole Selling Agents & Distributors" — a requested rewrite, not a fix of this item.) It is a compound adjective before a noun, so
   "on-the-ground" would be the standard form.
 - **"Pune based" in the `.about-lead`**, against "Pune-based" in the meta description,
   `og:description` and the JSON-LD. Note this is the one case that also touches the
@@ -1360,10 +1446,9 @@ that was otherwise rebuilt.
   convention elsewhere (nav logo, hero lockup, `.hub-mark`) is `alt=""` when adjacent real text
   already names the thing, so these are the exception rather than the rule.
 
-Two things that *are* worth acting on if you happen to be in the file: `sitemap.xml`'s `<lastmod>`
-goes stale on any material content change (its own comment says so), and the `CNAME` / `www.`
-question in the SEO bullet near the top of this file is genuinely open, pending the owner's DNS
-check.
+One thing that *is* worth acting on if you happen to be in the file: `sitemap.xml`'s `<lastmod>`
+goes stale on any material content change (its own comment says so). (The `CNAME` / `www.`
+question that used to be listed here was closed on 2026-09-02 — see the SEO bullet near the top.)
 
 ### Partner count — the hero is scoped to Europe on purpose
 There are **four** OEM partners: Phicomp (CH), Emil Broell (AT), Samatex (DE) and CPU (Taiwan). The
@@ -1410,8 +1495,8 @@ which must keep mirroring the manufacturers grid.
 
 The word **European** is what makes the three-flag row accurate rather than an understatement, so
 it has to survive any rewording of that credential — without it, "manufacturing partners" plus
-three flags reads as the whole partner count, not a scoped subset. Note the About hub's Authorized
-Distributor card still says "4 OEM partners" (the true total); 3 European + 1 Taiwanese reconciles,
+three flags reads as the whole partner count, not a scoped subset. Note the About hub's Sole Selling
+Agents & Distributors card still says "all 4 of our OEM partners" (the true total); 3 European + 1 Taiwanese reconciles,
 and the Manufacturers grid immediately below shows all four.
 
 ### Stock & availability claims
@@ -1522,9 +1607,18 @@ nothing to join); the cards themselves are unchanged, the badge already being in
 **560px** drops the cards to one column. The `@media (max-width: 820px)` block still holds `.about-intro`'s own rules.
 
 Current order — reading left column top-to-bottom, then right: `18+ Years`, `100+ Mills`,
-`Authorized Distributor`, `6 Product Ranges`. `.hub-title b` styles the blue trailing `+`, so it
-wraps only the `+` and only on the two cards that have one — `6 Product Ranges` and `Authorized
-Distributor` are plain `--ink`, and there is no second highlight style to invent.
+`Sole Selling Agents & Distributors`, `6 Product Ranges`. `.hub-title b` styles the blue trailing
+`+`, so it wraps only the `+` and only on the two cards that have one — `6 Product Ranges` and
+`Sole Selling Agents & Distributors` are plain `--ink`, and there is no second highlight style to
+invent.
+
+**The third card was "Authorized Distributor" until 2026-10-24**; the owner had it changed to
+`Sole Selling Agents & Distributors` / "The only appointed sales channel in India for all 4 of our
+OEM partners." — the owner confirmed the sole-agent status covers **all four** OEMs, CPU included.
+The title wraps to two lines at desktop width; that is fine, because the connectors are anchored to
+the hub's 50% and the core spans both rows (re-measured: all eight connector endpoints still at
+0.00px). The utility strip ("Sole-selling agent & distributor for European OEMs") and the footer
+blurb were deliberately left as they are.
 
 Between them the four cover tenure, customer base, status and breadth. **They are company facts,
 not product specifications**, and that altitude is the whole reason this list is curated: two

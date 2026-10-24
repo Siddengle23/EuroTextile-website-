@@ -692,6 +692,44 @@
     window.addEventListener("load", function () { ST.refresh(); guardVisible(gsap); });
   }
 
+  /* ---- clients marquee ---------------------------------------------------- */
+  // index.html holds ONE copy of the client logos. This builds the rest of the marquee from it:
+  // a clone of the list appended to row 1 (two identical halves are what make translateX(-50%)
+  // loop seamlessly), and a second, reversed row starting halfway through the list so the same
+  // logo never sits directly above itself. Every clone is aria-hidden, so assistive tech hears
+  // each client once. Under reduced motion nothing is built and the CSS wraps the single list
+  // into a static wall; .is-marquee is what switches the animation on.
+  function wireClients() {
+    var section = document.getElementById("clients");
+    var track = section && section.querySelector(".slider-track");
+    if (!track) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var logos = Array.prototype.slice.call(track.children);
+    if (!logos.length) return;
+
+    function hiddenClone(node) {
+      var c = node.cloneNode(true);
+      c.setAttribute("aria-hidden", "true");
+      c.querySelectorAll("img").forEach(function (img) { img.alt = ""; });
+      return c;
+    }
+
+    logos.forEach(function (l) { track.appendChild(hiddenClone(l)); });
+
+    var half = Math.floor(logos.length / 2);
+    var order = logos.slice(half).concat(logos.slice(0, half));
+    var row2 = document.createElement("div");
+    row2.className = "slider-container slider-reverse";
+    row2.setAttribute("aria-hidden", "true");
+    var track2 = document.createElement("div");
+    track2.className = "slider-track";
+    order.concat(order).forEach(function (l) { track2.appendChild(hiddenClone(l)); });
+    row2.appendChild(track2);
+    track.parentNode.parentNode.appendChild(row2);
+
+    section.classList.add("is-marquee");
+  }
+
   /* ---- init --------------------------------------------------------------- */
   document.addEventListener("DOMContentLoaded", function () {
     renderNavels();
@@ -705,6 +743,7 @@
     renderFlat("twinDiscParts", typeof TWIN_DISCS !== "undefined" ? TWIN_DISCS : []);
     renderFrictionDiscTable();
     renderPUFrictionWheelTable();
+    wireClients();
     wireSearch();
     wireTabs();
     wireHashDeepLink();

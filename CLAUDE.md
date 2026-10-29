@@ -443,7 +443,7 @@ CTAs ("Enquire about complete rotors"), the submit button ("Send Enquiry"), the 
 the search-empty and success strings in `script.js` all follow it.
 
 **The same rule covers "Catalogue", never "Catalog".** The hero CTA and the products eyebrow were
-American until 2026-09-01, while the panel buttons ("Browse Catalogue ↗", four of them now — see
+American until 2026-09-01, while the panel buttons ("Browse Catalogue ↗", six of them now — see
 "Reference material vs. served assets") were already British; all visible copy now agrees. Two
 things the rule does *not* reach, so **never bulk-replace this word**: the `catalogues/` folder path
 inside those buttons' `href`s, and `catalog` inside HTML comments. One linked file is genuinely
@@ -678,8 +678,8 @@ disk for provenance; don't wire it in assuming it was forgotten.
 
 ### CTA buttons: `.btn-quote` vs. the shared button base
 `style.css`'s base rule (`.btn-primary, .btn-outline, .btn-submit`) is a flat, sharp-cornered
-(`--r-btn: 4px`), all-caps, shadowless button shared by every CTA on the site: the three (now four
-— see "Reference material vs. served assets") `Browse Catalogue ↗` buttons, "Enquire about…" ×2,
+(`--r-btn: 4px`), all-caps, shadowless button shared by every CTA on the site: the six (see
+"Reference material vs. served assets") `Browse Catalogue ↗` buttons, "Enquire about…" ×2,
 and the contact form's "Send Enquiry". **"Request a Quote" — the only two plain `.btn-primary`
 instances with no `.btn-sm`, the nav-bar CTA (`.nav-cta`) and the hero's primary button — carries an
 additional `.btn-quote` modifier** that overrides it to a fully rounded pill (`--r-pill`),
@@ -837,6 +837,21 @@ alone produces zero visible space; 14px matches `.panel-note`'s own bottom margi
 inert on the other five panels, which still have exactly one `<p>` — a panel that grows a second
 paragraph gets the spacing for free, no new class needed.
 
+**Autocoro and Autoconer list their compatible machines as `.info-tags` chips inside
+`.panel-intro`, beside the photo** (added 2026-10-29). This is the same pattern Supporting Discs
+uses for "Supporting disc for RU / R1 / R20". The model names are copied **only** from the
+top-right badges of the owner's flyers, `catalogues/Autocoro Flyer Main.pdf` (ACO 8/9/10/11,
+SE7/8/9/10/11/12) and `catalogues/Autoconer Flyer Main.pdf` (238/338/AC5/AC6/X5/X6). Those flyers
+are image-only PDFs and are not linked from the site. The Samatex catalogues name no models
+beyond "ACO 8+", so don't extend these lists from general knowledge; ask the owner.
+
+**The Autoconer and Ring Frame intros are deliberately unhyphenated**, at the owner's request
+(2026-10-29): "Heavy duty, long lifespan winding machine spares" and "Heavy duty, long lifespan
+spare parts for Auto Doffing Ring spinning frames". Don't "correct" them back to `heavy-duty` /
+`long-lifespan` / `Auto-Doffing` / `Ring-spinning`. Only the visible intro text was changed; the
+Ring Frame photo's `alt` ("ring-frame auto-doffing line") still has its hyphens. Autocoro's intro
+("Rotor-spinning … high-speed") was not part of the request and keeps them.
+
 **Autocoro, Autoconer and Ring Frame each carry a subset caveat as a `.panel-note` directly under
 the `.parts-toolbar`**, above the `.parts-count` badge — the grids only hold the parts that have
 real photography (40 / 27 / 29 rows), so without it "40 parts shown" reads as the whole range. Each
@@ -858,6 +873,14 @@ SolidRotor) are already the **complete** published range — see "Groove-type ta
 a note to point at. The button exists so a visitor can read the source leaflet itself, not to imply
 more parts exist off-page. Don't add a "selection of the range" note here to match the other three;
 it would be false.
+
+**Rotors links that leaflet twice, on purpose.** A second `Browse Catalogue ↗` was added on
+2026-10-29 at the owner's request. It sits beside the photo, next to "Enquire about complete
+rotors", because the toolbar button sits below three notes and a photo pair and the owner hadn't
+found it. The two `.btn-sm`s share a `<div class="toolbar-actions">`, borrowed purely for its flex
+row and gap, which also gives them the toolbar's equal-width stretch at ≤640px. Keep the toolbar
+copy too: that one sits beside the search box. **The same reasoning covers Navels**: its 16 cards
+are the whole Broell catalogue, so its toolbar carries no subset-caveat note either.
 
 **Callout-style notes get a white rounded card, so they stay legible against the animated
 section background instead of blending into it.** Once the gradient behind them was no longer a
@@ -979,6 +1002,16 @@ the map still renders its cards under the raw series string, just with no `id` t
 headings sit *inside* `#navelGrid` rather than between grids because `.parts-group-title` is
 `grid-column: 1 / -1`; each card also still repeats its full series wording in `.navel-info .series`.
 
+**Navels has had a search box since 2026-10-29** (`data-target="navelGrid"`, toolbar above the
+grid, `Browse Catalogue ↗` → `catalogues/BROELL_Navel catalogue.pdf` on the right).
+`renderNavels()` puts a `data-search` on each `.navel-card` built from everything the card prints:
+type, series, fibre, counts, end use and benefits, so "denim" or "knitting" finds cards. It then
+calls `updateCount("navelGrid")` like the other renderers. **The series headings need no extra
+code**: `filterContainer()` already hides any `.parts-group-title` with no visible `[data-search]`
+sibling before the next heading. That logic predates this change; it was written for the retired
+`renderGrouped()`, so it is not dead code. One side effect: a `sub-navel-*` sub-link to a series
+the current query has hidden still switches the panel, but it has nothing to scroll to.
+
 Each part record is `{ en, img, code?, group? }`, though no live array currently populates `code` or
 `group` — both remain supported for a future dataset that needs them. `ROTOR_CUP_BEARING`
 (`{ type, speed }`) and
@@ -1071,9 +1104,9 @@ attribute is absent, so the `.split()` throws. It throws *inside* the `DOMConten
 and `wireSearch()` is near the front of that list, so the exception takes `wireTabs()`,
 `wireHashDeepLink()`, `wireLightbox()`, `wireNav()`, `wireForm()` and `wireMotion()` with it:
 dead tabs, dead hamburger, dead contact form, no animation, one console error naming only the
-search. Every renderer around it guards (`if (!el || !parts) return`) — this one doesn't. All four
-current inputs carry the attribute, so it is latent rather than live; the trap is adding a fifth
-search box and forgetting it. Matching also tries a
+search. Every renderer around it guards (`if (!el || !parts) return`) — this one doesn't. All five
+current inputs carry the attribute (Navels' was the fifth, 2026-10-29), so it is latent rather than
+live; the trap is adding a sixth search box and forgetting it. Matching also tries a
 punctuation-stripped comparison (`normalizeSearch()`, strips everything but `a-z0-9` from both the
 query and the stored string) alongside the raw substring match, so a query typed without spaces or
 slashes (e.g. `"T34DD"`) still matches a stored value like `"t 34 dd"`. The "no results" message
@@ -1234,9 +1267,11 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
 ### Reference material vs. served assets
 - `catalogues/` — source manufacturer PDF catalogues (Samatex, Emil Broell, CPU, Phicomp), **linked
   from the site** via a "Browse Catalogue ↗" button (`target="_blank"`, native browser PDF viewer —
-  no custom viewer built) on the Autoconer, Autocoro, Ring Frame and Complete Rotors panels — these
-  four are the only ones with a `.parts-toolbar` at all (Navels and Twin Discs have none — see
-  "Data-driven rendering"), and now every one of the four has a button (Rotors' was added
+  no custom viewer built) on the Autoconer, Autocoro, Ring Frame, Complete Rotors and Navels panels.
+  These five are the only ones with a `.parts-toolbar` (Twin Discs has none; see "Data-driven
+  rendering"), and every one of them has a button. Rotors carries a second copy beside its photo,
+  and Navels' toolbar was added 2026-10-29 linking `BROELL_Navel catalogue.pdf`, so there are six
+  buttons across five PDFs. (Rotors' toolbar button was added
   2026-09-24, linking `PhiComp 2026-08-Product Portfolio.pdf`; unlike the other four files its name
   carries the leaflet's own edition date, not a typo or a catalogue-brand pairing — don't
   "normalize" it to match the others' naming). The Ring Frame
@@ -1245,9 +1280,13 @@ or strip German rather than keeping bilingual strings like `"Driver / Mitnehmer"
   images out of it and "Data-driven rendering" for the table. Autoconer's
   catalogue file is literally named `Autconer Catalogue Euro Textile.pdf` (typo in the file itself)
   — the href matches it exactly; don't "fix" the spelling without renaming the actual file to
-  match. `BROELL_Navel catalogue.pdf` and `CPU Main Catalogue.pdf` are still reference-only, like the
-  source photos below — on disk for provenance/future cropping, not linked from the Navels or Twin
-  Discs panels.
+  match. `CPU Main Catalogue.pdf` is still reference-only, like the source photos below. It is on
+  disk for provenance and future cropping, and not linked from the Twin Discs panel.
+  (`BROELL_Navel catalogue.pdf` was reference-only too until it was linked on 2026-10-29. Its two
+  pages carry the same 16 types, fibres, counts and benefits already in `NAVELS`, plus the ETS
+  contact footer, and no prices or order numbers.) `Autocoro Flyer Main.pdf` and
+  `Autoconer Flyer Main.pdf` are the owner's own one-page flyers, reference-only and unlinked. They
+  are the source of the compatible-machine chips (see `.panel-feature`).
   There is no `docs/` folder. It held one PDF (`Autocoro338_Parts_list_revised.pdf`) behind a
   second Autocoro button ("Additional Parts ↗") next to "Browse Catalogue ↗"; both the button and
   the 7.9 MB file were removed on request, so every panel that links a PDF now links exactly one.
@@ -1407,9 +1446,11 @@ twice; keep doing that.
 - **En dash ranges stay.** `Ø 30–46 mm`, `Autocoro 8–11`, `BD3xx–BD8`, `types A–C` are correct
   typography on product facts. So is `Pune – 411 038` in the postal address.
 - **An em dash after a bold term in a heading or figcaption stays** — it is a label separator, not a
-  prose connector. Nine of these are left, on `Rotor cup & bearing`, `SolidRotor`, `Coating`,
-  `Ring Frame spares`, `RSM.R100`, `RSM.Z000` and `Supporting Discs` (the panel `<h3>`, renamed from
-  `Twin Discs` on 2026-10-24).
+  prose connector. Eight of these are left, on `Rotor cup & bearing`, `SolidRotor`, `Coating`,
+  `RSM.R100`, `RSM.Z000` and `Supporting Discs` (the panel `<h3>`, renamed from `Twin Discs` on
+  2026-10-24). `Ring Frame spares: Rieter & Zinser` was the ninth; the owner had it changed to a
+  colon on 2026-10-29. The `Rieter —` / `Zinser —` / `Marzoli —` labels in the steel-belt fitment
+  list were deliberately left as they are.
 - **Every prose-connector em dash is gone**, replaced by a colon, semicolon, comma or a sentence
   break. Don't reintroduce one mid-sentence.
 

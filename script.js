@@ -166,8 +166,11 @@
         head = '<h4 class="parts-group-title"' + (s ? ' id="' + s.id + '"' : "") + ">" +
                esc(s ? s.label : n.series) + "</h4>";
       }
+      // Everything printed on the card is searchable, so "denim", "knitting" or "viscose"
+      // finds navels as readily as a type name does.
+      var search = [n.type, n.series, n.fibre, n.counts, n.endUse].concat(n.benefits).join(" ").toLowerCase();
       return head +
-        '<article class="navel-card">' +
+        '<article class="navel-card" data-search="' + esc(search) + '">' +
         '<button type="button" class="navel-photo" data-img="' + esc(n.img) + '" ' +
           'data-label="Broell navel ' + esc(n.type) + '" aria-label="Enlarge photo: Broell navel ' + esc(n.type) + '">' +
           '<img loading="lazy" src="' + esc(n.img) + '" alt="Broell navel ' + esc(n.type) + '" ' +
@@ -181,6 +184,7 @@
           '<ul class="navel-benefits">' + n.benefits.map(function (b) { return "<li>" + esc(b) + "</li>"; }).join("") + "</ul>" +
         "</div></article>";
     }).join("");
+    updateCount("navelGrid");
     var ml = document.getElementById("navelMachines");
     if (ml && typeof NAVEL_MACHINES !== "undefined") {
       ml.innerHTML = NAVEL_MACHINES.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("");

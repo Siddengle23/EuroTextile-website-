@@ -465,7 +465,12 @@
                             <li>Rieter BT9xx · R3x</li>
                             <li>Taitan · Rifa &amp; others</li>
                         </ul>
-                        <a href="#contact" class="btn-outline btn-sm">Enquire about complete rotors</a>
+                        <!-- .toolbar-actions only for its flex row + gap; the same leaflet is also
+                             linked from the search toolbar above the rotor type table further down. -->
+                        <div class="toolbar-actions">
+                            <a href="#contact" class="btn-outline btn-sm">Enquire about complete rotors</a>
+                            <a class="btn-primary btn-sm" href="catalogues/PhiComp 2026-08-Product Portfolio.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
+                        </div>
                     </div>
                 </div>
 
@@ -648,6 +653,10 @@
                         <h3>Autocoro spares</h3>
                         <p>Rotor-spinning machine components for high-speed production. Over 3,500 parts
                         available.</p>
+                        <ul class="info-tags" aria-label="Compatible machines">
+                            <li>For Autocoro ACO 8 / 9 / 10 / 11</li>
+                            <li>For Autocoro SE7 / 8 / 9 / 10 / 11 / 12</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="parts-toolbar">
@@ -670,8 +679,11 @@
                     <div class="panel-intro">
                         <span class="mfr-badge"><span class="flag flag-de"></span> Samatex GmbH · Germany</span>
                         <h3>Autoconer spares</h3>
-                        <p>Heavy-duty, long-lifespan winding-machine spares. Over 3,000 parts
+                        <p>Heavy duty, long lifespan winding machine spares. Over 3,000 parts
                         available.</p>
+                        <ul class="info-tags" aria-label="Compatible machines">
+                            <li>For Autoconer 238 / 338 / AC5 / AC6 / X5 / X6</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="parts-toolbar">
@@ -693,8 +705,8 @@
                     <img loading="lazy" src="images/machines/Ringframe Autodoffing.jpg" alt="Samatex ring-frame auto-doffing line" class="panel-photo">
                     <div class="panel-intro">
                         <span class="mfr-badge"><span class="flag flag-de"></span> Samatex GmbH · Germany</span>
-                        <h3>Ring Frame spares — Rieter &amp; Zinser</h3>
-                        <p>Heavy-duty, long-lifespan spare parts for Auto-Doffing Ring-spinning
+                        <h3>Ring Frame spares: Rieter &amp; Zinser</h3>
+                        <p>Heavy duty, long lifespan spare parts for Auto Doffing Ring spinning
                         frames, covering both the Rieter and Zinser ranges plus steel strips and
                         conveyor belts.</p>
                     </div>
@@ -775,7 +787,7 @@
                     <p>We supply customized plain and pre-assembled steel conveyor belts for
                     ringspinning machines and models including:</p>
                     <ul class="callout-list">
-                        <li><strong>Rieter</strong> — G5/1, G5/2, G30, G32, G33, G35, G36, G312, K40, K42, K44, K45, K46</li>
+                        <li><strong>Rieter</strong> — G5/1, G5/2, G30, G32, G33, G35, G36, G38, G312, K40, K42, K44, K45, K46, K47, K48</li>
                         <li><strong>Zinser</strong> — 319, 320, 321, 350, 351, 421, 450, 451, 71, 72</li>
                         <li><strong>Marzoli</strong> — NSF, NSF2, NSF3, NSF4</li>
                     </ul>
@@ -795,6 +807,16 @@
                         use.</p>
                     </div>
                 </div>
+                <!-- The 16 navels are the whole Broell catalogue, so unlike Autocoro/Autoconer/Ring
+                     Frame there is no "selection of the range" note under this toolbar. The search
+                     also hides a series heading once none of its cards match (filterContainer()). -->
+                <div class="parts-toolbar">
+                    <input type="search" class="parts-search" data-target="navelGrid" placeholder="Search navels…" aria-label="Search navels">
+                    <div class="toolbar-actions">
+                        <a class="btn-primary btn-sm" href="catalogues/BROELL_Navel catalogue.pdf" target="_blank" rel="noopener">Browse Catalogue ↗</a>
+                    </div>
+                </div>
+                <p class="parts-count" data-count="navelGrid"></p>
                 <div class="navel-grid" id="navelGrid"><!-- injected by script.js --></div>
                 <div class="machines-note">
                     <strong>Fits:</strong>

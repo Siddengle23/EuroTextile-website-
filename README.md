@@ -48,7 +48,7 @@ git clone --depth 1 https://github.com/Siddengle23/EuroTextile-website-.git
 | `data.js` | Catalogue data as plain global arrays, loaded *before* `script.js` |
 | `js/vendor/` | `gsap.min.js` and `ScrollTrigger.min.js` |
 | `images/` | Served assets — `parts/`, `machines/`, `manufacturers/`, `clients/`, logos, social preview |
-| `catalogues/` | Manufacturer PDF catalogues; three are linked from the product panels |
+| `catalogues/` | Manufacturer PDF catalogues; five are linked from the product panels |
 | `robots.txt`, `sitemap.xml` | SEO files |
 | `CLAUDE.md` | Detailed engineering notes — architecture, conventions and the reasoning behind them |
 
